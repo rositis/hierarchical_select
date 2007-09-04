@@ -1,0 +1,50 @@
+$Id$
+
+Hooks
+-----
+1) hook_hierarchical_select_render($hsid, $selection, $params);
+
+This hook is called whenever the user makes a selection. It should return a
+new set of rendered selects. See hierarchical_select_taxonomy.inc for an
+example.
+
+2) hook_hierarchial_select_form_alter($form_id, &$form);
+
+This hook is absolutely optional. The sole reason for its existence, is to
+allow easy altering of Drupal core forms to use the hierarchical_select form
+item. To render the actual HTML, there's a helper function available:
+  hierarchical_select_render_selects($hsid, $selects);
+
+
+Form API usage
+--------------
+And last, but not least, you have to make sure your form item is using the
+"hierarchical_select" form element type:
+
+  $form['tid'] = array(
+    '#type' => 'hierarchical_select',
+    '#title' => t('Select the tag you wish to use.'),
+    '#options' => $options,
+    '#hierarchical_select_settings' => array(
+      'module' => 'taxonomy',
+      'params' => array(
+        'vid' => $vid,
+      ),
+    ),
+    '#default_value' => '83',
+  ); 
+
+A quick scan learns us that:
+
+1) We've set the #type property to "hierarchical_select" instead of "select".
+2) There's a new property: #hierarchical_select_settings. This must be an
+array.
+An obligated key/value pair in this array is "module". This will be passed
+through in the AHAH requests, to let the hierarchical_select module know which
+module's render function should be used.
+The other key/value pair in this array is optional: "params". This must again
+be an array. But this time, you can specify whatever other parameters you have
+to know to be able to render the new selects. In the case of taxonomy, this is
+the vocabulary id (vid). In case of content_taxonomy, there's an additional
+parameter: the depth.
+The "params" array is also passed through in every AHAH request.

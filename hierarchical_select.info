@@ -1,0 +1,4 @@
+; $Id$
+name = Hierarchical Select
+description = Transforms the select form items of hierarchical selects into dynamically updated, per-level select form items.
+dependencies = jquery_interface

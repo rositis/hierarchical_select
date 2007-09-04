@@ -1,0 +1,185 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * This module defines the "hierarchical_select" form element, which is a
+ * greatly enhanced way for letting the user select an option in a hierarchy.
+ * Out of the box, this module supports the taxonomy and content_taxonomy
+ * modules, but that automatically includes the forum module. It also converts
+ * any hierarchical taxonomy exposed filters in any View to a hierarchical
+ * select.
+ *
+ * Any module that uses a select form element, of which the options are
+ * ordered hierarchically, can take advantage of this new form element.
+ * Especially when there's a deep hierarchy, or when there are a lot of
+ * options in each sublevel, this form element greatly simplifies the finding
+ * of the right setting for the user. Note that due to the nature of this
+ * custom form item, it's currently impossible to select nothing. So by
+ * design, it is a required form item!
+ */
+
+
+// Enable default support for some modules, if they are enabled.
+if (module_exists('taxonomy')) {
+  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/hierarchical_select_taxonomy.inc';
+}
+if (module_exists('content_taxonomy')) {
+  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/hierarchical_select_content_taxonomy.inc';
+}
+
+
+//----------------------------------------------------------------------------
+// Drupal core hooks.
+
+/**
+ * Implementation of hook_menu().
+ */
+function hierarchical_select_menu($may_cache) {
+  if (!$maycache) {
+    $items[] = array(
+      'path' => 'hierarchical_select_ahah',
+      'callback' => 'hierarchical_select_ahah',
+      'access' => TRUE, // TODO: Check if this safe.
+    );
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function hierarchical_select_form_alter($form_id, &$form) {
+  foreach (module_implements('hierarchical_select_form_alter') as $module) {
+    $function = $module .'_hierarchical_select_form_alter';
+    $function($form_id, $form);
+  }
+}
+
+/**
+ * Implementation of hook_elements().
+ */
+function hierarchical_select_elements() {
+  $type['hierarchical_select'] = array(
+    '#input' => TRUE, 
+    '#process' => array('_hierarchical_select_process' => array()),
+    '#settings' => array(),
+    '#default_value' => -1,
+    '#required' => TRUE,
+  );
+  return $type;
+}
+
+
+//----------------------------------------------------------------------------
+// Menu callbacks.
+
+/**
+ * Menu callback; AHAH callback: generates the appropriate HTML.
+ */
+function hierarchical_select_ahah() {
+  $params = $_POST;
+  unset($params['module']);
+  unset($params['hsid']);
+  unset($params['selection']);
+
+  print module_invoke($_POST['module'], 'hierarchical_select_render', $_POST['hsid'], $_POST['selection'], $params);
+  exit;
+}
+
+
+//----------------------------------------------------------------------------
+// Public functions.
+
+/**
+ * Helper function to render the selects.
+ *
+ * @param $hsid
+ *   The hierarchical select id.
+ * @param $selects
+ *   An array of options to be used in the selects, of this format:
+ *   array(
+ *     'value' => 'label',
+ *     'value' => 'label',
+ *     'selected' => 'value',
+ *   );
+ * @return
+ *   The rendered HTML.
+ */
+function hierarchical_select_render_selects($hsid, $selects) {
+  $output = '';
+
+  for ($level = 0; $level < count($selects); $level++) {
+    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $level .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
+    foreach ($selects[$level]['options'] as $value => $label) {
+      if ($value == $selects[$level]['selected']) {
+        $output .= '<option selected="selected" value="'. $value .'">'. $label .'</option>';
+      }
+      else {
+        $output .= '<option value="'. $value .'">'. $label .'</option>';
+      }
+    }
+    $output .= '</select>';
+  }
+
+  return $output;
+}
+
+
+//----------------------------------------------------------------------------
+// Private functions.
+
+/**
+ * Hierarchical Select form element processing function.
+ */
+function _hierarchical_select_process($element) {
+  static $hsid;
+
+  // Render a hierarchical select as a normal select.
+  $element['#type'] = 'select';
+
+  if (!isset($hsid)) {
+    $hsid = 0;
+
+    // Add the CSS and JS, set the URL that should be used by all hierarchical
+    // selects.
+    drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+    jquery_interface_add();
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
+		drupal_add_js(
+		  array(
+		    'hierarchical_select' => array(
+		      'url' => base_path() .'hierarchical_select_ahah',
+		    ),
+		  ),
+		  'setting'
+		);
+  }
+  else {
+    $hsid++;
+  }
+
+  // Pass some settings for this hierarchical select.
+  $module = $element['#hierarchical_select_settings']['module'];
+  $params = $element['#hierarchical_select_settings']['params'];
+  $selection = (is_array($element['#default_value'])) ? $element['#default_value'][0] : $element['#default_value'];
+	drupal_add_js(
+	  array(
+	    'hierarchical_select' => array(
+	      'settings' => array(
+  	      $hsid => array(
+            'initial' => module_invoke($module, 'hierarchical_select_render', $hsid, $selection, $params),
+            'module' => $module,
+  	        'params' => $params,
+  	      ),
+  	    ),
+	    )
+	  ),
+	  'setting'
+	);
+
+  // Set the unique class.
+  $element['#attributes']['class'] .= " hierarchical-select-$hsid hierarchical-select";
+
+  return $element;
+}
