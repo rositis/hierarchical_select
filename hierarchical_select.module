@@ -22,10 +22,10 @@
 
 // Enable default support for some modules, if they are enabled.
 if (module_exists('taxonomy')) {
-  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/hierarchical_select_taxonomy.inc';
+  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/taxonomy.inc';
 }
 if (module_exists('content_taxonomy')) {
-  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/hierarchical_select_content_taxonomy.inc';
+  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/content_taxonomy.inc';
 }
 
 
@@ -41,6 +41,7 @@ function hierarchical_select_menu($may_cache) {
       'path' => 'hierarchical_select_ahah',
       'callback' => 'hierarchical_select_ahah',
       'access' => TRUE, // TODO: Check if this safe.
+      'type' => MENU_CALLBACK,
     );
   }
   return $items;
@@ -63,9 +64,8 @@ function hierarchical_select_elements() {
   $type['hierarchical_select'] = array(
     '#input' => TRUE, 
     '#process' => array('_hierarchical_select_process' => array()),
-    '#settings' => array(),
+    '#hierarchical_select_settings' => array(),
     '#default_value' => -1,
-    '#required' => TRUE,
   );
   return $type;
 }
@@ -79,11 +79,15 @@ function hierarchical_select_elements() {
  */
 function hierarchical_select_ahah() {
   $params = $_POST;
-  unset($params['module']);
-  unset($params['hsid']);
-  unset($params['selection']);
-
-  print module_invoke($_POST['module'], 'hierarchical_select_render', $_POST['hsid'], $_POST['selection'], $params);
+  $required = (strcasecmp($params['required'], 'TRUE') == 0);
+  unset(
+    $params['module'],
+    $params['hsid'],
+    $params['selection'],
+    $params['required']
+  );
+  
+  print module_invoke($_POST['module'], 'hierarchical_select_render', $_POST['hsid'], $_POST['selection'], $params, $required);
   exit;
 }
 
@@ -113,10 +117,10 @@ function hierarchical_select_render_selects($hsid, $selects) {
     $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $level .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
     foreach ($selects[$level]['options'] as $value => $label) {
       if ($value == $selects[$level]['selected']) {
-        $output .= '<option selected="selected" value="'. $value .'">'. $label .'</option>';
+        $output .= '<option selected="selected" value="'. $value .'">'. check_plain($label) .'</option>';
       }
       else {
-        $output .= '<option value="'. $value .'">'. $label .'</option>';
+        $output .= '<option value="'. $value .'">'. check_plain($label) .'</option>';
       }
     }
     $output .= '</select>';
@@ -130,30 +134,28 @@ function hierarchical_select_render_selects($hsid, $selects) {
 // Private functions.
 
 /**
- * Hierarchical Select form element processing function.
+ * Hierarchical select form element processing function.
  */
 function _hierarchical_select_process($element) {
   static $hsid;
 
-  // Render a hierarchical select as a normal select.
+  // Render a hierarchical select as a normal select, it's the JavaScript that
+  // will turn it into a hierarchical select.
   $element['#type'] = 'select';
 
   if (!isset($hsid)) {
     $hsid = 0;
+
+    $url = base_path();
+    $url .= variable_get('clean_url', 0) ? '' : '?q=';
+    $url .= 'hierarchical_select_ahah';
 
     // Add the CSS and JS, set the URL that should be used by all hierarchical
     // selects.
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
     jquery_interface_add();
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
-		drupal_add_js(
-		  array(
-		    'hierarchical_select' => array(
-		      'url' => base_path() .'hierarchical_select_ahah',
-		    ),
-		  ),
-		  'setting'
-		);
+		drupal_add_js(array('hierarchical_select' => array('url' => $url)), 'setting');
   }
   else {
     $hsid++;
@@ -162,14 +164,28 @@ function _hierarchical_select_process($element) {
   // Pass some settings for this hierarchical select.
   $module = $element['#hierarchical_select_settings']['module'];
   $params = $element['#hierarchical_select_settings']['params'];
-  $selection = (is_array($element['#default_value'])) ? $element['#default_value'][0] : $element['#default_value'];
+  $lineage = $element['#hierarchical_select_settings']['lineage'];
+
+  // When the #value property is empty, we're rendering this form (and thus
+  // the form element) for the first time. When it's no longer empty, this
+  // means that the validation failed and that we must keep the option that
+  // was selected by the user.
+  if (is_array($element['#value']) && empty($element['#value'])) {
+    $selection = (is_array($element['#default_value'])) ? $element['#default_value'][0] : $element['#default_value'];
+  }
+  else {
+    $selection = (is_array($element['#value'])) ? $element['#value'][0] : $element['#value'];
+  }
+
 	drupal_add_js(
 	  array(
 	    'hierarchical_select' => array(
 	      'settings' => array(
   	      $hsid => array(
-            'initial' => module_invoke($module, 'hierarchical_select_render', $hsid, $selection, $params),
+            'initial' => module_invoke($module, 'hierarchical_select_render', $hsid, $selection, $params, $element['#required']),
             'module' => $module,
+            'required' => (bool) $element['#required'],
+            'lineage' => (bool) $lineage,
   	        'params' => $params,
   	      ),
   	    ),
@@ -178,8 +194,25 @@ function _hierarchical_select_process($element) {
 	  'setting'
 	);
 
+  // If the lineage property is set to TRUE, make the select a multiple select.
+  if ($lineage) {
+    $element['#multiple'] = TRUE;
+  }
+
   // Set the unique class.
   $element['#attributes']['class'] .= " hierarchical-select-$hsid hierarchical-select";
 
   return $element;
+}
+
+/**
+ * Helper function that adds the JS to reposition the exposed filters of a
+ * view just once.
+ */
+function _hierarchical_select_views_exposed_filters_reposition() {
+  static $js_added;
+  
+  if (!isset($js_added)) {
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/modules/views.js', 'module');
+  }
 }

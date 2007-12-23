@@ -1,5 +1,11 @@
 // $Id$
 
+/**
+ * @file
+ * Corrects the table that contains the exposed filters for Views. It puts
+ * each hierarchical select in its own row.
+ */
+
 if (Drupal.jsEnabled) {
 	$(document).ready(function(){
 		var td;

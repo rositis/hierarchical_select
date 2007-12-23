@@ -24,7 +24,7 @@ And last, but not least, you have to make sure your form item is using the
   $form['tid'] = array(
     '#type' => 'hierarchical_select',
     '#title' => t('Select the tag you wish to use.'),
-    '#options' => $options,
+    '#options' => $options, // Contains an array of tid - term name pairs.
     '#hierarchical_select_settings' => array(
       'module' => 'taxonomy',
       'params' => array(
@@ -35,13 +35,12 @@ And last, but not least, you have to make sure your form item is using the
   ); 
 
 A quick scan learns us that:
-
 1) We've set the #type property to "hierarchical_select" instead of "select".
 2) There's a new property: #hierarchical_select_settings. This must be an
 array.
 An obligated key/value pair in this array is "module". This will be passed
 through in the AHAH requests, to let the hierarchical_select module know which
-module's render function should be used.
+module's rendering function should be used.
 The other key/value pair in this array is optional: "params". This must again
 be an array. But this time, you can specify whatever other parameters you have
 to know to be able to render the new selects. In the case of taxonomy, this is
