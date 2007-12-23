@@ -63,7 +63,7 @@ function hierarchical_select_form_alter($form_id, &$form) {
 function hierarchical_select_elements() {
   $type['hierarchical_select'] = array(
     '#input' => TRUE, 
-    '#process' => array('_hierarchical_select_process' => array()),
+    '#process' => array('hierarchical_select_process' => array()),
     '#hierarchical_select_settings' => array(),
     '#default_value' => -1,
   );
@@ -75,68 +75,30 @@ function hierarchical_select_elements() {
 // Menu callbacks.
 
 /**
- * Menu callback; AHAH callback: generates the appropriate HTML.
+ * Menu callback; AHAH callback: generates and outputs the appropriate HTML.
  */
 function hierarchical_select_ahah() {
   $params = $_POST;
-  $required = (strcasecmp($params['required'], 'TRUE') == 0);
   unset(
     $params['module'],
     $params['hsid'],
     $params['selection'],
     $params['required']
   );
-  
-  print module_invoke($_POST['module'], 'hierarchical_select_render', $_POST['hsid'], $_POST['selection'], $params, $required);
+  $required = (strcasecmp($_POST['required'], 'TRUE') == 0);
+
+  print _hierarchical_select_render($_POST['hsid'], $_POST['module'], $_POST['selection'], FALSE, TRUE, $required, $params);
   exit;
 }
 
 
 //----------------------------------------------------------------------------
-// Public functions.
-
-/**
- * Helper function to render the selects.
- *
- * @param $hsid
- *   The hierarchical select id.
- * @param $selects
- *   An array of options to be used in the selects, of this format:
- *   array(
- *     'value' => 'label',
- *     'value' => 'label',
- *     'selected' => 'value',
- *   );
- * @return
- *   The rendered HTML.
- */
-function hierarchical_select_render_selects($hsid, $selects) {
-  $output = '';
-
-  for ($level = 0; $level < count($selects); $level++) {
-    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $level .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
-    foreach ($selects[$level]['options'] as $value => $label) {
-      if ($value == $selects[$level]['selected']) {
-        $output .= '<option selected="selected" value="'. $value .'">'. check_plain($label) .'</option>';
-      }
-      else {
-        $output .= '<option value="'. $value .'">'. check_plain($label) .'</option>';
-      }
-    }
-    $output .= '</select>';
-  }
-
-  return $output;
-}
-
-
-//----------------------------------------------------------------------------
-// Private functions.
+// Forms API callbacks.
 
 /**
  * Hierarchical select form element processing function.
  */
-function _hierarchical_select_process($element) {
+function hierarchical_select_process($element) {
   static $hsid;
 
   // Render a hierarchical select as a normal select, it's the JavaScript that
@@ -176,13 +138,15 @@ function _hierarchical_select_process($element) {
   else {
     $selection = (is_array($element['#value'])) ? $element['#value'][0] : $element['#value'];
   }
+  
+  $initial = _hierarchical_select_render($hsid, $module, $selection, FALSE, TRUE, (bool) $element['#required'], $params);
 
 	drupal_add_js(
 	  array(
 	    'hierarchical_select' => array(
 	      'settings' => array(
   	      $hsid => array(
-            'initial' => module_invoke($module, 'hierarchical_select_render', $hsid, $selection, $params, $element['#required']),
+            'initial' => $initial,
             'module' => $module,
             'required' => (bool) $element['#required'],
             'lineage' => (bool) $lineage,
@@ -205,9 +169,136 @@ function _hierarchical_select_process($element) {
   return $element;
 }
 
+
+//----------------------------------------------------------------------------
+// Private functions.
+
+/**
+ * Render the hierarchical select.
+ */
+function _hierarchical_select_render($hsid, $module, $selection, $store_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $params = array()) {
+  // DEBUG
+//  $params['vid'] = 1;
+//  $selection = 8
+
+  if (!$selection) {
+    $selection = ($store_lineage) ? array() : -1;
+  }
+
+  if (!module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
+    $selection = -1;
+  }
+
+  // Build the hierarchy.
+  $hierarchy = new StdClass();
+  if (!$store_lineage) {
+    $depth = 0;
+    
+    // Get the root level.
+    $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_root_level', $params);
+    $depth++;
+
+    // Build the lineage
+    $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection);
+    if ($enforce_deepest) {
+      $hierarchy->lineage = _hierarchial_select_enforce_deepest_selection($hierarchy->lineage, $hierarchy->levels[0], $module, $params);
+    }
+
+    // Build the rest of the hierarchy, based on the lineage.
+    while ($depth < count($hierarchy->lineage)) {
+      $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
+      $depth++;
+    }
+  }
+  else {
+    // todo
+    $hierarchy->lineage = $selection; // $selection should be an array of selected stuff now.
+  }
+  
+  // DEBUG
+//  dpr($hierarchy);
+//  print _hierarchical_select_render_selects($hsid, $hierarchy);
+//  exit; 
+  // END DEBUG
+
+  return _hierarchical_select_render_selects($hsid, $hierarchy);
+}
+
+/**
+ * Helper function to update the lineage of the hierarchy to ensure that the
+ * user selects an item in the deepest level of the hierarchy.
+ *
+ * @param $lineage
+ *   The lineage up to the deepest selection the user has made so far.
+ * @param $root_level
+ *   The options in the root level.
+ * @param $module
+ *   The module that should be used for HS hooks.
+ * @param $params
+ *   The params that should be passed to HS hooks.
+ * @return
+ *   The updated lineage.
+ */
+function _hierarchial_select_enforce_deepest_selection($lineage, $root_level, $module, $params) {
+  $deepest_selection = end($lineage);
+
+  // If no default is selected, thus the lineage is still empty, select the
+  // first option of the root level by default.
+  if (count($lineage) == 0) {
+    $first_option = reset(array_keys($root_level));
+    $lineage[] = $first_option;
+    $deepest_selection = $first_option;
+  }
+
+  // Use the deepest selection as the first parent. Then apply this algorithm:
+  // 1) get the parent's children, stop if no children
+  // 2) choose the first child as the option that is selected by default, by
+  //    adding it to the lineage of the hierarchy
+  // 3) make this child the parent, go to step 1.
+  $parent = $deepest_selection;
+  $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
+  while (count($children)) {
+    $first_child = reset(array_keys($children));
+    $lineage[] = $first_child;
+    $parent = $first_child;
+    $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
+  }
+
+  return $lineage;
+}
+
+/**
+ * Render the HTML (the selects) for the given hierarchy..
+ *
+ * @param $hsid
+ *   The hierarchical select id.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @return
+ *   The rendered HTML.
+ */
+function _hierarchical_select_render_selects($hsid, $hierarchy) {
+  $output = '';
+
+  for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
+    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
+    foreach ($hierarchy->levels[$depth] as $value => $label) {
+      if ($value == $hierarchy->lineage[$depth]) {
+        $output .= '<option selected="selected" value="'. $value .'">'. check_plain($label) .'</option>';
+      }
+      else {
+        $output .= '<option value="'. $value .'">'. check_plain($label) .'</option>';
+      }
+    }
+    $output .= '</select>';
+  }
+
+  return $output;
+}
+
 /**
  * Helper function that adds the JS to reposition the exposed filters of a
- * view just once.
+ * View just once.
  */
 function _hierarchical_select_views_exposed_filters_reposition() {
   static $js_added;
