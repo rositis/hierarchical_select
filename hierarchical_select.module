@@ -13,10 +13,8 @@
  * Any module that uses a select form element, of which the options are
  * ordered hierarchically, can take advantage of this new form element.
  * Especially when there's a deep hierarchy, or when there are a lot of
- * options in each sublevel, this form element greatly simplifies the finding
- * of the right setting for the user. Note that due to the nature of this
- * custom form item, it's currently impossible to select nothing. So by
- * design, it is a required form item!
+ * options in each sublevel, this form element greatly simplifies the user's
+ * search for the right option.
  */
 
 
@@ -64,7 +62,12 @@ function hierarchical_select_elements() {
   $type['hierarchical_select'] = array(
     '#input' => TRUE, 
     '#process' => array('hierarchical_select_process' => array()),
-    '#hierarchical_select_settings' => array(),
+    '#hierarchical_select_settings' => array(
+      'save_lineage' => FALSE,
+      'enforce_deepest' => FALSE,
+      'level_labels' => array(),
+      'params' => array(),
+    ),
     '#default_value' => -1,
   );
   return $type;
@@ -84,11 +87,21 @@ function hierarchical_select_ahah() {
     $params['hsid'],
     $params['selection'],
     $params['required'],
-    $params['save_lineage']
+    $params['enforce_deepest'],
+    $params['save_lineage'],
+    $params['level_labels']
   );
-  $required = (strcasecmp($_POST['required'], 'TRUE') == 0);
 
-  print _hierarchical_select_render($_POST['hsid'], $_POST['module'], $_POST['selection'], $_POST['save_lineage'], TRUE, $required, $params);
+  print _hierarchical_select_render(
+    $_POST['hsid'],
+    $_POST['module'],
+    (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']),
+    (strcasecmp($_POST['save_lineage'], 'TRUE') == 0),
+    (strcasecmp($_POST['enforce_deepest'], 'TRUE') == 0),
+    (strcasecmp($_POST['required'], 'TRUE') == 0),
+    explode('|', $_POST['level_labels']),
+    $params
+  );
   exit;
 }
 
@@ -124,19 +137,22 @@ function hierarchical_select_process($element) {
     $hsid++;
   }
 
-  // Pass some settings for this hierarchical select.
+  // Extract settings.
   $module = $element['#hierarchical_select_settings']['module'];
-  $params = $element['#hierarchical_select_settings']['params'];
+  $enforce_deepest = (bool) $element['#hierarchical_select_settings']['enforce_deepest'];
   $save_lineage = (bool) $element['#hierarchical_select_settings']['save_lineage'];
   $required = (bool) $element['#required'];
+  $level_labels = (array) $element['#hierarchical_select_settings']['level_labels'];
+  $params = $element['#hierarchical_select_settings']['params'];
 
   // When the #value property is empty, we're rendering this form (and thus
   // the form element) for the first time. When it's no longer empty, this
   // means that the validation failed and that we must keep the option that
   // was selected by the user.
   $selection = (empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
+  $selection = (is_array($selection)) ? array_reverse($selection) : $selection;
   
-  $initial = _hierarchical_select_render($hsid, $module, $selection, $save_lineage, TRUE, $required, $params);
+  $initial = _hierarchical_select_render($hsid, $module, $selection, $save_lineage, $enforce_deepest, $required, $level_labels, $params);
 
   drupal_add_js(
     array(
@@ -146,7 +162,9 @@ function hierarchical_select_process($element) {
             'initial' => $initial,
             'module' => $module,
             'required' => $required,
+            'enforceDeepest' => $enforce_deepest,
             'saveLineage' => $save_lineage,
+            'levelLabels' => implode('|', $level_labels),
             'params' => $params,
           ),
         ),
@@ -161,7 +179,7 @@ function hierarchical_select_process($element) {
   }
 
   // Set the unique class.
-  $element['#attributes']['class'] .= " hierarchical-select-$hsid hierarchical-select";
+  $element['#attributes']['class'] .= " hierarchical-select hierarchical-select-$hsid";
 
   return $element;
 }
@@ -172,8 +190,25 @@ function hierarchical_select_process($element) {
 
 /**
  * Render the hierarchical select.
+ *
+ * @param $hsid
+ *   The HS id that should be used.
+ * @param $module
+ *   The module that should be used for HS hooks.
+ * @param $selection
+ *   The selection based on which a HS should be rendered.
+ * @param $save_lineage
+ *   Whether the "save lineage" option is enabled or not.
+ * @param $enforce_deepest
+ *   Whether the "enforce deepest" option is enabled or not.
+ * @param $required
+ *   Whether the form item is required or not.
+ * @param $level_labels
+ *   An array of labels, one per level. Optional.
+ * @param $params
+ *   An array of parameters, which may be necessary for some implementations.
  */
-function _hierarchical_select_render($hsid, $module, $selection, $save_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $params = array()) {
+function _hierarchical_select_render($hsid, $module, $selection, $save_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $level_labels = array(), $params = array()) {
   $hierarchy = new StdClass();
 
   // Validate and clean up the selection.
@@ -182,23 +217,67 @@ function _hierarchical_select_render($hsid, $module, $selection, $save_lineage =
   // Start building the hierarchy, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
 
+  // If the form item is optional, prepend a "none" option to the root level.
+  if (!$required) {
+    $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
+  }
+
   // If the "save lineage" option is enabled, then the selection *is* a
   // lineage. If it's disabled, we have to generate one ourselves based on the
   // (deepest) selected item.
-  $hierarchy->lineage = ($save_lineage) ? array_reverse($selection) : module_invoke($module, 'hierarchical_select_lineage', $selection);
+  if ($save_lineage) {
+    // When the form item is optional, and nothing is selected already, the
+    // "none" option will be selected by default, thus only the first level
+    // will be displayed. As a result, we won't receive an array as the
+    // selection, but only a single item.
+    $hierarchy->lineage = (is_array($selection)) ? $selection : array(0 => $selection);
+  }
+  else {
+    $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection);
+  }
+
+  // If the lineage is empty and the "enforce deepest" option is ...
+  // 1) ... disabled, then select the label of the first level by default.
+  // 2) ... enabled, then select the first item in the root level by default. 
+  if (empty($hierarchy->lineage)) {
+    $hierarchy->lineage[0] = (!$enforce_deepest) ? 'label_0' : reset(array_keys($hierarchy->levels[0]));
+  }
 
   // If we're enforcing a selection of an item in the deepest level in the
   // hierarchy (but still keeping the lineage of the current selection), we
   // have to pick items that will be selected by default in every level, and
   // add these to the lineage.
-  if ($enforce_deepest) {
-    $hierarchy->lineage = _hierarchial_select_enforce_deepest_selection($hierarchy->lineage, $hierarchy->levels[0], $module, $params);
+  if ($enforce_deepest && $hierarchy->lineage[0] != 'none') {
+    $hierarchy->lineage = _hierarchial_select_enforce_deepest_selection($hierarchy->lineage, $hierarchy->levels[0], $module, $required, $params);
   }
 
+  // Calculate the lineage's depth (starting from 0).
+  $max_depth = count($hierarchy->lineage) - 1;
+
   // Build the rest of the hierarchy, based on the lineage.
-  while ($depth < count($hierarchy->lineage)) {
+  for ($depth = 1; $depth <= $max_depth; $depth++) {
     $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
-    $depth++;
+  }
+
+  // If the "enforce deepest" option is disabled ... 
+  if (!$enforce_deepest) {
+    // ... we have to prepend labels to every level ...
+    for ($depth = 0; $depth <= $max_depth; $depth++) {
+      $hierarchy->levels[$depth] = array('label_'. $depth => $level_labels[$depth]) + $hierarchy->levels[$depth];
+    }
+
+    // ... and have to add one more level if appropriate.
+    $parent = $hierarchy->lineage[$max_depth];
+    if (module_invoke($module, 'hierarchical_select_valid_item', $parent, $params)) {
+      $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
+      if (count($children)) {
+        // We're good, let's add one level!
+        $max_depth++;
+        $first_child = reset(array_keys($children));
+        $hierarchy->lineage[$max_depth] = 'label_'. $max_depth;
+        $hierarchy->levels[$max_depth] = array('label_'. $max_depth => $level_labels[$max_depth]) + $children;
+      }
+    }
   }
 
   return _hierarchical_select_render_selects($hsid, $hierarchy);
@@ -214,28 +293,20 @@ function _hierarchical_select_render($hsid, $module, $selection, $save_lineage =
  *   The options in the root level.
  * @param $module
  *   The module that should be used for HS hooks.
+ * @param $required
+ *   Boolean, whether the form item is required or not.
  * @param $params
  *   The params that should be passed to HS hooks.
  * @return
  *   The updated lineage.
  */
-function _hierarchial_select_enforce_deepest_selection($lineage, $root_level, $module, $params) {
-  $deepest_selection = end($lineage);
-
-  // If no default is selected, thus the lineage is still empty, select the
-  // first option of the root level by default.
-  if (count($lineage) == 0) {
-    $first_option = reset(array_keys($root_level));
-    $lineage[] = $first_option;
-    $deepest_selection = $first_option;
-  }
-
-  // Use the deepest selection as the first parent. Then apply this algorithm:
+function _hierarchial_select_enforce_deepest_selection($lineage, $root_level, $module, $required, $params) {
+  // Use the deepest item as the first parent. Then apply this algorithm:
   // 1) get the parent's children, stop if no children
   // 2) choose the first child as the option that is selected by default, by
   //    adding it to the lineage of the hierarchy
   // 3) make this child the parent, go to step 1.
-  $parent = $deepest_selection;
+  $parent = end($lineage); // The last item in the lineage is the deepest one.
   $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
   while (count($children)) {
     $first_child = reset(array_keys($children));
@@ -248,8 +319,11 @@ function _hierarchial_select_enforce_deepest_selection($lineage, $root_level, $m
 }
 
 /**
- * Reset the selection if no valid item was selected, or if not every selected
- * item (when the "save lineage" option is enabled) is valid.
+ * Reset the selection if no valid item was selected. If an array is passed
+ * (this happens when the "save lineage" option is enabled), then the first
+ * item in the array corresponds to the first selected term. As soon as an
+ * invalid item is encountered, the lineage from that level to the deeper
+ * levels should be unset. This is so to ignore selection of a level label.
  *
  * @param $selection
  *   Either a single item id or an array of item ids.
@@ -265,14 +339,16 @@ function _hierarchical_select_validate_selection($selection, $module, $params) {
   if (is_array($selection)) {
     // The "save lineage" option is enabled because $selection is an array.
     $valid = TRUE;
-    for ($i = 0; $valid && $i < count($selection); $i++) {
-      $valid = module_invoke($module, 'hierarchical_select_valid_item', $selection[$i], $params);
-    }
-    if (!$valid) {
-      $selection = array();
+    for ($i = 0; $i < count($selection); $i++) {
+      if ($valid) {
+        $valid = module_invoke($module, 'hierarchical_select_valid_item', $selection[$i], $params);
+      }
+      if (!$valid) {
+        unset($selection[$i]);
+      }
     }
   }
-  elseif (!$selection || !module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
+  elseif ($selection != 'none' && !module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
     $selection = -1;
   }
   return $selection;

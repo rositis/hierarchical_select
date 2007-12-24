@@ -12,10 +12,17 @@ used as exposed filters in any View to a hierarchical select.
 Any module that uses a select form element, of which the options are ordered
 hierarchically, can take advantage of this new form element. Especially when
 there's a deep hierarchy, or when there are a lot of options in each sublevel,
-this form element greatly simplifies the user's search for the right option. 
-Optional form elements can be used. Hierarchical Select can be configured per
-vocabulary: it can be turned on/off and you can choose to save the entire term
-lineage or only the deepest term.
+this form element greatly simplifies the user's search for the right option.
+
+Hierarchical Select has the ability to save the entire lineage of a selection
+or only the "deepest" selection. You can configure it to force the user to
+make a selection as deep as possible in the tree, or allow the user to select
+an item anywhere in the tree. In the latter case, you can also label each
+level.
+
+The Taxonomy implementation of Hierarchical Select can be configured per
+vocabulary: it can be turned on/off and you can take advantage of all features
+mentioned above.
 
 
 Dependencies
@@ -39,7 +46,11 @@ Installation
 2) Install the modules it depends on. Don't forget to copy the jquery.js file
 included in the jQuery Update module to the "misc" directory!
 
-3) Enable the module. All changes are applied automagically.
+3) Enable the module.
+
+4) If you want to use it for one or more of your vocabularies, go to
+admin/content/taxonomy and click the "edit" link for a vocabulary. Now scroll
+down and you'll find a whole range of Hierarchical Select settings.
 
 In case of problems, don't forget to do a hard refresh in your browser!
 

@@ -2,31 +2,52 @@ $Id$
 
 Hooks
 -----
-1) hook_hierarchical_select_render($hsid, $selection, $params);
 
-This hook is called whenever the user makes a selection. It should return a
-new set of rendered selects. See hierarchical_select_taxonomy.inc for an
-example.
+1) hook_hierarchial_select_form_alter($form_id, &$form);
 
-2) hook_hierarchial_select_form_alter($form_id, &$form);
+  This hook is absolutely optional. The sole reason for its existence, is to
+  allow easy altering of Drupal core forms to use the hierarchical_select form
+  item.
 
-This hook is absolutely optional. The sole reason for its existence, is to
-allow easy altering of Drupal core forms to use the hierarchical_select form
-item. To render the actual HTML, there's a helper function available:
-  hierarchical_select_render_selects($hsid, $selects);
+2) function hook_hierarchical_select_params();
+
+  Returns the names of all parameters that should be present.
+
+3) function hook_hierarchical_select_root_level($params);
+
+  Returns the root level of the hierarchy.
+
+4) function hook_hierarchical_select_children($parent, $params);
+
+  Gets the children of $parent and returns them.
+
+5) function hook_hierarchical_select_lineage($item);
+
+  Calculates the lineage of $item and returns it. Necessary when the
+  "enforce_deepest" option is enabled.
+
+6) function hook_hierarchical_select_valid_item($item, $params);
+
+  Validates an item, returns TRUE if valid, FALSE if invalid.
 
 
 Form API usage
 --------------
-And last, but not least, you have to make sure your form item is using the
-"hierarchical_select" form element type:
+You have to make sure your form item is using the "hierarchical_select" form
+element type:
 
-  $form['tid'] = array(
+  $form['select_some_term'] = array(
     '#type' => 'hierarchical_select',
     '#title' => t('Select the tag you wish to use.'),
     '#options' => $options, // Contains an array of tid - term name pairs.
     '#hierarchical_select_settings' => array(
       'module' => 'taxonomy',
+      'save_lineage' => FALSE,
+      'enforce_deepest' => FALSE,
+      'level_labels' => array(
+        0 => t('Main category'),
+        1 => t('Subcategory'),
+      ),
       'params' => array(
         'vid' => $vid,
       ),
@@ -34,16 +55,22 @@ And last, but not least, you have to make sure your form item is using the
     '#default_value' => '83',
   ); 
 
-A quick scan learns us that:
+Now, let's explain what we see here:
 1) We've set the #type property to "hierarchical_select" instead of "select".
 2) There's a new property: #hierarchical_select_settings. This must be an
-array.
-An obligated key/value pair in this array is "module". This will be passed
-through in the AHAH requests, to let the hierarchical_select module know which
-module's rendering function should be used.
-The other key/value pair in this array is optional: "params". This must again
-be an array. But this time, you can specify whatever other parameters you have
-to know to be able to render the new selects. In the case of taxonomy, this is
-the vocabulary id (vid). In case of content_taxonomy, there's an additional
-parameter: the depth.
-The "params" array is also passed through in every AHAH request.
+array. These are the items it can contain:
+ - module (obligated)
+   This will be passed through in the AHAH requests, to let the HS module know
+   which module's hooks should be used.
+ - save_lineage (optional, defaults to FALSE)
+   This option triggers the lineage saving functionality.
+ - enforce_deepest (optional, defaults to FALSE)
+   This option triggers the enforcing of a selection in the deepest level.
+ - level_labels (optional, only used if enforce_deepest is set to FALSE)
+   An array of labels, one per level. The label for the first level should be
+   the value of key 0.
+ - params (optional, may be necessary for some implementations)
+   An array of parameters that will also be passed through in every AHAH
+   request.
+   e.g. In the case of taxonomy, this is the vocabulary id (vid). In case of
+   content_taxonomy, there's two parameters: vid and the depth.

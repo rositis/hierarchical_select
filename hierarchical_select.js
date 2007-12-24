@@ -68,7 +68,7 @@ HierarchicalSelect.attachBindings = function() {
 
   for (hsid in Drupal.settings.hierarchical_select.settings) {
     // Closure.
-    updateFunction = function(x) {  
+    updateFunction = function(x) {
       return function() { HierarchicalSelect.update(x, $(this).val()); };
     }(hsid);
 
@@ -80,10 +80,24 @@ HierarchicalSelect.attachBindings = function() {
 
 HierarchicalSelect.update = function(hsid, selection) {
   var url = Drupal.settings.hierarchical_select.url;
+  var saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
   var lastUnchanged;
   var post = new Object();
-  var $selects = $('select.hierarchical-select-'+ hsid + '-hierarchical-select', HierarchicalSelect.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
   lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-hierarchical-select option[@value='+ selection +']', HierarchicalSelect.context).parent()[0]);
+
+  if (saveLineage) {
+    var lineageSelection = new Array();
+    for (var level = 0; level < $selects.size(); level++) {
+      var s = $('select#hierarchical-select-'+ hsid +'-level-'+ level, HierarchicalSelect.context).val();
+      lineageSelection[level] = s;
+      if (s == selection) {
+        // Don't go collect values from levels deeper than the clicked level,
+        // they have to be tossed away anyway.
+        break;
+      }
+    }
+  }
 
   // Drop out the *original* selects of the levels deeper than the select of
   // the level that just changed.
@@ -91,9 +105,17 @@ HierarchicalSelect.update = function(hsid, selection) {
 
   // Create the POST object.
   post['hsid'] = hsid;
-  post['selection'] = selection;
+  if (undefined === lineageSelection) {
+    post['selection'] = selection;
+  }
+  else {
+    post['selection'] = lineageSelection.join('|');
+  }
   post['module'] = Drupal.settings.hierarchical_select.settings[hsid].module;
   post['required'] = Drupal.settings.hierarchical_select.settings[hsid].required;
+  post['save_lineage'] = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
+  post['enforce_deepest'] = Drupal.settings.hierarchical_select.settings[hsid].enforceDeepest;
+  post['level_labels'] = Drupal.settings.hierarchical_select.settings[hsid].levelLabels;
   $.extend(post, Drupal.settings.hierarchical_select.settings[hsid].params);
 
   // Load the HTML.
