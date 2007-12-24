@@ -83,11 +83,12 @@ function hierarchical_select_ahah() {
     $params['module'],
     $params['hsid'],
     $params['selection'],
-    $params['required']
+    $params['required'],
+    $params['save_lineage']
   );
   $required = (strcasecmp($_POST['required'], 'TRUE') == 0);
 
-  print _hierarchical_select_render($_POST['hsid'], $_POST['module'], $_POST['selection'], FALSE, TRUE, $required, $params);
+  print _hierarchical_select_render($_POST['hsid'], $_POST['module'], $_POST['selection'], $_POST['save_lineage'], TRUE, $required, $params);
   exit;
 }
 
@@ -117,7 +118,7 @@ function hierarchical_select_process($element) {
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
     jquery_interface_add();
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
-		drupal_add_js(array('hierarchical_select' => array('url' => $url)), 'setting');
+    drupal_add_js(array('hierarchical_select' => array('url' => $url)), 'setting');
   }
   else {
     $hsid++;
@@ -126,40 +127,36 @@ function hierarchical_select_process($element) {
   // Pass some settings for this hierarchical select.
   $module = $element['#hierarchical_select_settings']['module'];
   $params = $element['#hierarchical_select_settings']['params'];
-  $lineage = $element['#hierarchical_select_settings']['lineage'];
+  $save_lineage = (bool) $element['#hierarchical_select_settings']['save_lineage'];
+  $required = (bool) $element['#required'];
 
   // When the #value property is empty, we're rendering this form (and thus
   // the form element) for the first time. When it's no longer empty, this
   // means that the validation failed and that we must keep the option that
   // was selected by the user.
-  if (is_array($element['#value']) && empty($element['#value'])) {
-    $selection = (is_array($element['#default_value'])) ? $element['#default_value'][0] : $element['#default_value'];
-  }
-  else {
-    $selection = (is_array($element['#value'])) ? $element['#value'][0] : $element['#value'];
-  }
+  $selection = (empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
   
-  $initial = _hierarchical_select_render($hsid, $module, $selection, FALSE, TRUE, (bool) $element['#required'], $params);
+  $initial = _hierarchical_select_render($hsid, $module, $selection, $save_lineage, TRUE, $required, $params);
 
-	drupal_add_js(
-	  array(
-	    'hierarchical_select' => array(
-	      'settings' => array(
-  	      $hsid => array(
+  drupal_add_js(
+    array(
+      'hierarchical_select' => array(
+        'settings' => array(
+          $hsid => array(
             'initial' => $initial,
             'module' => $module,
-            'required' => (bool) $element['#required'],
-            'lineage' => (bool) $lineage,
-  	        'params' => $params,
-  	      ),
-  	    ),
-	    )
-	  ),
-	  'setting'
-	);
+            'required' => $required,
+            'saveLineage' => $save_lineage,
+            'params' => $params,
+          ),
+        ),
+      )
+    ),
+    'setting'
+  );
 
-  // If the lineage property is set to TRUE, make the select a multiple select.
-  if ($lineage) {
+  // If the "save lineage" option is enabled, make the select a multiple select.
+  if ($save_lineage) {
     $element['#multiple'] = TRUE;
   }
 
@@ -176,50 +173,33 @@ function hierarchical_select_process($element) {
 /**
  * Render the hierarchical select.
  */
-function _hierarchical_select_render($hsid, $module, $selection, $store_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $params = array()) {
-  // DEBUG
-//  $params['vid'] = 1;
-//  $selection = 8
-
-  if (!$selection) {
-    $selection = ($store_lineage) ? array() : -1;
-  }
-
-  if (!module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
-    $selection = -1;
-  }
-
-  // Build the hierarchy.
+function _hierarchical_select_render($hsid, $module, $selection, $save_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $params = array()) {
   $hierarchy = new StdClass();
-  if (!$store_lineage) {
-    $depth = 0;
-    
-    // Get the root level.
-    $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_root_level', $params);
+
+  // Validate and clean up the selection.
+  $selection = _hierarchical_select_validate_selection($selection, $module, $params);
+
+  // Start building the hierarchy, initialize with the root level.
+  $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
+
+  // If the "save lineage" option is enabled, then the selection *is* a
+  // lineage. If it's disabled, we have to generate one ourselves based on the
+  // (deepest) selected item.
+  $hierarchy->lineage = ($save_lineage) ? array_reverse($selection) : module_invoke($module, 'hierarchical_select_lineage', $selection);
+
+  // If we're enforcing a selection of an item in the deepest level in the
+  // hierarchy (but still keeping the lineage of the current selection), we
+  // have to pick items that will be selected by default in every level, and
+  // add these to the lineage.
+  if ($enforce_deepest) {
+    $hierarchy->lineage = _hierarchial_select_enforce_deepest_selection($hierarchy->lineage, $hierarchy->levels[0], $module, $params);
+  }
+
+  // Build the rest of the hierarchy, based on the lineage.
+  while ($depth < count($hierarchy->lineage)) {
+    $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
     $depth++;
-
-    // Build the lineage
-    $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection);
-    if ($enforce_deepest) {
-      $hierarchy->lineage = _hierarchial_select_enforce_deepest_selection($hierarchy->lineage, $hierarchy->levels[0], $module, $params);
-    }
-
-    // Build the rest of the hierarchy, based on the lineage.
-    while ($depth < count($hierarchy->lineage)) {
-      $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
-      $depth++;
-    }
   }
-  else {
-    // todo
-    $hierarchy->lineage = $selection; // $selection should be an array of selected stuff now.
-  }
-  
-  // DEBUG
-//  dpr($hierarchy);
-//  print _hierarchical_select_render_selects($hsid, $hierarchy);
-//  exit; 
-  // END DEBUG
 
   return _hierarchical_select_render_selects($hsid, $hierarchy);
 }
@@ -265,6 +245,37 @@ function _hierarchial_select_enforce_deepest_selection($lineage, $root_level, $m
   }
 
   return $lineage;
+}
+
+/**
+ * Reset the selection if no valid item was selected, or if not every selected
+ * item (when the "save lineage" option is enabled) is valid.
+ *
+ * @param $selection
+ *   Either a single item id or an array of item ids.
+ * @param $module
+ *   The module that should be used for HS hooks.
+ * @param $params
+ *   The module that should be passed to HS hooks.
+ * @return
+ *   The updated selection.
+ */
+function _hierarchical_select_validate_selection($selection, $module, $params) {
+  // Reset if no item was selected or the item's id could not be validated.
+  if (is_array($selection)) {
+    // The "save lineage" option is enabled because $selection is an array.
+    $valid = TRUE;
+    for ($i = 0; $valid && $i < count($selection); $i++) {
+      $valid = module_invoke($module, 'hierarchical_select_valid_item', $selection[$i], $params);
+    }
+    if (!$valid) {
+      $selection = array();
+    }
+  }
+  elseif (!$selection || !module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
+    $selection = -1;
+  }
+  return $selection;
 }
 
 /**

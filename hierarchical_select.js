@@ -12,10 +12,10 @@ HierarchicalSelect.context = function() {
 };
 
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
-  lineage = Drupal.settings.hierarchical_select.settings[hsid].lineage;
+  saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
 
   $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
-  if (!lineage) {
+  if (!saveLineage) {
     // Set it to the value of the "deepest" of the hierarchical selects.
     $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context).val(
       $selects.eq($selects.length - 1).val()
