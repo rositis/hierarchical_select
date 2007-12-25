@@ -117,7 +117,7 @@ HierarchicalSelect.update = function(hsid, selection) {
   post['save_lineage'] = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
   post['enforce_deepest'] = Drupal.settings.hierarchical_select.settings[hsid].enforceDeepest;
   post['level_labels'] = Drupal.settings.hierarchical_select.settings[hsid].levelLabels;
-  $.extend(post, Drupal.settings.hierarchical_select.settings[hsid].params);
+  post['params'] = Drupal.settings.hierarchical_select.settings[hsid].params;
 
   // Load the HTML.
   $('div#hierarchical-select-'+ hsid +'-container', HierarchicalSelect.context)

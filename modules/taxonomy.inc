@@ -201,15 +201,12 @@ function taxonomy_hierarchical_select_children($parent, $params) {
 /**
  * Implementation of hook_hierarchical_select_lineage().
  */
-function taxonomy_hierarchical_select_lineage($item) {
-  if (!is_numeric($item) || $item == -1) {
-    $lineage = array();
-  }
-  else {
-    $terms = array_reverse(taxonomy_get_parents_all($item));
-    foreach ($terms as $term) {
-      $lineage[] = $term->tid;
-    }
+function taxonomy_hierarchical_select_lineage($item, $params) {
+  $lineage = array();
+
+  $terms = array_reverse(taxonomy_get_parents_all($item));
+  foreach ($terms as $term) {
+    $lineage[] = $term->tid;
   }
   return $lineage;
 }

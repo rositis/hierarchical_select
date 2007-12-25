@@ -82,26 +82,15 @@ function hierarchical_select_elements() {
  * Menu callback; AHAH callback: generates and outputs the appropriate HTML.
  */
 function hierarchical_select_ahah() {
-  $params = $_POST;
-  unset(
-    $params['module'],
-    $params['hsid'],
-    $params['selection'],
-    $params['required'],
-    $params['enforce_deepest'],
-    $params['save_lineage'],
-    $params['level_labels']
-  );
-
   print _hierarchical_select_render(
     $_POST['hsid'],
     $_POST['module'],
     (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']),
-    (strcasecmp($_POST['save_lineage'], 'TRUE') == 0),
-    (strcasecmp($_POST['enforce_deepest'], 'TRUE') == 0),
-    (strcasecmp($_POST['required'], 'TRUE') == 0),
+    _hierarchical_select_str_to_bool($_POST['save_lineage']),
+    _hierarchical_select_str_to_bool($_POST['enforce_deepest']),
+    _hierarchical_select_str_to_bool($_POST['required']),
     explode('|', $_POST['level_labels']),
-    $params
+    unserialize($_POST['params'])
   );
   exit;
 }
@@ -168,7 +157,7 @@ function hierarchical_select_process($element) {
             'enforceDeepest' => $enforce_deepest,
             'saveLineage' => $save_lineage,
             'levelLabels' => implode('|', $level_labels),
-            'params' => $params,
+            'params' => serialize($params),
           ),
         ),
       )
@@ -236,7 +225,13 @@ function _hierarchical_select_render($hsid, $module, $selection, $save_lineage =
     $hierarchy->lineage = (is_array($selection)) ? $selection : array(0 => $selection);
   }
   else {
-    $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection);
+    if (module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
+      $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection, $params);
+    }
+    else {
+      // If the selected item is invalid, then start with an empty lineage.
+      $hierarchy->lineage = array();
+    }
   }
 
   // If the lineage is empty and the "enforce deepest" option is ...
@@ -374,10 +369,10 @@ function _hierarchical_select_render_selects($hsid, $hierarchy) {
     $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
     foreach ($hierarchy->levels[$depth] as $value => $label) {
       if ($value == $hierarchy->lineage[$depth]) {
-        $output .= '<option selected="selected" value="'. $value .'">'. check_plain($label) .'</option>';
+        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
       }
       else {
-        $output .= '<option value="'. $value .'">'. check_plain($label) .'</option>';
+        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
       }
     }
     $output .= '</select>';
@@ -396,4 +391,17 @@ function _hierarchical_select_views_exposed_filters_reposition() {
   if (!isset($js_added)) {
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/modules/views.js', 'module');
   }
+}
+
+/**
+ * Convert a "true" or "false" string into the corresponding boolean value,
+ * while ignoring the case.
+ *
+ * @param $string
+ *   The string to convert.
+ * @return
+ *   The boolean value.
+ */
+function _hierarchical_select_str_to_bool($string) {
+  return (strcasecmp($string, 'TRUE') == 0);
 }

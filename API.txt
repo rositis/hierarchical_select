@@ -21,7 +21,7 @@ Hooks
 
   Gets the children of $parent and returns them.
 
-5) function hook_hierarchical_select_lineage($item);
+5) function hook_hierarchical_select_lineage($item, $params);
 
   Calculates the lineage of $item and returns it. Necessary when the
   "enforce_deepest" option is enabled.
