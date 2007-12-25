@@ -51,6 +51,7 @@ element type:
       'params' => array(
         'vid' => $vid,
       ),
+      'animation_delay' => 400,
     ),
     '#default_value' => '83',
   ); 
@@ -74,3 +75,5 @@ array. These are the items it can contain:
    request.
    e.g. In the case of taxonomy, this is the vocabulary id (vid). In case of
    content_taxonomy, there's two parameters: vid and the depth.
+ - animation_delay (optional, defaults to 400)
+   The delay of each animation (the drop in left and right animations), in ms.

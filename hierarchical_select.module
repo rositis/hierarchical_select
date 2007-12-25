@@ -67,6 +67,7 @@ function hierarchical_select_elements() {
       'enforce_deepest' => FALSE,
       'level_labels' => array(),
       'params' => array(),
+      'animationDelay' => 400,
     ),
     '#default_value' => -1,
   );
@@ -144,6 +145,7 @@ function hierarchical_select_process($element) {
   $required = (bool) $element['#required'];
   $level_labels = (array) $element['#hierarchical_select_settings']['level_labels'];
   $params = $element['#hierarchical_select_settings']['params'];
+  $animation_delay = (int) $element['#hierarchical_select_settings']['animation_delay'];
 
   // When the #value property is empty, we're rendering this form (and thus
   // the form element) for the first time. When it's no longer empty, this
@@ -159,6 +161,7 @@ function hierarchical_select_process($element) {
       'hierarchical_select' => array(
         'settings' => array(
           $hsid => array(
+            'animationDelay' => ($animation_delay == 0) ? 400 : $animation_delay,
             'initial' => $initial,
             'module' => $module,
             'required' => $required,

@@ -79,6 +79,7 @@ HierarchicalSelect.attachBindings = function() {
 };
 
 HierarchicalSelect.update = function(hsid, selection) {
+  var animationDelay = Drupal.settings.hierarchical_select.settings[hsid].animationDelay;
   var url = Drupal.settings.hierarchical_select.url;
   var saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
   var lastUnchanged;
@@ -101,7 +102,7 @@ HierarchicalSelect.update = function(hsid, selection) {
 
   // Drop out the *original* selects of the levels deeper than the select of
   // the level that just changed.
-  $selects.gt(lastUnchanged).DropOutLeft(400);
+  $selects.gt(lastUnchanged).DropOutLeft(animationDelay);
 
   // Create the POST object.
   post['hsid'] = hsid;
@@ -125,7 +126,7 @@ HierarchicalSelect.update = function(hsid, selection) {
 
     // Hide the loaded selects after the one that was just changed, then  drop
     // them in.
-    $selects.gt(lastUnchanged).hide(0).DropInLeft(400);
+    $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
 
     // Re-attach bindings.
     HierarchicalSelect.attachBindings();
