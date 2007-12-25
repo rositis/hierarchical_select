@@ -124,7 +124,7 @@ function hierarchical_select_process($element) {
     $hsid = 0;
 
     $url = base_path();
-    $url .= variable_get('clean_url', 0) ? '' : '?q=';
+    $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
     $url .= 'hierarchical_select_ahah';
 
     // Add the CSS and JS, set the URL that should be used by all hierarchical
