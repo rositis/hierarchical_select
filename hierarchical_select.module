@@ -141,7 +141,6 @@ function hierarchical_select_process($element) {
   // means that the validation failed and that we must keep the option that
   // was selected by the user.
   $selection = (empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
-  $selection = (is_array($selection)) ? array_reverse($selection) : $selection;
   
   $initial = _hierarchical_select_render($hsid, $module, $selection, $save_lineage, $enforce_deepest, $required, $level_labels, $params);
 
@@ -205,6 +204,22 @@ function _hierarchical_select_render($hsid, $module, $selection, $save_lineage =
 
   // Validate and clean up the selection.
   $selection = _hierarchical_select_validate_selection($selection, $module, $params);
+
+  // Use a BubbleSort sorting algorithm to reconstruct the lineage. This is
+  // necessary because for example the taxonomy module doesn't store the terms
+  // in order of hierarchy, but rather by order of weight and lexicography.
+  if ($save_lineage && is_array($selection) && count($selection) >= 2) {
+    for ($i = 1; $i < count($selection); $i++) {
+      for ($j = count($selection) - 1; $j >= $i; $j--) {
+        $children = array_keys(module_invoke($module, 'hierarchical_select_children', $selection[$j], $params));
+        if (in_array($selection[$j - 1], $children)) {
+          $tmp = $selection[$j - 1];
+          $selection[$j - 1] =  $selection[$j];
+          $selection[$j] = $tmp;
+        }
+      }
+    }
+  }
 
   // Start building the hierarchy, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
