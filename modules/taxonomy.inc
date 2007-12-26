@@ -123,12 +123,12 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
             // Make it use a hierarchical select.
             $form["filter$id"]['#type'] = 'hierarchical_select';
             $form["filter$id"]['#hierarchical_select_settings'] = array(
-              'lineage' => variable_get("hierarchical_select_lineage_$vid", FALSE),
               'module' => 'taxonomy',
               'params' => array(
                 'vid' => $vid,
               ),
             );
+            taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid);
 
             // Put the altered exposed filters in a separate table row.
             _hierarchical_select_views_exposed_filters_reposition();
@@ -149,23 +149,14 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
         // Hierarchical Select only makes sense if there's a hierarchy.
         if ($vocabulary->hierarchy > 0) {
-          $enforce_deepest = variable_get("hierarchical_select_enforce_deepest_$vid", HS_TAXONOMY_DONT_ENFORCE_DEEPEST);
-
           $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
           $form['taxonomy'][$vid]['#hierarchical_select_settings'] = array(
-            'save_lineage' => _taxonomy_hierarchical_select_get_save_linage($vid),
-            'enforce_deepest' => $enforce_deepest,
             'module' => 'taxonomy',
             'params' => array(
               'vid' => $vid,
             ),
           );
-          if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
-            $max_depth = _taxonomy_hierarchical_select_get_depth($vid);
-            for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
-              $form['taxonomy'][$vid]['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
-            }
-          }
+          taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
         }
       }
     }
@@ -298,4 +289,27 @@ function _taxonomy_hierarchical_select_get_depth($vid) {
     }
   }
   return $depth;
+}
+
+
+/**
+ * Sets certain Hierarchical Select settings, based on the vid. The user can
+ * configure this on the vocabulary administration page, this function applies
+ * those settings.
+ *
+ * @param $form_item
+ *   The form item to update.
+ * @param $vid
+ *   The id of the vocabulary of which the settings should be applied.
+ */
+function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
+  $enforce_deepest = variable_get("hierarchical_select_enforce_deepest_$vid", HS_TAXONOMY_DONT_ENFORCE_DEEPEST);
+
+  $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
+  $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
+  if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
+    for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+      $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
+    }
+  }
 }

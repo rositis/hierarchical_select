@@ -50,6 +50,7 @@ function content_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
             'depth' => $depth,
           ),
         );
+        taxonomy_hierarchical_select_update_form_item($form[$field_name]['tids'], $vid);
       }
       // Check if the form element is in a fieldgroup, the select widget must
       // be used and it cannot be a multiple select.
@@ -64,6 +65,7 @@ function content_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
               'depth' => $depth,
             ),
           );
+          taxonomy_hierarchical_select_update_form_item($form[$field_group][$field_name]['tids'], $vid);
         }
       }
     }
@@ -71,8 +73,45 @@ function content_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_render().
+ * Implementation of hook_hierarchical_select_params().
  */
-function content_taxonomy_hierarchical_select_render($hsid, $selection, $params) {
-  return taxonomy_hierarchical_select_render($hsid, $selection, $params);
+function content_taxonomy_hierarchical_select_params() {
+  $params = array(
+    'vid',
+    'depth',
+  );
+  return $params;
+}
+
+/**
+ * Implementation of hook_hierarchical_select_root_level().
+ */
+function content_taxonomy_hierarchical_select_root_level($params) {
+  return taxonomy_hierarchical_select_root_level($params);
+}
+
+/**
+ * Implementation of hook_hierarchical_select_children().
+ */
+function content_taxonomy_hierarchical_select_children($parent, $params) {
+  $terms = taxonomy_get_tree($params['vid'], $parent, -1, $params['depth']);
+  return _taxonomy_hierarchical_select_terms_to_options($terms);
+}
+
+/**
+ * Implementation of hook_hierarchical_select_lineage().
+ */
+function content_taxonomy_hierarchical_select_lineage($item, $params) {
+  return taxonomy_hierarchical_select_lineage($item, $params);
+}
+
+/**
+ * Implementation of hook_hierarchical_select_valid_item().
+ */
+function content_taxonomy_hierarchical_select_valid_item($item, $params) {
+  if (!is_numeric($item) || $item < 1) {
+    return FALSE;
+  }
+  $term = taxonomy_get_term($item);
+  return ($term->vid == $params['vid'] && $term->depth <= $params['depth']);
 }
