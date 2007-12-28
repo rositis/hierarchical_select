@@ -5,3 +5,46 @@ div.hierarchical-select-container select.hierarchical-select {
 	margin-bottom: 1em;
 	float: left;
 }
+
+span.dropbox-title {
+  font-size: 115%;
+  margin-top: 1em;
+  margin-bottom: 0;
+}
+
+div.hierarchical-select-dropbox {
+  border: 1px solid grey;
+  width: 10%;
+  min-width: 20em;
+  margin-bottom: 1em;
+  padding: .2em 1em;
+  color: grey;
+  font-size: 90%;
+  line-height: 1em;
+}
+
+div.dropbox-entry {
+  margin-top: .5em;
+  margin-bottom: .5em;
+}
+
+span.dropbox-item {
+  float: left;
+}
+
+span.dropbox-selected-item {
+  float: left;
+  font-weight: bold;
+}
+
+span.dropbox-item-separator {
+  float: left;
+  padding-left: .5em;
+  padding-right: .5em;
+}
+
+div.hierarchical-select-dropbox .hierarchical-select-remove-from-dropbox {
+  float: right;
+  margin-left: 2em;
+  color: #F7A54F;
+}

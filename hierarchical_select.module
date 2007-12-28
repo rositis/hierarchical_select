@@ -1,6 +1,8 @@
 <?php
 // $Id$
 
+// TODO: Improve themability (theme_*() functions instead of the current render functions).
+
 /**
  * @file
  * This module defines the "hierarchical_select" form element, which is a
@@ -67,7 +69,8 @@ function hierarchical_select_elements() {
       'enforce_deepest' => FALSE,
       'level_labels' => array(),
       'params' => array(),
-      'animationDelay' => 400,
+      'animation_delay' => 400,
+      'dropbox_title' => t('All selections'),
     ),
     '#default_value' => -1,
   );
@@ -82,16 +85,67 @@ function hierarchical_select_elements() {
  * Menu callback; AHAH callback: generates and outputs the appropriate HTML.
  */
 function hierarchical_select_ahah() {
-  print _hierarchical_select_render(
-    $_POST['hsid'],
-    $_POST['module'],
-    (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']),
-    _hierarchical_select_str_to_bool($_POST['save_lineage']),
-    _hierarchical_select_str_to_bool($_POST['enforce_deepest']),
-    _hierarchical_select_str_to_bool($_POST['required']),
-    explode('|', $_POST['level_labels']),
-    unserialize($_POST['params'])
-  );
+  // We are returning JavaScript, so tell the browser. Ripped from Drupal 6's
+  // drupal_json() function.
+  drupal_set_header('Content-Type: text/javascript; charset=utf-8');
+
+  // Extract the common parameters.
+  $hsid         = $_POST['hsid'];
+  $module       = $_POST['module'];
+  $selection    = (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']);
+  $save_lineage = _hierarchical_select_str_to_bool($_POST['save_lineage']);
+  $enforce_deepest = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
+  $level_labels = explode('|', $_POST['level_labels']);
+  $params       = unserialize($_POST['params']);
+  $required        = _hierarchical_select_str_to_bool($_POST['required']);
+
+  // Return output as JSON.
+  switch ($_POST['type']) {
+    case 'dropbox':
+      $dropbox = hierarchical_select_get_dropbox(
+        $module,
+        $selection,
+        $save_lineage,
+        $level_labels,
+        $params
+      );
+      $dropbox_html = hierarchical_select_render_dropbox($hsid, $dropbox);
+
+      $hierarchy = hierarchical_select_get_hierarchy(
+        $module,
+        array(), // We want to render an empty select.
+        $save_lineage, 
+        $enforce_deepest,
+        $level_labels,
+        $params,
+        FALSE // Allow the user to select nothing, to prevent confusion.
+      );   
+      $selects_html = hierarchical_select_render_selects($hsid, $hierarchy);
+
+      print drupal_to_js(array(
+        'dropboxLineagesSelections' => $dropbox->lineages_selections,
+        'dropbox' => $dropbox_html,
+        'selects' => $selects_html,
+      ));
+      break;
+    case 'selects':
+    default:
+      $hierarchy = hierarchical_select_get_hierarchy(
+        $module,
+        $selection,
+        $save_lineage, 
+        $enforce_deepest,
+        $level_labels,
+        $params,
+        $required
+      );   
+      $html = hierarchical_select_render_selects($hsid, $hierarchy);
+      print drupal_to_js(array(
+        'html' => $html
+      ));
+      break;
+  }
+
   exit;
 }
 
@@ -131,18 +185,23 @@ function hierarchical_select_process($element) {
   $module = $element['#hierarchical_select_settings']['module'];
   $enforce_deepest = (bool) $element['#hierarchical_select_settings']['enforce_deepest'];
   $save_lineage = (bool) $element['#hierarchical_select_settings']['save_lineage'];
-  $required = (bool) $element['#required'];
   $level_labels = (array) $element['#hierarchical_select_settings']['level_labels'];
-  $params = $element['#hierarchical_select_settings']['params'];
   $animation_delay = (int) $element['#hierarchical_select_settings']['animation_delay'];
+  $dropbox_title = $element['#hierarchical_select_settings']['dropbox_title'];
+  $params = $element['#hierarchical_select_settings']['params'];
+  $required = (bool) $element['#required'];
+  $multiple = (bool) $element['#multiple'];
 
   // When the #value property is empty, we're rendering this form (and thus
   // the form element) for the first time. When it's no longer empty, this
   // means that the validation failed and that we must keep the option that
   // was selected by the user.
   $selection = (empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
-  
-  $initial = _hierarchical_select_render($hsid, $module, $selection, $save_lineage, $enforce_deepest, $required, $level_labels, $params);
+
+  // Render the initial HTML.
+  $hierarchy = hierarchical_select_get_hierarchy($module, ($multiple) ? -1 : $selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required);
+  $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels, $params, $dropbox_title);
+  $initial = hierarchical_select_render_initial_html($hsid, $hierarchy, $dropbox);
 
   drupal_add_js(
     array(
@@ -151,12 +210,15 @@ function hierarchical_select_process($element) {
           $hsid => array(
             'animationDelay' => ($animation_delay == 0) ? 400 : $animation_delay,
             'initial' => $initial,
+            'initialDropboxLineagesSelections' => (!$dropbox) ? NULL : $dropbox->lineages_selections,
+            'addButton' => '<input id="hierarchical-select-'. $hsid .'-add-to-dropbox" class="hierarchical-select-add-to-dropbox form-submit" type="button" value="'. t('Add') .'" />',
             'module' => $module,
-            'required' => $required,
             'enforceDeepest' => $enforce_deepest,
             'saveLineage' => $save_lineage,
             'levelLabels' => implode('|', $level_labels),
             'params' => serialize($params),
+            'required' => $required,
+            'multiple' => $multiple, // Enables the dropbox.
           ),
         ),
       )
@@ -180,10 +242,113 @@ function hierarchical_select_process($element) {
 // Private functions.
 
 /**
- * Render the hierarchical select.
+ * Render the initial hierarchical select.
  *
  * @param $hsid
- *   The HS id that should be used.
+ *   A hierarchical select id.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @param $dropbox
+ *   A dropbox object.
+ * @return
+ *   The rendered HTML.
+ */
+function hierarchical_select_render_initial_html($hsid, $hierarchy, $dropbox) {
+  $output = '';
+
+  $output .= '<div class="hierarchical-select-input clear-block">';
+  $output .= hierarchical_select_render_selects($hsid, $hierarchy);
+  $output .= '</div>';
+
+  if ($dropbox) {
+    $output .= '<span class="dropbox-title">'. check_plain($dropbox->title) .'</span>';
+    $output .= '<div class="hierarchical-select-dropbox clear-block">';
+    $output .= hierarchical_select_render_dropbox($hsid, $dropbox);
+    $output .= '</div>';
+  }
+
+  return $output;
+}
+
+/**
+ * Render the selects.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @return
+ *   The rendered HTML.
+ */
+function hierarchical_select_render_selects($hsid, $hierarchy) {
+  $output = '';
+
+  for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
+    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
+    foreach ($hierarchy->levels[$depth] as $value => $label) {
+      if ($value == $hierarchy->lineage[$depth]) {
+        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+      }
+      else {
+        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+      }
+    }
+    $output .= '</select>';
+  }
+
+  return $output;
+}
+
+/**
+ * Render the dropbox.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @param $dropbox
+ *   A dropbox object.
+ * @return
+ *   The rendered HTML.
+ */
+function hierarchical_select_render_dropbox($hsid, $dropbox) {
+  $output = '';
+
+  $separator = '›';
+  $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
+
+  foreach ($dropbox->lineages as $lineage) {
+    // Preparation: get the labels of the lineage.
+    $lineage_labels = array();
+    for ($level = 0; $level < count($lineage); $level++) {
+      $lineage_labels[] = $lineage[$level]['label'];
+    }
+
+    $output .= '<div class="dropbox-entry clear-block">';
+
+    // If the "save lineage" option is enabled: select every item. Otherwise
+    // only select the last item.
+    if ($dropbox->save_lineage) {
+      $output .= '<span class="dropbox-selected-item">'. implode('</span>'. $separator_html .'<span class="dropbox-selected-item">', $lineage_labels) .'</span>';
+    }
+    else {
+      $output .= '<span class="dropbox-item">'. implode('</span>'. $separator_html .'<span class="dropbox-item">', array_slice($lineage_labels, 0, count($lineage_labels) - 1)) .'</span>';
+      if (count($lineage_labels) > 1) {
+        $output .= $separator_html;
+      }
+      $output .= '<span class="dropbox-selected-item">'. $lineage_labels[count($lineage_labels) - 1] .'</span>';
+    }
+
+    // Add a "Remove" link.
+    $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $level .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox" href="#">'. t('Remove') .'</a>';
+
+    $output .= '</div>';
+  }
+
+  return $output;
+}
+ 
+/**
+ * Generate the hierarchy object.
+ *
  * @param $module
  *   The module that should be used for HS hooks.
  * @param $selection
@@ -192,14 +357,17 @@ function hierarchical_select_process($element) {
  *   Whether the "save lineage" option is enabled or not.
  * @param $enforce_deepest
  *   Whether the "enforce deepest" option is enabled or not.
- * @param $required
- *   Whether the form item is required or not.
  * @param $level_labels
  *   An array of labels, one per level. Optional.
  * @param $params
  *   An array of parameters, which may be necessary for some implementations.
+ *   Optional.
+ * @param $required
+ *   Whether the form item is required or not. (#required Forms API property)
+ * @return
+ *   A hierarchy object.
  */
-function _hierarchical_select_render($hsid, $module, $selection, $save_lineage = FALSE, $enforce_deepest = TRUE, $required = FALSE, $level_labels = array(), $params = array()) {
+function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required) {
   $hierarchy = new StdClass();
 
   // Validate and clean up the selection.
@@ -293,7 +461,137 @@ function _hierarchical_select_render($hsid, $module, $selection, $save_lineage =
     }
   }
 
-  return _hierarchical_select_render_selects($hsid, $hierarchy);
+  return $hierarchy;
+}
+
+/**
+ * Generate the dropbox object.
+ *
+ * @param $module
+ *   The module that should be used for HS hooks.
+ * @param $selection
+ *   The selection based on which a dropbox should be generated.
+ * @param $save_lineage
+ *   Whether the "save lineage" option is enabled or not.
+ * @param $level_labels
+ *   An array of labels, one per level. Optional.
+ * @param $params
+ *   An array of parameters, which may be necessary for some implementations.
+ *   Optional.
+ * @param $title
+ *   A title that should be displayed above the dropbox. Optional.
+ * @return
+ *   A dropbox object.
+ */
+function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title) {
+  $dropbox = new StdClass();
+  
+  $dropbox->title = (!empty($title)) ? $title : t('All selections');
+  $dropbox->lineages = array();
+  $dropbox->lineages_selections = array();
+  
+  // Remove all duplicate values from the selection. We'll work with this
+  // *set* (repeating values don't matter) of selected items in the code.
+  $selection = array_unique($selection);
+
+  // Store the "save lineage" setting, needed in the theming layer.
+  $dropbox->save_lineage = $save_lineage;
+
+  if ($save_lineage) {
+    $dropbox->lineages = _hierarchical_select_reconstruct_lineages_save_lineage_enabled($module, $selection, $params);
+  }
+  else {
+    // Retrieve the lineage of each item. Ignore invalid items.
+    foreach ($selection as $item) {
+      if (module_invoke($module, 'hierarchical_select_valid_item', $item, $params)) {
+        $dropbox->lineages[] = module_invoke($module, 'hierarchical_select_lineage', $item, $params);
+      }
+    }
+    foreach ($dropbox->lineages as $id => $lineage) {
+      foreach ($lineage as $level => $item) {
+        $dropbox->lineages[$id][$level] = array('value' => $item, 'label' => module_invoke($module, 'hierarchical_select_item_get_label', $item, $params));
+      }
+    }
+  }
+
+  usort($dropbox->lineages, '_hierarchical_select_dropbox_sort');
+
+  // Now store each lineage's selection too. This is needed on the client side
+  // to enable the remove button to let the server know which selected items
+  // should be removed.
+  foreach ($dropbox->lineages as $id => $lineage) {
+    $dropbox->lineages_selections[$id] = array_map('_hierarchical_select_dropbox_lineage_item_get_value', $lineage);
+  }
+
+  return $dropbox;
+}
+
+/**
+ * Helper function to reconstruct the lineages given a set of selected items
+ * and the fact that the "save lineage" option is enabled.
+ *
+ * Note that it's impossible to predict how many lineages if we know the
+ * number of selected items, exactly because the "save lineage" option is
+ * enabled.
+ *
+ * Worst case time complexity is O(n^3), optimizations are still possible.
+ *
+ * @param $module
+ *   The module that should be used for HS hooks.
+ * @param $selection
+ *   The selection based on which a dropbox should be generated.
+ * @param $params
+ *   An array of parameters, which may be necessary for some implementations.
+ *   Optional.
+ * @return
+ *   An array of dropbox lineages.
+ */
+function _hierarchical_select_reconstruct_lineages_save_lineage_enabled($module, $selection, $params) {
+  // We have to reconstruct all lineages from the given set of selected
+  // items. That means: we have to reconstruct every possible combination!
+  $root_level = module_invoke($module, 'hierarchical_select_root_level', $params);
+  foreach ($selection as $key => $item) {
+    // Create new lineage if the item can be found in the root level.
+    if (in_array($item, array_keys($root_level))) {
+      $lineages[][0] = array('value' => $item, 'label' => $root_level[$item]);
+      unset($selection[$key]);
+    }
+  }
+
+  // Keep on trying as long as at least one lineage has been extended.
+  $at_least_one = TRUE;
+  for ($i = 0; $at_least_one; $i++) {
+    $at_least_one = FALSE;
+    $num = count($lineages);
+
+    // Try to improve every lineage. Make sure we don't iterate over
+    // possibly new lineages.
+    for ($id = 0; $id < $num; $id++) {
+      $children = module_invoke($module, 'hierarchical_select_children', $lineages[$id][$i]['value'], $params);
+
+      $child_added_to_lineage = FALSE;
+      foreach (array_keys($children) as $child) {
+        if (in_array($child, $selection)) {
+          if (!$child_added_to_lineage) {
+            // Add the child to the lineage.
+            $lineages[$id][$i + 1] = array('value' => $child, 'label' => $children[$child]);
+            $child_added_to_lineage = TRUE;
+            $at_least_one = TRUE;
+          }
+          else {
+            // Create new lineage based on current one and add the child.
+            $lineage = $lineages[$id];
+            $lineage[$i + 1] = array('value' => $child, 'label' => $children[$child]);;
+
+            // Add the new lineage to the set of lineages
+            $lineages[] = $lineage;
+          }
+        }
+      }
+    }
+  } 
+
+  return $lineages;
 }
 
 /**
@@ -368,35 +666,6 @@ function _hierarchical_select_validate_selection($selection, $module, $params) {
 }
 
 /**
- * Render the HTML (the selects) for the given hierarchy..
- *
- * @param $hsid
- *   The hierarchical select id.
- * @param $hierarchy
- *   A hierarchy object.
- * @return
- *   The rendered HTML.
- */
-function _hierarchical_select_render_selects($hsid, $hierarchy) {
-  $output = '';
-
-  for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
-    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
-    foreach ($hierarchy->levels[$depth] as $value => $label) {
-      if ($value == $hierarchy->lineage[$depth]) {
-        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
-      }
-      else {
-        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
-      }
-    }
-    $output .= '</select>';
-  }
-
-  return $output;
-}
-
-/**
  * Helper function that adds the JS to reposition the exposed filters of a
  * View just once.
  */
@@ -419,4 +688,46 @@ function _hierarchical_select_views_exposed_filters_reposition() {
  */
 function _hierarchical_select_str_to_bool($string) {
   return (strcasecmp($string, 'TRUE') == 0);
+}
+
+/**
+ * Dropbox lineages sorting callback.
+ *
+ * @param $lineage_a
+ *   The first lineage.
+ * @param $lineage_b
+ *   The second lineage.
+ * @return
+ *   An integer that determines which of the two lineages comes first.
+ */
+function _hierarchical_select_dropbox_sort($lineage_a, $lineage_b) {
+  $string_a = implode('', array_map('_hierarchical_select_dropbox_lineage_item_get_label', $lineage_a));
+  $string_b = implode('', array_map('_hierarchical_select_dropbox_lineage_item_get_label', $lineage_b));
+  return strcmp($string_a, $string_b);
+}
+
+/**
+ * Helper function needed for the array_map() call in the dropbox sorting
+ * callback.
+ *
+ * @param $item
+ *   An item in a dropbox lineage.
+ * @return
+ *   The value associated with the "label" key of the item.
+ */
+function _hierarchical_select_dropbox_lineage_item_get_label($item) {
+  return $item['label'];
+}
+
+/**
+ * Helper function needed for the array_map() call in the dropbox lineages
+ * selections creation.
+ *
+ * @param $item
+ *   An item in a dropbox lineage.
+ * @return
+ *   The value associated with the "value" key of the item.
+ */
+function _hierarchical_select_dropbox_lineage_item_get_value($item) {
+  return $item['value'];
 }

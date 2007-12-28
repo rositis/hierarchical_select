@@ -92,6 +92,28 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       }
     }
 
+    $form['hierarchical_select']['dropbox'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Dropbox settings'),
+      '#description' => t(
+        'The dropbox is the area where all selected items are displayed when
+        multiple select is enabled.'
+      ),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+
+    if ($form['multiple']['#default_value']) {
+      $form['hierarchical_select']['dropbox']['dropbox_title'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Title'),
+        '#description' => t('The title you enter here appears above the dropbox.'),
+        '#size' => 40,
+        '#maxlength' => 255,
+        '#default_value' => variable_get("hierarchical_select_dropbox_title_{$vid}", ''),
+      );
+    }
+
     $form['#submit']['taxonomy_form_vocabulary_submit'] = array(); // Make sure the original submit handler is still called.
     $form['#submit']['hierarchical_select_taxonomy_form_vocabulary_submit'] = array();
     $form += $second_part;
@@ -213,6 +235,20 @@ function taxonomy_hierarchical_select_valid_item($item, $params) {
   return ($term->vid == $params['vid']);
 }
 
+/**
+ * Implementation of hook_hierarchical_select_item_get_label().
+ */
+function taxonomy_hierarchical_select_item_get_label($item, $params) {
+  static $labels = array();
+  
+  if (!isset($labels[$item])) {
+    $term = taxonomy_get_term($item);
+    $labels[$item] = $term->name;
+  }
+
+  return $labels[$item];
+}
+
  
 //----------------------------------------------------------------------------
 // FAPI callbacks.
@@ -228,6 +264,11 @@ function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_val
   }
   if (isset($form_values['hierarchical_select']['level_labels'])) {
     foreach ($form_values['hierarchical_select']['level_labels'] as $setting => $value) {
+      variable_set("hierarchical_select_{$setting}_{$vid}", $value);
+    }
+  }
+  if (isset($form_values['hierarchical_select']['dropbox'])) {
+    foreach ($form_values['hierarchical_select']['dropbox'] as $setting => $value) {
       variable_set("hierarchical_select_{$setting}_{$vid}", $value);
     }
   }
@@ -312,4 +353,5 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
       $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
     }
   }
+  $form_item['#hierarchical_select_settings']['dropbox_title'] = variable_get("hierarchical_select_dropbox_title_{$vid}", '');
 }

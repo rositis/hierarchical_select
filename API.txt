@@ -9,26 +9,30 @@ Hooks
   allow easy altering of Drupal core forms to use the hierarchical_select form
   item.
 
-2) function hook_hierarchical_select_params();
+2) hook_hierarchical_select_params();
 
   Returns the names of all parameters that should be present.
 
-3) function hook_hierarchical_select_root_level($params);
+3) hook_hierarchical_select_root_level($params);
 
   Returns the root level of the hierarchy.
 
-4) function hook_hierarchical_select_children($parent, $params);
+4) hook_hierarchical_select_children($parent, $params);
 
   Gets the children of $parent and returns them.
 
-5) function hook_hierarchical_select_lineage($item, $params);
+5) hook_hierarchical_select_lineage($item, $params);
 
   Calculates the lineage of $item and returns it. Necessary when the
   "enforce_deepest" option is enabled.
 
-6) function hook_hierarchical_select_valid_item($item, $params);
+6) hook_hierarchical_select_valid_item($item, $params);
 
   Validates an item, returns TRUE if valid, FALSE if invalid.
+
+7) hook_hierarchical_select_item_get_label($item, $params);
+
+  Given a valid item, returns the label.
 
 
 Form API usage
@@ -52,6 +56,7 @@ element type:
         'vid' => $vid,
       ),
       'animation_delay' => 400,
+      'dropbox_title' => t('These are the terms you selected'). ':',
     ),
     '#default_value' => '83',
   ); 
@@ -77,3 +82,7 @@ array. These are the items it can contain:
    content_taxonomy, there's two parameters: vid and the depth.
  - animation_delay (optional, defaults to 400)
    The delay of each animation (the drop in left and right animations), in ms.
+ - dropbox_title (optional, defaults to "All selections:")
+   The title of the dropbox. The dropbox is the area where all selected items
+   are displayed when multiple select is enabled.
+

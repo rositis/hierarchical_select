@@ -115,3 +115,10 @@ function content_taxonomy_hierarchical_select_valid_item($item, $params) {
   $term = taxonomy_get_term($item);
   return ($term->vid == $params['vid'] && $term->depth <= $params['depth']);
 }
+
+/**
+ * Implementation of hook_hierarchical_select_item_get_label().
+ */
+function content_taxonomy_hierarchical_select_item_get_label($item, $params) {
+  return taxonomy_hierarchical_select_item_get_label($item, $params);
+}
