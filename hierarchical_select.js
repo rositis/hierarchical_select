@@ -33,7 +33,18 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   });
 
   // Update it to the current selection.
-  if (!this.setting(hsid, 'saveLineage')) {
+  if ($('select#hierarchical-select-'+ hsid +'-level-0', this.context).val() == 'none') {
+    // This is for compatibility with Drupal's Taxonomy form items. They have
+    // a "- None selected -" option, with the value "". We *must* select it if
+    // we want to select nothing.
+    // TODO: make sure Drupal standardizes on a form item with a value "" to
+    // select nothing. Perhaps I should also make Hierarchical Select use this
+    // for its "<none>" option?
+    $('select.hierarchical-select-'+ hsid, this.context)
+    .find('option[@value=""]')
+    .attr('selected', 'selected'); 
+  }
+  else if (!this.setting(hsid, 'saveLineage')) {
     // Get the deepest valid value of the current selection.
     var level = $selects.length - 1;
     var deepestSelectValue = '';
