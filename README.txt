@@ -63,6 +63,8 @@ Sponsors
     Etienne Leers of http://creditcalc.biz.
 * Support for saving the term lineage:
     Paul Ektov of http://autobin.ru.
+* Multiple select support:
+   Marmaladesoul, http://marmaladesoul.com.
 
 
 Author

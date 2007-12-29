@@ -52,3 +52,7 @@ div.hierarchical-select-dropbox .hierarchical-select-remove-from-dropbox {
 a.hierarchical-select-remove-from-dropbox {
   cursor: pointer;
 }
+
+p.dropbox-is-empty {
+  padding: .5em 1em;
+}

@@ -89,7 +89,7 @@ HierarchicalSelect.initialize = function() {
 
     $('select.hierarchical-select-'+ hsid, this.context)
     // Hide the standard select.
-    //.hide(0)
+    .hide(0)
     // Add a unique container div after the standard select.
     .after('<div id="hierarchical-select-'+ hsid +'-container" class="hierarchical-select-container clear-block" />');
 
