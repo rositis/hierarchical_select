@@ -32,8 +32,9 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     $(this).removeAttr('selected');
   });
 
+  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-level-0', this.context).val();
   // Update it to the current selection.
-  if ($('select#hierarchical-select-'+ hsid +'-level-0', this.context).val().match(/^(none|label_\d+)$/)) {
+  if (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/)) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
     // a "- None selected -" option, with the value "". We *must* select it if
     // we want to select nothing.
