@@ -13,19 +13,26 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   var multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
   var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
 
+  // Reset the current selection in the original select.
+  $('select.hierarchical-select-'+ hsid +' option:selected', HierarchicalSelect.context).each(function() {
+    $(this).removeAttr('selected');
+  });
+
   // Update it to the current selection.
   if (!saveLineage) {
-    // Set it to the value of the "deepest" of the hierarchical selects.
-    $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context).val(
-      $selects.eq($selects.length - 1).val()
-    );
+    // Get the deepest valid value of the current selection.
+    var level = $selects.length - 1;
+    var deepestSelectValue = '';
+    do {
+      deepestSelectValue = $selects.eq(level).val();
+      level--;
+    } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
+
+    // Update the original select.
+    $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
+    .val(deepestSelectValue);
   }
   else {
-    // First reset the current selection (unselect the selected options).
-    $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
-    .children()
-    .removeAttr('selected');
-
     // Select each hierarchical select's selected option in the original
     // select (thus effectively saving the term lineage).
     $selects
@@ -83,11 +90,12 @@ HierarchicalSelect.initialize = function() {
   }
 };
 
-HierarchicalSelect.attachBindings = function(hsid) {
+HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
   var addButton;
   var updateFunction;
   var addFunction;
   var multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
+  var removeFunction;
 
   // Closure.
   updateFunction = function(x) {
@@ -102,21 +110,35 @@ HierarchicalSelect.attachBindings = function(hsid) {
   // If multiple select is enabled, add an "Add" button to update the
   // dropbox and reset the selection.
   if (multiple) {
-    addButton = Drupal.settings.hierarchical_select.settings[hsid].addButton;
+    if (!dropboxOnly) {
+      addButton = Drupal.settings.hierarchical_select.settings[hsid].addButton;
 
-    // Add the "Add" button.
-    $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
-    .append(addButton);
+      // Add the "Add" button.
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
+      .append(addButton);
 
-    // Closure.
-    addFunction = function(y) {
-      return function() { HierarchicalSelect.add(y); };
-    }(hsid);
+      // Closure.
+      addFunction = function(y) {
+        return function() { HierarchicalSelect.add(y); };
+      }(hsid);
     
-    // Attach the event to the "Add" button.
-    $('#hierarchical-select-'+ hsid +'-add-to-dropbox', HierarchicalSelect.context)
-    .unbind()
-    .click(addFunction);
+      // Attach the event to the "Add" button.
+      $('#hierarchical-select-'+ hsid +'-add-to-dropbox', HierarchicalSelect.context)
+      .unbind()
+      .click(addFunction);
+    }
+
+    for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
+      // Closure.
+      removeFunction = function(x, y) {
+        return function() { HierarchicalSelect.remove(x, y); };
+      }(hsid, i);
+
+      // Attach the event to the "Remove" links.
+      $('#hierarchical-select-'+ hsid +'-remove-'+ i + '-from-dropbox', HierarchicalSelect.context)
+      .unbind()
+      .click(removeFunction); 
+    }    
   }
 };
 
@@ -192,7 +214,6 @@ HierarchicalSelect.add = function(hsid) {
     data: post,
     dataType: "json",
     success: function(json){
-      // Load the HTML.
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
       .html(json.selects);
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HierarchicalSelect.context)
@@ -200,8 +221,41 @@ HierarchicalSelect.add = function(hsid) {
 
       HierarchicalSelect.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
-      // Re-attach bindings.
       HierarchicalSelect.attachBindings(hsid);
+    }
+  });
+};
+
+HierarchicalSelect.remove = function(hsid, dropboxEntry) {
+  var url = Drupal.settings.hierarchical_select.url;
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
+
+  // Add all other selections to the 
+  var fullSelection = new Array();
+  for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
+    if (i != dropboxEntry) {
+      for (var j = 0; j < HierarchicalSelect.dropboxContent[hsid][i].length; j++) {
+        fullSelection.push(HierarchicalSelect.dropboxContent[hsid][i][j]);
+      }
+    }
+  }
+
+  post = HierarchicalSelect.post(hsid, fullSelection);
+  post.type = 'dropbox-remove';
+
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: post,
+    dataType: "json",
+    success: function(json){
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HierarchicalSelect.context)
+      .html(json.dropbox);
+
+      HierarchicalSelect.dropboxContent[hsid] = json.dropboxLineagesSelections;
+
+      HierarchicalSelect.updateOriginalSelect(hsid);
+      HierarchicalSelect.attachBindings(hsid, true);
     }
   });
 };
@@ -230,7 +284,6 @@ HierarchicalSelect.update = function(hsid, selection) {
     data: post,
     dataType: "json",
     success: function(json){
-      // Load the HTML.
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
       .html(json.html);
 
@@ -240,16 +293,7 @@ HierarchicalSelect.update = function(hsid, selection) {
       // them in.
       $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
 
-      if (selection == 'none') {
-        // Reset the original select.
-        $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context).val(0);
-      }
-      else {
-        // Update the original select.
-        HierarchicalSelect.updateOriginalSelect(hsid);
-      }
-
-      // Re-attach bindings.
+      HierarchicalSelect.updateOriginalSelect(hsid);
       HierarchicalSelect.attachBindings(hsid);
     }
   });

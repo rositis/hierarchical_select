@@ -101,6 +101,21 @@ function hierarchical_select_ahah() {
 
   // Return output as JSON.
   switch ($_POST['type']) {
+    case 'dropbox-remove':
+      $dropbox = hierarchical_select_get_dropbox(
+        $module,
+        $selection,
+        $save_lineage,
+        $level_labels,
+        $params
+      );
+      $dropbox_html = hierarchical_select_render_dropbox($hsid, $dropbox);
+
+      print drupal_to_js(array(
+        'dropboxLineagesSelections' => $dropbox->lineages_selections,
+        'dropbox' => $dropbox_html,
+      ));
+      break;
     case 'dropbox':
       $dropbox = hierarchical_select_get_dropbox(
         $module,
@@ -315,7 +330,7 @@ function hierarchical_select_render_dropbox($hsid, $dropbox) {
   $separator = '›';
   $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
 
-  foreach ($dropbox->lineages as $lineage) {
+  foreach ($dropbox->lineages as $id => $lineage) {
     // Preparation: get the labels of the lineage.
     $lineage_labels = array();
     for ($level = 0; $level < count($lineage); $level++) {
@@ -338,7 +353,7 @@ function hierarchical_select_render_dropbox($hsid, $dropbox) {
     }
 
     // Add a "Remove" link.
-    $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $level .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox" href="#">'. t('Remove') .'</a>';
+    $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox" href="#">'. t('Remove') .'</a>';
 
     $output .= '</div>';
   }
@@ -483,7 +498,7 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
  * @return
  *   A dropbox object.
  */
-function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title) {
+function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title = '') {
   $dropbox = new StdClass();
   
   $dropbox->title = (!empty($title)) ? $title : t('All selections');
@@ -520,7 +535,14 @@ function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $le
   // to enable the remove button to let the server know which selected items
   // should be removed.
   foreach ($dropbox->lineages as $id => $lineage) {
-    $dropbox->lineages_selections[$id] = array_map('_hierarchical_select_dropbox_lineage_item_get_value', $lineage);
+    if ($save_lineage) {
+      // Store the entire lineage.
+      $dropbox->lineages_selections[$id] = array_map('_hierarchical_select_dropbox_lineage_item_get_value', $lineage);
+    }
+    else {
+      // Store only the last (aka the deepest) value of the lineage.
+      $dropbox->lineages_selections[$id][0] = $lineage[count($lineage) - 1]['value'];
+    }
   }
 
   return $dropbox;
