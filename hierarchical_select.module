@@ -330,7 +330,7 @@ function hierarchical_select_render_dropbox($hsid, $dropbox) {
   $separator = '›';
   $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
 
-  if (!empty($dropbox->selection)) {
+  if (!empty($dropbox->lineages)) {
     foreach ($dropbox->lineages as $id => $lineage) {
       // Preparation: get the labels of the lineage.
       $lineage_labels = array();
@@ -509,13 +509,11 @@ function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $le
   $dropbox->title = (!empty($title)) ? $title : t('All selections');
   $dropbox->lineages = array();
   $dropbox->lineages_selections = array();
-  $dropbox->selection = array();
-  
 
   if (!empty($selection)) {
     // Remove all duplicate values from the selection. We'll work with this
     // *set* (repeating values don't matter) of selected items in the code.
-    $selection = array_unique($selection);
+    $selection = (is_array($selection)) ? array_unique($selection) : array($selection);
 
     // Store the "save lineage" setting, needed in the theming layer.
     $dropbox->save_lineage = $save_lineage;
