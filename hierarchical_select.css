@@ -48,3 +48,7 @@ div.hierarchical-select-dropbox .hierarchical-select-remove-from-dropbox {
   margin-left: 2em;
   color: #F7A54F;
 }
+
+a.hierarchical-select-remove-from-dropbox {
+  cursor: pointer;
+}

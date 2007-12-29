@@ -8,18 +8,32 @@ HierarchicalSelect.context = function() {
   return $("form div.form-item");
 };
 
+HierarchicalSelect.setting = function(hsid, settingName, newValue) {
+  // Global settings.
+  if (hsid == 'global') {
+    return Drupal.settings.hierarchical_select[settingName];
+  }
+  else {
+    // Per-Hierarchical Select settings.
+    if (undefined === newValue) {
+      return Drupal.settings.hierarchical_select.settings[hsid][settingName];
+    }
+    else {
+      Drupal.settings.hierarchical_select.settings[hsid][settingName] = newValue;
+    }
+  }
+};
+
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
-  var saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
-  var multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context);
 
   // Reset the current selection in the original select.
-  $('select.hierarchical-select-'+ hsid +' option:selected', HierarchicalSelect.context).each(function() {
+  $('select.hierarchical-select-'+ hsid +' option:selected', this.context).each(function() {
     $(this).removeAttr('selected');
   });
 
   // Update it to the current selection.
-  if (!saveLineage) {
+  if (!this.setting(hsid, 'saveLineage')) {
     // Get the deepest valid value of the current selection.
     var level = $selects.length - 1;
     var deepestSelectValue = '';
@@ -29,7 +43,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
 
     // Update the original select.
-    $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
+    $('select.hierarchical-select-'+ hsid, this.context)
     .val(deepestSelectValue);
   }
   else {
@@ -37,17 +51,17 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     // select (thus effectively saving the term lineage).
     $selects
     .each(function() { // Can be done cleaner in jQuery 1.2, because .val() can then accept an array.
-      $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
+      $('select.hierarchical-select-'+ hsid, this.context)
       .find('option[@value='+ $(this).val() +']')
       .attr('selected', 'selected');
     });
   }
 
   // If multiple select is enabled, also add the selections in the dropbox.
-  if (multiple) {
+  if (this.setting(hsid, 'multiple')) {
     for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
       for (var j = 0; j < HierarchicalSelect.dropboxContent[hsid][i].length; j++) {
-        $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
+        $('select.hierarchical-select-'+ hsid, this.context)
         .find('option[@value='+ HierarchicalSelect.dropboxContent[hsid][i][j] +']')
         .attr('selected', 'selected');
       }
@@ -56,106 +70,72 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
 };
 
 HierarchicalSelect.initialize = function() {
-  var container;
-  var hsid;
-  var initial;
-  var multiple;
-  var $selects;
-
-  for (hsid in Drupal.settings.hierarchical_select.settings) {
-    initial = Drupal.settings.hierarchical_select.settings[hsid].initial;
-    multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
-    initialDropboxLineagesSelections = Drupal.settings.hierarchical_select.settings[hsid].initialDropboxLineagesSelections;
-
-    // If multiple select is enabled, intialize the dropbox array.
-    if (multiple) {
-      HierarchicalSelect.dropboxContent[hsid] = initialDropboxLineagesSelections;
+  for (var hsid in Drupal.settings.hierarchical_select.settings) {
+    // If multiple select is enabled, intialize the dropbox content array.
+    if (this.setting(hsid, 'multiple')) {
+      HierarchicalSelect.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
     }
 
-    // Create the unique container.
-    container = '<div id="hierarchical-select-'+ hsid +'-container" class="hierarchical-select-container clear-block" />';
-
-    $('select.hierarchical-select-'+ hsid, HierarchicalSelect.context)
+    $('select.hierarchical-select-'+ hsid, this.context)
     // Hide the standard select.
     .hide(0)
     // Add a unique container div after the standard select.
-    .after(container);
+    .after('<div id="hierarchical-select-'+ hsid +'-container" class="hierarchical-select-container clear-block" />');
 
     // Now load the initial HTML *without* using AHAH.
-    $('div#hierarchical-select-'+ hsid +'-container', HierarchicalSelect.context)
-    .html(initial);
+    $('div#hierarchical-select-'+ hsid +'-container', this.context)
+    .html(this.setting(hsid, 'initial'));
 
-    HierarchicalSelect.updateOriginalSelect(hsid);
-    HierarchicalSelect.attachBindings(hsid);
+    this.updateOriginalSelect(hsid);
+    this.attachBindings(hsid);
   }
 };
 
 HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
-  var addButton;
-  var updateFunction;
-  var addFunction;
-  var multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
-  var removeFunction;
-
-  // Closure.
-  updateFunction = function(x) {
-    return function() { HierarchicalSelect.update(x, $(this).val()); };
-  }(hsid);
-
-  // Attach the event to every select of the current Hierarchical Select.
-  $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context)
+  // Update event: attach to every select of the current Hierarchical Select.
+  $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context)
   .unbind()
-  .change(updateFunction);
+  .change(function(x) {
+    return function() { HierarchicalSelect.update(x, $(this).val()); };
+  }(hsid));
 
-  // If multiple select is enabled, add an "Add" button to update the
-  // dropbox and reset the selection.
-  if (multiple) {
+  if (this.setting(hsid, 'multiple')) {
     if (!dropboxOnly) {
-      addButton = Drupal.settings.hierarchical_select.settings[hsid].addButton;
-
       // Add the "Add" button.
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
-      .append(addButton);
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', this.context)
+      .append(this.setting(hsid, 'addButton'));
 
-      // Closure.
-      addFunction = function(y) {
-        return function() { HierarchicalSelect.add(y); };
-      }(hsid);
-    
-      // Attach the event to the "Add" button.
-      $('#hierarchical-select-'+ hsid +'-add-to-dropbox', HierarchicalSelect.context)
+      // Add event: attach to the "Add" button.
+      $('#hierarchical-select-'+ hsid +'-add-to-dropbox', this.context)
       .unbind()
-      .click(addFunction);
+      .click(function(x) {
+        return function() { HierarchicalSelect.add(x); };
+      }(hsid));
     }
 
-    for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
-      // Closure.
-      removeFunction = function(x, y) {
-        return function() { HierarchicalSelect.remove(x, y); };
-      }(hsid, i);
-
-      // Attach the event to the "Remove" links.
-      $('#hierarchical-select-'+ hsid +'-remove-'+ i + '-from-dropbox', HierarchicalSelect.context)
+    for (var i = 0; i < this.dropboxContent[hsid].length; i++) {
+      // Remove event: attach to the "Remove" links.
+      $('#hierarchical-select-'+ hsid +'-remove-'+ i + '-from-dropbox', this.context)
       .unbind()
-      .click(removeFunction); 
+      .click(function(x, y) {
+        return function() { HierarchicalSelect.remove(x, y); };
+      }(hsid, i));
     }    
   }
 };
 
 HierarchicalSelect.getFullSelection = function(hsid, selection) {
-  var fullSelection;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
-  var saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context);
 
   // Make sure selection is always an array.
   if ("string" == typeof(selection)) {
     selection = new Array(selection);
   }
 
-  if (saveLineage) {
+  if (this.setting(hsid, 'saveLineage')) {
     var lineageSelection = new Array();
     for (var level = 0; level < $selects.size(); level++) {
-      var s = $('select#hierarchical-select-'+ hsid +'-level-'+ level, HierarchicalSelect.context).val();
+      var s = $('select#hierarchical-select-'+ hsid +'-level-'+ level, this.context).val();
       lineageSelection[level] = s;
       if (s == selection) {
         // Don't go collect values from levels deeper than the clicked level,
@@ -165,17 +145,10 @@ HierarchicalSelect.getFullSelection = function(hsid, selection) {
     }
   }
 
-  if (undefined === lineageSelection) {
-    fullSelection = selection;
-  }
-  else {
-    fullSelection = lineageSelection;
-  }
-
-  return fullSelection;
+  return (undefined === lineageSelection) ? selection : lineageSelection;
 };
 
-HierarchicalSelect.post = function(hsid, fullSelection) {
+HierarchicalSelect.post = function(hsid, fullSelection, type) {
   var post = new Object();
   post['hsid'] = hsid;
   if (typeof(fullSelection) == "string") {
@@ -184,53 +157,53 @@ HierarchicalSelect.post = function(hsid, fullSelection) {
   else {
     post['selection'] = fullSelection.join('|');
   }
-  post['module'] = Drupal.settings.hierarchical_select.settings[hsid].module;
-  post['save_lineage'] = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
-  post['enforce_deepest'] = Drupal.settings.hierarchical_select.settings[hsid].enforceDeepest;
-  post['level_labels'] = Drupal.settings.hierarchical_select.settings[hsid].levelLabels;
-  post['params'] = Drupal.settings.hierarchical_select.settings[hsid].params;
-  post['required'] = Drupal.settings.hierarchical_select.settings[hsid].required;
-  post['multiple'] = Drupal.settings.hierarchical_select.settings[hsid].multiple;
+  post['module'] = this.setting(hsid, 'module');
+  post['save_lineage'] = this.setting(hsid, 'saveLineage');
+  post['enforce_deepest'] = this.setting(hsid, 'enforceDeepest');
+  post['level_labels'] = this.setting(hsid, 'levelLabels');
+  post['params'] = this.setting(hsid, 'params');
+  post['required'] = this.setting(hsid, 'required');
+  post['type'] = type;
 
   return post;
 };
 
 HierarchicalSelect.add = function(hsid) {
-  var url = Drupal.settings.hierarchical_select.url;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
+  var HS = HierarchicalSelect;
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
 
   // Get all selected items.
   var fullSelection = new Array();
-  $('select.hierarchical-select-'+ hsid +' option:selected', HierarchicalSelect.context).each(function() {
+  $('select.hierarchical-select-'+ hsid +' option:selected', this.context).each(function() {
     fullSelection.push($(this).val());
   });
 
-  post = HierarchicalSelect.post(hsid, fullSelection);
-  post.type = 'dropbox';
-
   $.ajax({
     type: "POST",
-    url: url,
-    data: post,
+    url: HS.setting('global', 'url'),
+    data: HS.post(hsid, fullSelection, 'dropbox'),
     dataType: "json",
     success: function(json){
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
       .html(json.selects);
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HierarchicalSelect.context)
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HS.context)
       .html(json.dropbox);
 
-      HierarchicalSelect.dropboxContent[hsid] = json.dropboxLineagesSelections;
+      HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
-      HierarchicalSelect.attachBindings(hsid);
+      HS.updateOriginalSelect(hsid); // In theory we don't have to do this, but it's a safety net: it will only set valid selections.
+      HS.attachBindings(hsid);
     }
   });
 };
 
 HierarchicalSelect.remove = function(hsid, dropboxEntry) {
-  var url = Drupal.settings.hierarchical_select.url;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
+  var HS = HierarchicalSelect;
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
 
-  // Add all other selections to the 
+  // Add the selections of all items in the dropbox to the selection, except
+  // for the one that has to be removed. If we submit this, the server will
+  // reconstruct all lineages and thus remove the removed selection.
   var fullSelection = new Array();
   for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
     if (i != dropboxEntry) {
@@ -240,61 +213,52 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
     }
   }
 
-  post = HierarchicalSelect.post(hsid, fullSelection);
-  post.type = 'dropbox-remove';
-
   $.ajax({
     type: "POST",
-    url: url,
-    data: post,
+    url: HS.setting('global', 'url'),
+    data: HS.post(hsid, fullSelection, 'dropbox-remove'),
     dataType: "json",
     success: function(json){
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HierarchicalSelect.context)
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', this.context)
       .html(json.dropbox);
 
-      HierarchicalSelect.dropboxContent[hsid] = json.dropboxLineagesSelections;
+      HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
-      HierarchicalSelect.updateOriginalSelect(hsid);
-      HierarchicalSelect.attachBindings(hsid, true);
+      HS.updateOriginalSelect(hsid);
+      HS.attachBindings(hsid, true);
     }
   });
 };
 
 HierarchicalSelect.update = function(hsid, selection) {
-  var animationDelay = Drupal.settings.hierarchical_select.settings[hsid].animationDelay;
-  var url = Drupal.settings.hierarchical_select.url;
-  var multiple = Drupal.settings.hierarchical_select.settings[hsid].multiple;
-  var saveLineage = Drupal.settings.hierarchical_select.settings[hsid].saveLineage;
-  var fullSelection = HierarchicalSelect.getFullSelection(hsid, selection);
-  var lastUnchanged;
+  var HS = HierarchicalSelect;
 
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HierarchicalSelect.context);
-  lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-hierarchical-select option[@value='+ selection +']', HierarchicalSelect.context).parent()[0]);
+  var animationDelay = HS.setting(hsid, 'animationDelay');
+
+  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
+  var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-hierarchical-select option[@value='+ selection +']', HS.context).parent()[0]);
 
   // Drop out the *original* selects of the levels deeper than the select of
   // the level that just changed.
   $selects.gt(lastUnchanged).DropOutLeft(animationDelay);
 
-  var post = HierarchicalSelect.post(hsid, fullSelection);
-  post.type = 'selects';
-
   $.ajax({
     type: "POST",
-    url: url,
-    data: post,
+    url: HierarchicalSelect.setting('global', 'url'),
+    data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), 'selects'),
     dataType: "json",
     success: function(json){
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HierarchicalSelect.context)
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
       .html(json.html);
 
-      $selects = $('select.hierarchical-select-'+ hsid + '-hierarchical-select', HierarchicalSelect.context);
+      $selects = $('select.hierarchical-select-'+ hsid + '-hierarchical-select', HS.context);
 
       // Hide the loaded selects after the one that was just changed, then  drop
       // them in.
       $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
 
-      HierarchicalSelect.updateOriginalSelect(hsid);
-      HierarchicalSelect.attachBindings(hsid);
+      HS.updateOriginalSelect(hsid);
+      HS.attachBindings(hsid);
     }
   });
 };

@@ -353,7 +353,7 @@ function hierarchical_select_render_dropbox($hsid, $dropbox) {
     }
 
     // Add a "Remove" link.
-    $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox" href="#">'. t('Remove') .'</a>';
+    $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox">'. t('Remove') .'</a>';
 
     $output .= '</div>';
   }
