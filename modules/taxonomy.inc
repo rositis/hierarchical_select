@@ -44,8 +44,9 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#default_value' => _taxonomy_hierarchical_select_get_save_linage($vid),
       '#description' => t(
         'Saving the term lineage means saving the the term itself and all its
-        ancestors. This is enabled by default and recommended if the
-        vocabulary has the multiple parents options enabled.'
+        ancestors. This is enabled by default if the vocabulary has the
+        multiple parents options enabled (otherwise it would try to
+        reconstruct the lineage and possibly choose the wrong parent).'
       ),
     );
 
