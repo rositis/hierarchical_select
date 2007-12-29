@@ -33,7 +33,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   });
 
   // Update it to the current selection.
-  if ($('select#hierarchical-select-'+ hsid +'-level-0', this.context).val() == 'none') {
+  if ($('select#hierarchical-select-'+ hsid +'-level-0', this.context).val().match(/^(none|label_\d+)$/)) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
     // a "- None selected -" option, with the value "". We *must* select it if
     // we want to select nothing.
@@ -89,7 +89,7 @@ HierarchicalSelect.initialize = function() {
 
     $('select.hierarchical-select-'+ hsid, this.context)
     // Hide the standard select.
-    .hide(0)
+    //.hide(0)
     // Add a unique container div after the standard select.
     .after('<div id="hierarchical-select-'+ hsid +'-container" class="hierarchical-select-container clear-block" />');
 
