@@ -25,14 +25,14 @@ HierarchicalSelect.setting = function(hsid, settingName, newValue) {
 };
 
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
 
   // Reset the current selection in the original select.
-  $('select.hierarchical-select-'+ hsid +' option:selected', this.context).each(function() {
+  $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
     $(this).removeAttr('selected');
   });
 
-  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-level-0', this.context).val();
+  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-select-level-0', this.context).val();
   // Update it to the current selection.
   if (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/)) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
@@ -41,7 +41,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     // TODO: make sure Drupal standardizes on a form item with a value "" to
     // select nothing. Perhaps I should also make Hierarchical Select use this
     // for its "<none>" option?
-    $('select.hierarchical-select-'+ hsid, this.context)
+    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
     .find('option[@value=""]')
     .attr('selected', 'selected'); 
   }
@@ -55,7 +55,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
 
     // Update the original select.
-    $('select.hierarchical-select-'+ hsid, this.context)
+    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
     .val(deepestSelectValue);
   }
   else {
@@ -63,7 +63,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     // select (thus effectively saving the term lineage).
     $selects
     .each(function() { // Can be done cleaner in jQuery 1.2, because .val() can then accept an array.
-      $('select.hierarchical-select-'+ hsid, this.context)
+      $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
       .find('option[@value='+ $(this).val() +']')
       .attr('selected', 'selected');
     });
@@ -73,7 +73,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   if (this.setting(hsid, 'multiple')) {
     for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
       for (var j = 0; j < HierarchicalSelect.dropboxContent[hsid][i].length; j++) {
-        $('select.hierarchical-select-'+ hsid, this.context)
+        $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
         .find('option[@value='+ HierarchicalSelect.dropboxContent[hsid][i][j] +']')
         .attr('selected', 'selected');
       }
@@ -88,7 +88,7 @@ HierarchicalSelect.initialize = function() {
       HierarchicalSelect.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
     }
 
-    $('select.hierarchical-select-'+ hsid, this.context)
+    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
     // Hide the standard select.
     .hide(0)
     // Add a unique container div after the standard select.
@@ -105,7 +105,7 @@ HierarchicalSelect.initialize = function() {
 
 HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
   // Update event: attach to every select of the current Hierarchical Select.
-  $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context)
+  $('select.hierarchical-select-'+ hsid +'-select', this.context)
   .unbind()
   .change(function(x) {
     return function() { HierarchicalSelect.update(x, $(this).val()); };
@@ -137,7 +137,7 @@ HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
 };
 
 HierarchicalSelect.getFullSelection = function(hsid, selection) {
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', this.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
 
   // Make sure selection is always an array.
   if ("string" == typeof(selection)) {
@@ -147,7 +147,7 @@ HierarchicalSelect.getFullSelection = function(hsid, selection) {
   if (this.setting(hsid, 'saveLineage')) {
     var lineageSelection = new Array();
     for (var level = 0; level < $selects.size(); level++) {
-      var s = $('select#hierarchical-select-'+ hsid +'-level-'+ level, this.context).val();
+      var s = $('select#hierarchical-select-'+ hsid +'-select-level-'+ level, this.context).val();
       lineageSelection[level] = s;
       if (s == selection) {
         // Don't go collect values from levels deeper than the clicked level,
@@ -182,11 +182,11 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
 
 HierarchicalSelect.add = function(hsid) {
   var HS = HierarchicalSelect;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
 
   // Get all selected items.
   var fullSelection = new Array();
-  $('select.hierarchical-select-'+ hsid +' option:selected', this.context).each(function() {
+  $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
     fullSelection.push($(this).val());
   });
 
@@ -211,7 +211,7 @@ HierarchicalSelect.add = function(hsid) {
 
 HierarchicalSelect.remove = function(hsid, dropboxEntry) {
   var HS = HierarchicalSelect;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
 
   // Add the selections of all items in the dropbox to the selection, except
   // for the one that has to be removed. If we submit this, the server will
@@ -247,8 +247,8 @@ HierarchicalSelect.update = function(hsid, selection) {
 
   var animationDelay = HS.setting(hsid, 'animationDelay');
 
-  var $selects = $('select.hierarchical-select-'+ hsid +'-hierarchical-select', HS.context);
-  var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-hierarchical-select option[@value='+ selection +']', HS.context).parent()[0]);
+  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
+  var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-select option[@value='+ selection +']', HS.context).parent()[0]);
 
   // Drop out the *original* selects of the levels deeper than the select of
   // the level that just changed.
@@ -263,7 +263,7 @@ HierarchicalSelect.update = function(hsid, selection) {
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
       .html(json.html);
 
-      $selects = $('select.hierarchical-select-'+ hsid + '-hierarchical-select', HS.context);
+      $selects = $('select.hierarchical-select-'+ hsid + '-select', HS.context);
 
       // Hide the loaded selects after the one that was just changed, then  drop
       // them in.

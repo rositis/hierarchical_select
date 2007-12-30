@@ -1,8 +1,6 @@
 <?php
 // $Id$
 
-// TODO: Improve themability (theme_*() functions instead of the current render functions).
-
 /**
  * @file
  * This module defines the "hierarchical_select" form element, which is a
@@ -247,7 +245,7 @@ function hierarchical_select_process($element) {
   }
 
   // Set the unique class.
-  $element['#attributes']['class'] .= " hierarchical-select hierarchical-select-$hsid";
+  $element['#attributes']['class'] .= " hierarchical-select-original-select hierarchical-select-$hsid-original-select";
 
   return $element;
 }
@@ -674,7 +672,7 @@ function theme_hierarchical_select_render_selects($hsid, $hierarchy) {
   $output = '';
 
   for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
-    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
+    $output .= '<select id="hierarchical-select-'. $hsid .'-select-level-'. $depth .'" class="form-select hierarchical-select-select hierarchical-select-'. $hsid .'-select">';
     foreach ($hierarchy->levels[$depth] as $value => $label) {
       if ($value == $hierarchy->lineage[$depth]) {
         $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
