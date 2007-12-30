@@ -50,7 +50,8 @@ included in the jQuery Update module to the "misc" directory!
 
 4) If you want to use it for one or more of your vocabularies, go to
 admin/content/taxonomy and click the "edit" link for a vocabulary. Now scroll
-down and you'll find a whole range of Hierarchical Select settings.
+down and you'll find a whole range of Hierarchical Select settings. All
+settings are explained there as well.
 
 In case of problems, don't forget to do a hard refresh in your browser!
 

@@ -109,7 +109,7 @@ function hierarchical_select_ahah() {
         $level_labels,
         $params
       );
-      $dropbox_html = hierarchical_select_render_dropbox($hsid, $dropbox);
+      $dropbox_html = theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
 
       print drupal_to_js(array(
         'dropboxLineagesSelections' => $dropbox->lineages_selections,
@@ -124,7 +124,7 @@ function hierarchical_select_ahah() {
         $level_labels,
         $params
       );
-      $dropbox_html = hierarchical_select_render_dropbox($hsid, $dropbox);
+      $dropbox_html = theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
 
       $hierarchy = hierarchical_select_get_hierarchy(
         $module,
@@ -135,7 +135,7 @@ function hierarchical_select_ahah() {
         $params,
         FALSE // Allow the user to select nothing, to prevent confusion.
       );   
-      $selects_html = hierarchical_select_render_selects($hsid, $hierarchy);
+      $selects_html = theme('hierarchical_select_render_selects', $hsid, $hierarchy);
 
       print drupal_to_js(array(
         'dropboxLineagesSelections' => $dropbox->lineages_selections,
@@ -154,7 +154,7 @@ function hierarchical_select_ahah() {
         $params,
         $required
       );   
-      $html = hierarchical_select_render_selects($hsid, $hierarchy);
+      $html = theme('hierarchical_select_render_selects', $hsid, $hierarchy);
       print drupal_to_js(array(
         'html' => $html
       ));
@@ -216,7 +216,7 @@ function hierarchical_select_process($element) {
   // Render the initial HTML.
   $hierarchy = hierarchical_select_get_hierarchy($module, ($multiple) ? -1 : $selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required);
   $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels, $params, $dropbox_title);
-  $initial = hierarchical_select_render_initial_html($hsid, $hierarchy, $dropbox);
+  $initial = theme('hierarchical_select_render_initial_html', $hsid, $hierarchy, $dropbox);
 
   drupal_add_js(
     array(
@@ -255,116 +255,6 @@ function hierarchical_select_process($element) {
 
 //----------------------------------------------------------------------------
 // Private functions.
-
-/**
- * Render the initial hierarchical select.
- *
- * @param $hsid
- *   A hierarchical select id.
- * @param $hierarchy
- *   A hierarchy object.
- * @param $dropbox
- *   A dropbox object.
- * @return
- *   The rendered HTML.
- */
-function hierarchical_select_render_initial_html($hsid, $hierarchy, $dropbox) {
-  $output = '';
-
-  $output .= '<div class="hierarchical-select-input clear-block">';
-  $output .= hierarchical_select_render_selects($hsid, $hierarchy);
-  $output .= '</div>';
-
-  if ($dropbox) {
-    $output .= '<span class="dropbox-title">'. check_plain($dropbox->title) .'</span>';
-    $output .= '<div class="hierarchical-select-dropbox clear-block">';
-    $output .= hierarchical_select_render_dropbox($hsid, $dropbox);
-    $output .= '</div>';
-  }
-
-  return $output;
-}
-
-/**
- * Render the selects.
- *
- * @param $hsid
- *   A hierarchical select id.
- * @param $hierarchy
- *   A hierarchy object.
- * @return
- *   The rendered HTML.
- */
-function hierarchical_select_render_selects($hsid, $hierarchy) {
-  $output = '';
-
-  for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
-    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
-    foreach ($hierarchy->levels[$depth] as $value => $label) {
-      if ($value == $hierarchy->lineage[$depth]) {
-        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
-      }
-      else {
-        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
-      }
-    }
-    $output .= '</select>';
-  }
-
-  return $output;
-}
-
-/**
- * Render the dropbox.
- *
- * @param $hsid
- *   A hierarchical select id.
- * @param $dropbox
- *   A dropbox object.
- * @return
- *   The rendered HTML.
- */
-function hierarchical_select_render_dropbox($hsid, $dropbox) {
-  $output = '';
-
-  $separator = '›';
-  $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
-
-  if (!empty($dropbox->lineages)) {
-    foreach ($dropbox->lineages as $id => $lineage) {
-      // Preparation: get the labels of the lineage.
-      $lineage_labels = array();
-      for ($level = 0; $level < count($lineage); $level++) {
-        $lineage_labels[] = $lineage[$level]['label'];
-      }
-
-      $output .= '<div class="dropbox-entry clear-block">';
-
-      // If the "save lineage" option is enabled: select every item. Otherwise
-      // only select the last item.
-      if ($dropbox->save_lineage) {
-        $output .= '<span class="dropbox-selected-item">'. implode('</span>'. $separator_html .'<span class="dropbox-selected-item">', $lineage_labels) .'</span>';
-      }
-      else {
-        $output .= '<span class="dropbox-item">'. implode('</span>'. $separator_html .'<span class="dropbox-item">', array_slice($lineage_labels, 0, count($lineage_labels) - 1)) .'</span>';
-        if (count($lineage_labels) > 1) {
-          $output .= $separator_html;
-        }
-        $output .= '<span class="dropbox-selected-item">'. $lineage_labels[count($lineage_labels) - 1] .'</span>';
-      }
-
-      // Add a "Remove" link.
-      $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox">'. t('Remove') .'</a>';
-
-      $output .= '</div>';
-    }
-  }
-  else {
-    $output .= '<p class="dropbox-is-empty">'. t('Nothing has been selected yet.') .'</p>';
-  }
-
-  return $output;
-}
  
 /**
  * Generate the hierarchy object.
@@ -760,3 +650,126 @@ function _hierarchical_select_dropbox_lineage_item_get_label($item) {
 function _hierarchical_select_dropbox_lineage_item_get_value($item) {
   return $item['value'];
 }
+
+
+//----------------------------------------------------------------------------
+// Themeing callbacks.
+
+/**
+ * @ingroup themeable
+ * @{
+ */
+
+/**
+ * Render the selects.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @return
+ *   The rendered HTML.
+ */
+function theme_hierarchical_select_render_selects($hsid, $hierarchy) {
+  $output = '';
+
+  for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
+    $output .= '<select id="hierarchical-select-'. $hsid .'-level-'. $depth .'" class="form-select hierarchical-select hierarchical-select-'. $hsid .'-hierarchical-select">';
+    foreach ($hierarchy->levels[$depth] as $value => $label) {
+      if ($value == $hierarchy->lineage[$depth]) {
+        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+      }
+      else {
+        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+      }
+    }
+    $output .= '</select>';
+  }
+
+  return $output;
+}
+
+/**
+ * Render the dropbox.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @param $dropbox
+ *   A dropbox object.
+ * @return
+ *   The rendered HTML.
+ */
+function theme_hierarchical_select_render_dropbox($hsid, $dropbox) {
+  $output = '';
+
+  $separator = '›';
+  $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
+
+  if (!empty($dropbox->lineages)) {
+    foreach ($dropbox->lineages as $id => $lineage) {
+      // Preparation: get the labels of the lineage.
+      $lineage_labels = array();
+      for ($level = 0; $level < count($lineage); $level++) {
+        $lineage_labels[] = $lineage[$level]['label'];
+      }
+
+      $output .= '<div class="dropbox-entry clear-block">';
+
+      // If the "save lineage" option is enabled: select every item. Otherwise
+      // only select the last item.
+      if ($dropbox->save_lineage) {
+        $output .= '<span class="dropbox-selected-item">'. implode('</span>'. $separator_html .'<span class="dropbox-selected-item">', $lineage_labels) .'</span>';
+      }
+      else {
+        $output .= '<span class="dropbox-item">'. implode('</span>'. $separator_html .'<span class="dropbox-item">', array_slice($lineage_labels, 0, count($lineage_labels) - 1)) .'</span>';
+        if (count($lineage_labels) > 1) {
+          $output .= $separator_html;
+        }
+        $output .= '<span class="dropbox-selected-item">'. $lineage_labels[count($lineage_labels) - 1] .'</span>';
+      }
+
+      // Add a "Remove" link.
+      $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox">'. t('Remove') .'</a>';
+
+      $output .= '</div>';
+    }
+  }
+  else {
+    $output .= '<p class="dropbox-is-empty">'. t('Nothing has been selected yet.') .'</p>';
+  }
+
+  return $output;
+}
+
+/**
+ * Render the initial hierarchical select.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @param $dropbox
+ *   A dropbox object.
+ * @return
+ *   The rendered HTML.
+ */
+function theme_hierarchical_select_render_initial_html($hsid, $hierarchy, $dropbox) {
+  $output = '';
+
+  $output .= '<div class="hierarchical-select-input clear-block">';
+  $output .= theme('hierarchical_select_render_selects', $hsid, $hierarchy);
+  $output .= '</div>';
+
+  if ($dropbox) {
+    $output .= '<span class="dropbox-title">'. check_plain($dropbox->title) .'</span>';
+    $output .= '<div class="hierarchical-select-dropbox clear-block">';
+    $output .= theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
+    $output .= '</div>';
+  }
+
+  return $output;
+}
+ 
+/**
+ * @} End of "ingroup themeable".
+ */
