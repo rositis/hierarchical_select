@@ -36,10 +36,12 @@ if (module_exists('content_taxonomy')) {
 function hierarchical_select_menu($may_cache) {
   if (!$maycache) {
     $items[] = array(
-      'path' => 'hierarchical_select_ahah',
-      'callback' => 'hierarchical_select_ahah',
-      'access' => TRUE, // TODO: Check if this safe.
+      'path' => 'hierarchical_select_json',
+      'callback' => 'hierarchical_select_json',
       'type' => MENU_CALLBACK,
+      // TODO: Needs improvements. Ideally, this would inherit the permissions
+      // of the form the Hierarchical Select was in.
+      'access' => user_access('access content'),
     );
   }
   return $items;
@@ -80,9 +82,9 @@ function hierarchical_select_elements() {
 // Menu callbacks.
 
 /**
- * Menu callback; AHAH callback: generates and outputs the appropriate HTML.
+ * Menu callback; JSON callback: generates and outputs the appropriate HTML.
  */
-function hierarchical_select_ahah() {
+function hierarchical_select_json() {
   // We are returning JavaScript, so tell the browser. Ripped from Drupal 6's
   // drupal_json() function.
   drupal_set_header('Content-Type: text/javascript; charset=utf-8');
@@ -181,7 +183,7 @@ function hierarchical_select_process($element) {
 
     $url = base_path();
     $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
-    $url .= 'hierarchical_select_ahah';
+    $url .= 'hierarchical_select_json';
 
     // Add the CSS and JS, set the URL that should be used by all hierarchical
     // selects.
