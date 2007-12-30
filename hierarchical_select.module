@@ -97,7 +97,7 @@ function hierarchical_select_json() {
   $enforce_deepest = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
   $level_labels = explode('|', $_POST['level_labels']);
   $params       = unserialize($_POST['params']);
-  $required        = _hierarchical_select_str_to_bool($_POST['required']);
+  $required     = _hierarchical_select_str_to_bool($_POST['required']);
 
   // Return output as JSON.
   switch ($_POST['type']) {
@@ -226,7 +226,7 @@ function hierarchical_select_process($element) {
             'animationDelay' => ($animation_delay == 0) ? 400 : $animation_delay,
             'initial' => $initial,
             'initialDropboxLineagesSelections' => (!$dropbox) ? NULL : $dropbox->lineages_selections,
-            'addButton' => '<input id="hierarchical-select-'. $hsid .'-add-to-dropbox" class="hierarchical-select-add-to-dropbox form-submit" type="button" value="'. t('Add') .'" />',
+            'addButton' => theme('hierarchical_select_dropbox_add_button', $hsid),
             'module' => $module,
             'enforceDeepest' => $enforce_deepest,
             'saveLineage' => $save_lineage,
@@ -769,7 +769,29 @@ function theme_hierarchical_select_render_initial_html($hsid, $hierarchy, $dropb
 
   return $output;
 }
- 
+
+/**
+ * Render the add button.
+ *
+ * @param $hsid
+ *   A hierarchical select id.
+ * @return
+ *   The rendered HTML.
+ */
+function theme_hierarchical_select_dropbox_add_button($hsid) {
+  $output = '';
+
+  // Any XHTML element can be used, as long as you keep the same ID.
+  $id = 'hierarchical-select-'. $hsid .'-add-to-dropbox';
+
+  $output .= '<input id="'. $id .'"';
+  $output .= ' class="hierarchical-select-add-to-dropbox form-submit"';
+  $output .= ' type="button"';
+  $output .= ' value="'. t('Add') .'" />';
+
+  return $output;
+}
+
 /**
  * @} End of "ingroup themeable".
  */
