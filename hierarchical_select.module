@@ -211,7 +211,7 @@ function hierarchical_select_process($element) {
   // the form element) for the first time. When it's no longer empty, this
   // means that the validation failed and that we must keep the option that
   // was selected by the user.
-  $selection = (empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
+  $selection = (!empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
 
   // Render the initial HTML.
   $hierarchy = hierarchical_select_get_hierarchy($module, ($multiple) ? -1 : $selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required);
