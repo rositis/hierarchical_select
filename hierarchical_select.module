@@ -97,6 +97,7 @@ function hierarchical_select_json() {
   $enforce_deepest = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
   $level_labels = explode('|', $_POST['level_labels']);
   $params       = unserialize($_POST['params']);
+  $dropbox_title= $_POST['dropbox_title'];
   $required     = _hierarchical_select_str_to_bool($_POST['required']);
 
   // Return output as JSON.
@@ -107,7 +108,8 @@ function hierarchical_select_json() {
         $selection,
         $save_lineage,
         $level_labels,
-        $params
+        $params,
+        $dropbox_title
       );
       $dropbox_html = theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
 
@@ -122,7 +124,8 @@ function hierarchical_select_json() {
         $selection,
         $save_lineage,
         $level_labels,
-        $params
+        $params,
+        $dropbox_title
       );
       $dropbox_html = theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
 
@@ -232,6 +235,7 @@ function hierarchical_select_process($element) {
             'saveLineage' => $save_lineage,
             'levelLabels' => implode('|', $level_labels),
             'params' => serialize($params),
+            'dropboxTitle' => $dropbox_title,
             'required' => $required,
             'multiple' => $multiple, // Enables the dropbox.
           ),

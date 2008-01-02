@@ -175,6 +175,7 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
   post['level_labels'] = this.setting(hsid, 'levelLabels');
   post['params'] = this.setting(hsid, 'params');
   post['required'] = this.setting(hsid, 'required');
+  post['dropbox_title'] = this.setting(hsid, 'dropboxTitle');
   post['type'] = type;
 
   return post;
