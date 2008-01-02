@@ -39,12 +39,12 @@ tr.dropbox-entry {
 
 tr.dropbox-entry.even {
   background-color: transparent;
-  border-bottom: 1px solid #CCCCCC;  
+  border-bottom: 1px solid #CCCCCC;
 }
 
 tr.dropbox-entry.odd {
   background-color: #EDF5FA;
-  border-bottom: 1px solid #CCCCCC;  
+  border-bottom: 1px solid #CCCCCC;
 }
 
 tr.dropbox-entry.first {

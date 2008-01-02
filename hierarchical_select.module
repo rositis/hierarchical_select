@@ -748,7 +748,7 @@ function theme_hierarchical_select_render_dropbox($hsid, $dropbox) {
     }
   }
   else {
-    $output .= '<p class="dropbox-is-empty">'. t('Nothing has been selected yet.') .'</p>';
+    $output .= '<tr class="dropbox-entry first last dropbox-is-empty"><td>'. t('Nothing has been selected yet.') .'</td></tr>';
   }
 
   // Add the dropbox title as a table caption.
