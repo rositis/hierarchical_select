@@ -705,6 +705,8 @@ function theme_hierarchical_select_render_dropbox($hsid, $dropbox) {
   $separator = '›';
   $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
 
+  $output .= '<tbody>';
+    
   if (!empty($dropbox->lineages)) {
     foreach ($dropbox->lineages as $id => $lineage) {
       // Preparation: get the labels of the lineage.
@@ -713,10 +715,15 @@ function theme_hierarchical_select_render_dropbox($hsid, $dropbox) {
         $lineage_labels[] = $lineage[$level]['label'];
       }
 
-      $output .= '<div class="dropbox-entry clear-block">';
+      $zebra = (($id + 1) % 2 == 0) ? 'even' : 'odd';
+      $first = ($id == 0) ? 'first' : '';
+      $last = ($id == count($dropbox->lineages) - 1) ? 'last' : '';
+
+      $output .= '<tr class="dropbox-entry '. $first .' '. $last .' '. $zebra .'">';
 
       // If the "save lineage" option is enabled: select every item. Otherwise
       // only select the last item.
+      $output .= '<td>';
       if ($dropbox->save_lineage) {
         $output .= '<span class="dropbox-selected-item">'. implode('</span>'. $separator_html .'<span class="dropbox-selected-item">', $lineage_labels) .'</span>';
       }
@@ -727,16 +734,22 @@ function theme_hierarchical_select_render_dropbox($hsid, $dropbox) {
         }
         $output .= '<span class="dropbox-selected-item">'. $lineage_labels[count($lineage_labels) - 1] .'</span>';
       }
+      $output .= '</td>';
 
-      // Add a "Remove" link.
-      $output .= '<a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox">'. t('Remove') .'</a>';
+      // Add a column with a "Remove" link.
+      $output .= '<td><a id="hierarchical-select-'. $hsid .'-remove-'. $id .'-from-dropbox" class="hierarchical-select-remove-from-dropbox hierarchical-select-'. $hsid .'-remove-from-dropbox">'. t('Remove') .'</a></td>';
 
-      $output .= '</div>';
+      $output .= '</tr>';
     }
   }
   else {
     $output .= '<p class="dropbox-is-empty">'. t('Nothing has been selected yet.') .'</p>';
   }
+
+  // Add the dropbox title as a table caption.
+  $output .= '<caption class="dropbox-title">'. check_plain($dropbox->title) .'</caption>';
+
+  $output .= '</tbody>';
 
   return $output;
 }
@@ -761,10 +774,9 @@ function theme_hierarchical_select_render_initial_html($hsid, $hierarchy, $dropb
   $output .= '</div>';
 
   if ($dropbox) {
-    $output .= '<span class="dropbox-title">'. check_plain($dropbox->title) .'</span>';
-    $output .= '<div class="hierarchical-select-dropbox clear-block">';
+    $output .= '<table class="hierarchical-select-dropbox">';
     $output .= theme('hierarchical_select_render_dropbox', $hsid, $dropbox);
-    $output .= '</div>';
+    $output .= '</table>';
   }
 
   return $output;
@@ -781,10 +793,7 @@ function theme_hierarchical_select_render_initial_html($hsid, $hierarchy, $dropb
 function theme_hierarchical_select_dropbox_add_button($hsid) {
   $output = '';
 
-  // Any XHTML element can be used, as long as you keep the same ID.
-  $id = 'hierarchical-select-'. $hsid .'-add-to-dropbox';
-
-  $output .= '<input id="'. $id .'"';
+  $output .= '<input id="hierarchical-select-'. $hsid .'-add-to-dropbox"';
   $output .= ' class="hierarchical-select-add-to-dropbox form-submit"';
   $output .= ' type="button"';
   $output .= ' value="'. t('Add') .'" />';

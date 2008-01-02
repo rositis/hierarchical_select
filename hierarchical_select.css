@@ -1,58 +1,72 @@
 /* $Id$ */
 
 div.hierarchical-select-container select.hierarchical-select-select {
-	margin-right: .5em;
-	margin-bottom: 1em;
-	float: left;
+  margin-right: .5em;
+  margin-bottom: 1em;
+  float: left;
 }
 
-span.dropbox-title {
+.dropbox-title {
   font-size: 115%;
-  margin-top: 1em;
-  margin-bottom: 0;
+  color: #898989;
 }
 
-div.hierarchical-select-dropbox {
-  border: 1px solid grey;
-  width: 10%;
+.hierarchical-select-dropbox {
+  margin: 0px;
+  width: auto;
+  max-width: 100%;
   min-width: 20em;
   margin-bottom: 1em;
-  padding: .2em 1em;
+  padding: 0px;
   color: grey;
   font-size: 90%;
+  padding: 1em;
+  margin-left: 1px;
+}
+
+.hierarchical-select-dropbox tbody {
+  margin: 0;
+  padding: 0;
+  border: 1px solid grey;
+}
+
+tr.dropbox-entry {
   line-height: 1em;
+  padding: .3em .6em;
+}  
+
+tr.dropbox-entry.even {
+  background-color: transparent;
+  border-bottom: 1px solid #CCCCCC;  
 }
 
-div.dropbox-entry {
-  margin-top: .5em;
-  margin-bottom: .5em;
+tr.dropbox-entry.odd {
+  background-color: #EDF5FA;
+  border-bottom: 1px solid #CCCCCC;  
 }
 
-span.dropbox-item {
-  float: left;
+tr.dropbox-entry.first {
+  border-top: 1px solid grey;
 }
 
-span.dropbox-selected-item {
-  float: left;
+tr.dropbox-entry.last {
+  border-bottom: 1px solid grey;
+}
+
+.dropbox-selected-item {
   font-weight: bold;
 }
 
-span.dropbox-item-separator {
-  float: left;
+.dropbox-item-separator {
   padding-left: .5em;
   padding-right: .5em;
 }
 
-div.hierarchical-select-dropbox .hierarchical-select-remove-from-dropbox {
-  float: right;
-  margin-left: 2em;
+.hierarchical-select-remove-from-dropbox {
   color: #F7A54F;
-}
-
-a.hierarchical-select-remove-from-dropbox {
   cursor: pointer;
 }
 
-p.dropbox-is-empty {
+.dropbox-is-empty {
   padding: .5em 1em;
 }
