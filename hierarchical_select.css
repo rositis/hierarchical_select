@@ -1,6 +1,8 @@
 /* $Id$ */
 
-div.hierarchical-select-container select.hierarchical-select-select {
+div.hierarchical-select-container select.hierarchical-select-select,
+div.hierarchical-select-container .hierarchical-select-add-to-dropbox {
+  margin: 0;
   margin-right: .5em;
   margin-bottom: 1em;
   float: left;
