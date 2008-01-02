@@ -306,8 +306,9 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
   // Start building the hierarchy, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
 
-  // If the form item is optional, prepend a "none" option to the root level.
-  if (!$required) {
+  // If the form item is optional AND "enforce deepest" is enabled, prepend a
+  // "none" option to the root level.
+  if (!$required && $enforce_deepest) {
     $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
   }
 
