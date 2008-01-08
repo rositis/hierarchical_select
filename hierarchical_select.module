@@ -404,6 +404,20 @@ function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $le
   $dropbox->title = (!empty($title)) ? $title : t('All selections');
   $dropbox->lineages = array();
   $dropbox->lineages_selections = array();
+  
+  // Clean selection.
+  if (is_array($selection)) {
+    foreach ($selection as $key => $item) {
+      if (!module_invoke($module, 'hierarchical_select_valid_item', $item, $params)) {
+        unset($selection[$key]);
+      }
+    }
+  }
+  else {
+    if (!module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
+      $selection = array();
+    }
+  }
 
   if (!empty($selection)) {
     // Remove all duplicate values from the selection. We'll work with this

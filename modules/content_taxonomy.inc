@@ -41,13 +41,13 @@ function content_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
       // Check if the form element is at the root, the select widget must be
       // used and it cannot be a multiple select.
-      if (isset($form[$field_name]) && $form[$field_name]['tids']['#type'] == 'select' && !$form[$field_name]['tids']['#multiple']) {
+      if (isset($form[$field_name]) && $form[$field_name]['tids']['#type'] == 'select') {
         $form[$field_name]['tids']['#type'] = 'hierarchical_select';
         $form[$field_name]['tids']['#hierarchical_select_settings'] = array(
           'module' => 'content_taxonomy',
           'params' => array(
             'vid' => $vid,
-            'depth' => $depth,
+            'depth' => (is_numeric($depth)) ? $depth : 999,
           ),
         );
         taxonomy_hierarchical_select_update_form_item($form[$field_name]['tids'], $vid);
@@ -56,13 +56,13 @@ function content_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       // be used and it cannot be a multiple select.
       elseif (module_exists('fieldgroup')) {
         $field_group = fieldgroup_get_group($content_type, $field_name);
-        if (isset($form[$field_group][$field_name]) && $form[$field_group][$field_name]['tids']['#type'] == 'select' && !$form[$field_group][$field_name]['tids']['#multiple']) {
+        if (isset($form[$field_group][$field_name]) && $form[$field_group][$field_name]['tids']['#type'] == 'select') {
           $form[$field_group][$field_name]['tids']['#type'] = 'hierarchical_select';
           $form[$field_group][$field_name]['tids']['#hierarchical_select_settings'] = array(
             'module' => 'content_taxonomy',
             'params' => array(
               'vid' => $vid,
-              'depth' => $depth,
+              'depth' => (is_numeric($depth)) ? $depth : 999,
             ),
           );
           taxonomy_hierarchical_select_update_form_item($form[$field_group][$field_name]['tids'], $vid);
