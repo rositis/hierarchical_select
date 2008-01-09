@@ -1,0 +1,32 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install().
+ */
+function hierarchical_select_install() {
+  // Ensure the Hierarchical Select module runs after the Taxonomy and Content
+  // Taxonomy modules! This should not be necessary to do, but apparently some
+  // idiot module developer is changing the weight of the Taxonomy module...
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight + 1, 'hierarchical_select');
+}
+
+
+//----------------------------------------------------------------------------
+// Schema updates.
+
+// Update module weight.
+function hierarchical_select_update_1() {
+  $ret = array();
+
+  // Ensure the Hierarchical Select module runs after the Taxonomy and Content
+  // Taxonomy modules! This should not be necessary to do, but apparently some
+  // idiot module developer is changing the weight of the Taxonomy module...
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight + 1, 'hierarchical_select');
+
+  return $ret;
+}
