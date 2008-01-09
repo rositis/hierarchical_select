@@ -282,7 +282,7 @@ function hierarchical_select_process($element) {
  *   A hierarchy object.
  */
 function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required) {
-  $hierarchy = new StdClass();
+  $hierarchy = new stdClass();
 
   // Validate and clean up the selection.
   $selection = _hierarchical_select_validate_selection($selection, $module, $params);
@@ -399,7 +399,7 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
  *   A dropbox object.
  */
 function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title = '') {
-  $dropbox = new StdClass();
+  $dropbox = new stdClass();
   
   $dropbox->title = (!empty($title)) ? $title : t('All selections');
   $dropbox->lineages = array();
