@@ -43,6 +43,15 @@ function hierarchical_select_menu($may_cache) {
       // of the form the Hierarchical Select was in.
       'access' => user_access('access content'),
     );
+    $items[] = array(
+      'path' => 'admin/settings/hierarchical_select',
+      'title' => t('Hierarchical Select'),
+      'description' => t('Configure site-wide settings for Hierarchical Select.'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('hierarchical_select_admin_settings'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+    
   }
   return $items;
 }
@@ -69,7 +78,7 @@ function hierarchical_select_elements() {
       'enforce_deepest' => FALSE,
       'level_labels' => array(),
       'params' => array(),
-      'animation_delay' => 400,
+      'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
       'dropbox_title' => t('All selections'),
     ),
     '#default_value' => -1,
@@ -226,7 +235,7 @@ function hierarchical_select_process($element) {
       'hierarchical_select' => array(
         'settings' => array(
           $hsid => array(
-            'animationDelay' => ($animation_delay == 0) ? 400 : $animation_delay,
+            'animationDelay' => ($animation_delay == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $animation_delay,
             'initial' => $initial,
             'initialDropboxLineagesSelections' => (!$dropbox) ? NULL : $dropbox->lineages_selections,
             'addButton' => theme('hierarchical_select_dropbox_add_button', $hsid),
@@ -254,6 +263,22 @@ function hierarchical_select_process($element) {
   $element['#attributes']['class'] .= " hierarchical-select-original-select hierarchical-select-$hsid-original-select";
 
   return $element;
+}
+
+/**
+ * Form definition; admin settings.
+ */
+function hierarchical_select_admin_settings() {
+  $form['hierarchical_select_animation_delay'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Animation delay'),
+    '#description' => t('The site-wide animation delay for the Hierarchical Select form element (in milliseconds).'),
+    '#size' => 5,
+    '#maxlength' => 5,
+    '#default_value' => variable_get('hierarchical_select_animation_delay', 400),
+  );
+
+  return system_settings_form($form);
 }
 
 
