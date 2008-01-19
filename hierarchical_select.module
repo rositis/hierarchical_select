@@ -80,6 +80,7 @@ function hierarchical_select_elements() {
       'params' => array(),
       'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
       'dropbox_title' => t('All selections'),
+      'dropbox_limit' => 0,
     ),
     '#default_value' => -1,
   );
@@ -215,6 +216,7 @@ function hierarchical_select_process($element) {
   $level_labels = (array) $element['#hierarchical_select_settings']['level_labels'];
   $animation_delay = (int) $element['#hierarchical_select_settings']['animation_delay'];
   $dropbox_title = $element['#hierarchical_select_settings']['dropbox_title'];
+  $dropbox_limit = (int) $element['#hierarchical_select_settings']['dropbox_limit'];
   $params = $element['#hierarchical_select_settings']['params'];
   $required = (bool) $element['#required'];
   $multiple = (bool) $element['#multiple'];
@@ -245,6 +247,7 @@ function hierarchical_select_process($element) {
             'levelLabels' => implode('|', $level_labels),
             'params' => serialize($params),
             'dropboxTitle' => $dropbox_title,
+            'dropboxLimit' => $dropbox_limit,
             'required' => $required,
             'multiple' => $multiple, // Enables the dropbox.
           ),

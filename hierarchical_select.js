@@ -208,6 +208,12 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
 HierarchicalSelect.add = function(hsid) {
   var HS = HierarchicalSelect;
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
+  var dropboxLimit = HS.setting(hsid, 'dropboxLimit');
+
+  if (dropboxLimit > 0 && HS.dropboxContent[hsid].length == dropboxLimit) {
+    // TODO: should be translatable. But that's a lot easier in Drupal 6, so let's postpone it.
+    alert('You cannot add more than '+ dropboxLimit + ' items! Please remove an item before adding another one.');
+  }
 
   // Get all selected items.
   var fullSelection = new Array();

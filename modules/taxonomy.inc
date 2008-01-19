@@ -113,6 +113,21 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
         '#maxlength' => 255,
         '#default_value' => variable_get("hierarchical_select_dropbox_title_{$vid}", ''),
       );
+      $form['hierarchical_select']['dropbox']['dropbox_limit'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Limit the number of selections'),
+        '#description' => t(
+          'Limits the number of selections that can be added to the dropbox.
+          0 means no limit.
+          <br />
+          Note: the "Save term lineage" option has no effect on this, even if
+          a lineage consists of 3 terms, this will count as only one selection
+          in the dropbox.'),
+        '#size' => 5,
+        '#maxlength' => 5,
+        '#default_value' => variable_get("hierarchical_select_dropbox_limit_{$vid}", 0),
+      );
+      
     }
 
     $form['#submit']['taxonomy_form_vocabulary_submit'] = array(); // Make sure the original submit handler is still called.
@@ -355,4 +370,5 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
     }
   }
   $form_item['#hierarchical_select_settings']['dropbox_title'] = variable_get("hierarchical_select_dropbox_title_{$vid}", '');
+  $form_item['#hierarchical_select_settings']['dropbox_limit'] = variable_get("hierarchical_select_dropbox_limit_{$vid}", 0);
 }
