@@ -24,6 +24,30 @@ HierarchicalSelect.setting = function(hsid, settingName, newValue) {
   }
 };
 
+HierarchicalSelect.waitToggle = function(hsid) {
+  if ($('#hierarchical-select-' + hsid +'-container').css('opacity') == 1) {
+    // Disable *all* submit buttons in this form.
+    $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
+    .add('#hierarchical-select-' + hsid +'-container input[@type=button]')
+    .attr('disabled', 'disabled');
+
+    // Make everything related to the hierarchical select form item transparent.
+    $('#hierarchical-select-' + hsid +'-container').css('opacity', 0.5);
+
+    // Indicate that the user has to wait.
+    $('body').css('cursor', 'wait');  
+  }
+  else {
+    $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
+    .add('#hierarchical-select-' + hsid +'-container input[@type=button]')
+    .removeAttr('disabled');
+
+    $('#hierarchical-select-' + hsid +'-container').css('opacity', 1);
+
+    $('body').css('cursor', 'auto');  
+  }
+};
+
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
 
@@ -191,6 +215,7 @@ HierarchicalSelect.add = function(hsid) {
     fullSelection.push($(this).val());
   });
 
+  HS.waitToggle(hsid);
   $.ajax({
     type: "POST",
     url: HS.setting('global', 'url'),
@@ -204,6 +229,7 @@ HierarchicalSelect.add = function(hsid) {
 
       HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
+      HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid); // In theory we don't have to do this, but it's a safety net: it will only set valid selections.
       HS.attachBindings(hsid);
     }
@@ -226,6 +252,8 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
     }
   }
 
+  HS.waitToggle(hsid);
+
   $.ajax({
     type: "POST",
     url: HS.setting('global', 'url'),
@@ -237,6 +265,7 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
 
       HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
+      HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid);
       HS.attachBindings(hsid, true);
     }
@@ -250,6 +279,8 @@ HierarchicalSelect.update = function(hsid, selection) {
 
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
   var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-select option[@value='+ selection +']', HS.context).parent()[0]);
+
+  HS.waitToggle(hsid);
 
   // Drop out the *original* selects of the levels deeper than the select of
   // the level that just changed.
@@ -270,6 +301,7 @@ HierarchicalSelect.update = function(hsid, selection) {
       // them in.
       $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
 
+      HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid);
       HS.attachBindings(hsid);
     }
