@@ -72,3 +72,19 @@ tr.dropbox-entry.last {
 .dropbox-is-empty {
   padding: .5em 1em;
 }
+
+
+/* Level labels styles */
+
+.hierarchical-select-level-label-bold {
+  font-weight: bold;
+}
+
+.hierarchical-select-level-label-inversed {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+.hierarchical-select-level-label-underlined {
+  text-decoration: underline;
+}

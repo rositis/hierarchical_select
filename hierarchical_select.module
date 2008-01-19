@@ -269,13 +269,37 @@ function hierarchical_select_process($element) {
  * Form definition; admin settings.
  */
 function hierarchical_select_admin_settings() {
+  $form['description'] = array(
+    '#value' => t('All settings below will be used as site-wide defaults.'),
+    '#prefix' => '<div>',
+    '#suffix' => '</div>',
+  );
   $form['hierarchical_select_animation_delay'] = array(
     '#type' => 'textfield',
     '#title' => t('Animation delay'),
-    '#description' => t('The site-wide animation delay for the Hierarchical Select form element (in milliseconds).'),
+    '#description' => t(
+      'The delay that will be used for the "drop in/out" effect when a
+      hierarchical select is being updated (in milliseconds).'
+    ),
     '#size' => 5,
     '#maxlength' => 5,
     '#default_value' => variable_get('hierarchical_select_animation_delay', 400),
+  );
+  $form['hierarchical_select_level_labels_style'] = array(
+    '#type' => 'select',
+    '#title' => t('Level labels style'),
+    '#description' => t(
+      'The style that will be used for level labels. This is not supported by
+      all browsers! If you want a consistent interface, choose to use no
+      style.'
+    ),
+    '#options' => array(
+      'none' => t('No style'),
+      'bold' => t('Bold'),
+      'inversed' => t('Inversed'),
+      'underlined' => t('Underlined'),
+    ),
+    '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
   );
 
   return system_settings_form($form);
@@ -716,15 +740,20 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
  */
 function theme_hierarchical_select_render_selects($hsid, $hierarchy) {
   $output = '';
+  $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
 
   for ($depth = 0; $depth < count($hierarchy->lineage); $depth++) {
     $output .= '<select id="hierarchical-select-'. $hsid .'-select-level-'. $depth .'" class="form-select hierarchical-select-select hierarchical-select-'. $hsid .'-select">';
     foreach ($hierarchy->levels[$depth] as $value => $label) {
+      $output .= '<option';
+      if (preg_match('/^label_\d+$/', $value) && $level_labels_style != 'none') {
+        $output .= ' class="hierarchical-select-level-label-'. $level_labels_style .'"';
+      }
       if ($value == $hierarchy->lineage[$depth]) {
-        $output .= '<option selected="selected" value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+         $output .= ' selected="selected" value="'. check_plain($value) .'"><strong>'. check_plain($label) .'</strong></option>';
       }
       else {
-        $output .= '<option value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
+        $output .= ' value="'. check_plain($value) .'">'. check_plain($label) .'</option>';
       }
     }
     $output .= '</select>';
