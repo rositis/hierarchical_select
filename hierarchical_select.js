@@ -25,7 +25,7 @@ HierarchicalSelect.setting = function(hsid, settingName, newValue) {
 };
 
 HierarchicalSelect.waitToggle = function(hsid) {
-  if ($('#hierarchical-select-' + hsid +'-container').css('opacity') == 1) {
+  if ($('#hierarchical-select-' + hsid +'-container').css('opacity') != 0.5) {
     // Disable *all* submit buttons in this form.
     $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
     .add('#hierarchical-select-' + hsid +'-container input[@type=button]')
