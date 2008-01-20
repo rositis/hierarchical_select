@@ -48,6 +48,40 @@ HierarchicalSelect.waitToggle = function(hsid) {
   }
 };
 
+// Should always be called *after* attachBindings(), because this method
+// disables the "Add" button, which is only available after that method call.
+HierarchicalSelect.checkDropboxLimit = function(hsid, initial) {
+  var HS = HierarchicalSelect;
+  var dropboxLimit = HS.setting(hsid, 'dropboxLimit');
+
+  // Set default value for the "initial" parameter.
+  initial = (undefined === initial) ? false : initial;
+
+  if (dropboxLimit > 0) {
+    if (HS.dropboxContent[hsid].length == dropboxLimit) {
+      $('#hierarchical-select-'+ hsid +'-container .hierarchical-select-input')
+      .css('opacity', 0.5)
+      // TODO: should be translatable. But that's a lot easier in Drupal 6, so let's postpone it.
+      .after('<p class="hierarchical-select-dropbox-limit-warning">You\'ve reached the maximal number of items you can select.</p>')
+      .children()
+      .attr('disabled', 'disabled');
+      $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context)
+      .hide()
+      .show((initial) ? 0 : 'fast');
+    }
+    else if (HS.dropboxContent[hsid].length < dropboxLimit && $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context).size()) {
+      $('#hierarchical-select-'+ hsid +'-container .hierarchical-select-input')
+      .css('opacity', 1)
+      .children()
+      .removeAttr('disabled');
+      $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context)
+      .hide('fast', function() {
+        $(this).remove();
+      });
+    }
+  }
+};
+
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
 
@@ -124,6 +158,7 @@ HierarchicalSelect.initialize = function() {
 
     this.updateOriginalSelect(hsid);
     this.attachBindings(hsid);
+    this.checkDropboxLimit(hsid, true);
   }
 };
 
@@ -208,12 +243,6 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
 HierarchicalSelect.add = function(hsid) {
   var HS = HierarchicalSelect;
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
-  var dropboxLimit = HS.setting(hsid, 'dropboxLimit');
-
-  if (dropboxLimit > 0 && HS.dropboxContent[hsid].length == dropboxLimit) {
-    // TODO: should be translatable. But that's a lot easier in Drupal 6, so let's postpone it.
-    alert('You cannot add more than '+ dropboxLimit + ' items! Please remove an item before adding another one.');
-  }
 
   // Get all selected items.
   var fullSelection = new Array();
@@ -238,6 +267,7 @@ HierarchicalSelect.add = function(hsid) {
       HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid); // In theory we don't have to do this, but it's a safety net: it will only set valid selections.
       HS.attachBindings(hsid);
+      HS.checkDropboxLimit(hsid);
     }
   });
 };
@@ -274,6 +304,7 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
       HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid);
       HS.attachBindings(hsid, true);
+      HS.checkDropboxLimit(hsid);
     }
   });
 };

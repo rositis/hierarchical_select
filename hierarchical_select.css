@@ -88,3 +88,13 @@ tr.dropbox-entry.last {
 .hierarchical-select-level-label-underlined {
   text-decoration: underline;
 }
+
+
+/* Dropbox limit */
+
+p.hierarchical-select-dropbox-limit-warning {
+  padding: 0;
+  color: #F7A54F;
+  font-size: 110%;
+  padding-left: .5em;
+}
