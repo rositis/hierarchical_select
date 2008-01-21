@@ -19,7 +19,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
     $vid = $form['vid']['#value'];
-    $first_part = array_slice($form, 0, 9);
+    $first_part = array_slice($form, 0, 10);
     $second_part = array_slice($form, 10);
     $form = $first_part;
 
