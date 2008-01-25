@@ -1,5 +1,5 @@
 ; $Id$
 name = Hierarchical Select
-description = Transforms the select form items of hierarchical selects into dynamically updated, per-level select form items.
+description = Simplifies the selection of one or multiple items in a hierarchical tree.
 dependencies = jquery_interface
 package = Form Elements
