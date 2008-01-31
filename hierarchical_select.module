@@ -5,27 +5,16 @@
  * @file
  * This module defines the "hierarchical_select" form element, which is a
  * greatly enhanced way for letting the user select an option in a hierarchy.
- * Out of the box, this module supports the taxonomy and content_taxonomy
- * modules, but that automatically includes the forum module. It also converts
- * any hierarchical taxonomy exposed filters in any View to a hierarchical
- * select.
- *
- * Any module that uses a select form element, of which the options are
- * ordered hierarchically, can take advantage of this new form element.
- * Especially when there's a deep hierarchy, or when there are a lot of
- * options in each sublevel, this form element greatly simplifies the user's
- * search for the right option.
  */
 
 
 // Enable default support for some modules, if they are enabled.
-if (module_exists('taxonomy')) {
-  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/taxonomy.inc';
+$modules = array('taxonomy', 'content_taxonomy', 'subscriptions_taxonomy');
+foreach ($modules as $module) {
+  if (module_exists($module)) {
+    require_once drupal_get_path('module', 'hierarchical_select') ."/modules/$module.inc";
+  }
 }
-if (module_exists('content_taxonomy')) {
-  require_once drupal_get_path('module', 'hierarchical_select') .'/modules/content_taxonomy.inc';
-}
-
 
 //----------------------------------------------------------------------------
 // Drupal core hooks.

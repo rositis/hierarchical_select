@@ -5,9 +5,9 @@ Description
 This module defines the "hierarchical_select" form element, which is a much
 enhanced way for letting the user select an option in a hierarchy. Out of the
 box, this module implements the hierarchical_select hooks for the taxonomy
-(which automatically includes support for the forum module) and
-content_taxonomy modules. It also converts hierarchical vocabularies that are
-used as exposed filters in any View to a hierarchical select.
+(which automatically includes support for the forum module), content_taxonomy
+and subscriptions_taxonomy modules. It also converts hierarchical vocabularies
+that are used as exposed filters in any View to a hierarchical select.
 
 Any module that uses a select form element, of which the options are ordered
 hierarchically, can take advantage of this new form element. Especially when
@@ -35,6 +35,7 @@ Integrates with
 ---------------
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy)
+* Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
 * Views (http://drupal.org/project/views)
 
 
