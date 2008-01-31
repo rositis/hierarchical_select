@@ -742,7 +742,7 @@ function theme_hierarchical_select_render_selects($hsid, $hierarchy) {
         $output .= ' class="hierarchical-select-level-label-'. $level_labels_style .'"';
       }
       if ($value == $hierarchy->lineage[$depth]) {
-         $output .= ' selected="selected" value="'. check_plain($value) .'"><strong>'. check_plain($label) .'</strong></option>';
+        $output .= ' selected="selected" value="'. check_plain($value) .'"><strong>'. check_plain($label) .'</strong></option>';
       }
       else {
         $output .= ' value="'. check_plain($value) .'">'. check_plain($label) .'</option>';

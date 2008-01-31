@@ -99,7 +99,7 @@ function hierarchical_select_subscriptions_taxonomy_validate($form_id, $form_val
           if (!in_array($tid, $selected_tids) && $form_values[$vid]['checkboxes'][$tid][-1] == 1) {
             form_set_value($form[$vid]['checkboxes'][$tid][-1], 0);
           }
-          else if (in_array($tid, $selected_tids)){
+          else if (in_array($tid, $selected_tids)) {
             form_set_value($form[$vid]['checkboxes'][$tid][-1], 1);
           }
         }
