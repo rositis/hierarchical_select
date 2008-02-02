@@ -441,7 +441,7 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
  */
 function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title = '') {
   $dropbox = new stdClass();
-  
+
   $dropbox->title = (!empty($title)) ? $title : t('All selections');
   $dropbox->lineages = array();
   $dropbox->lineages_selections = array();
@@ -528,6 +528,7 @@ function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $le
 function _hierarchical_select_reconstruct_lineages_save_lineage_enabled($module, $selection, $params) {
   // We have to reconstruct all lineages from the given set of selected
   // items. That means: we have to reconstruct every possible combination!
+  $lineages = array();
   $root_level = module_invoke($module, 'hierarchical_select_root_level', $params);
   foreach ($selection as $key => $item) {
     // Create new lineage if the item can be found in the root level.
