@@ -19,9 +19,17 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
     $vid = $form['vid']['#value'];
-    $first_part = array_slice($form, 0, 10);
-    $second_part = array_slice($form, 10);
+    $first_part = array_slice($form, 0, 8);
+    $second_part = array_slice($form, 8, 2);
+    $third_part = array_slice($form, 10);
     $form = $first_part;
+
+    // Hide Taxonomy's "multiple select" setting, create a similar setting
+    // for Hierarchical Select.
+    // Also see the comment in hierarchical_select_taxonomy_form_vocabulary_validate().
+    $form['hierarchical_select_multiple'] = $form['multiple'];
+    $form['multiple']['#type'] = 'value';
+    $form += $second_part;
 
     $form['hierarchical_select'] = array(
       '#tree' => TRUE,
@@ -104,7 +112,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#collapsed' => FALSE,
     );
 
-    if ($form['multiple']['#default_value']) {
+    if ($form['hs_multiple']['#default_value']) {
       $form['hierarchical_select']['dropbox']['dropbox_title'] = array(
         '#type' => 'textfield',
         '#title' => t('Title'),
@@ -131,8 +139,9 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     }
 
     $form['#submit']['taxonomy_form_vocabulary_submit'] = array(); // Make sure the original submit handler is still called.
+    $form['#validate']['hierarchical_select_taxonomy_form_vocabulary_validate'] = array();
     $form['#submit']['hierarchical_select_taxonomy_form_vocabulary_submit'] = array();
-    $form += $second_part;
+    $form += $third_part;
   }
 
   // Change the exposed filters of Views. Only affects hierarchical vocabulary
@@ -268,6 +277,17 @@ function taxonomy_hierarchical_select_item_get_label($item, $params) {
  
 //----------------------------------------------------------------------------
 // FAPI callbacks.
+
+/**
+ * Additional validate handler for the taxonomy_form_vocabulary form.
+ */
+function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_values, $form) {
+  // Enable Taxonomy's "multiple select" setting when:
+  // - Hierarchical Select's "multiple select" setting is enabled
+  // - Hierarchical Select's "save term lineage" setting is enabled
+  $multiple_select_enabled = ($form_values['hierarchical_select_multiple'] || _taxonomy_hierarchical_select_get_save_linage($form_values['vid']));
+  form_set_value($form['multiple'], (int) $multiple_select_enabled);
+}
 
 /**
  * Additional submit handler for the taxonomy_form_vocabulary form.
