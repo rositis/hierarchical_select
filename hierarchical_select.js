@@ -92,8 +92,11 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   });
 
   var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-select-level-0', this.context).val();
+
   // Update it to the current selection.
-  if (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/)) {
+  var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
+  var somethingSelectedInDropbox = (this.setting(hsid, 'multiple') && this.dropboxContent[hsid].length);
+  if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
     // a "- None selected -" option, with the value "". We *must* select it if
     // we want to select nothing.
@@ -130,10 +133,10 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
 
   // If multiple select is enabled, also add the selections in the dropbox.
   if (this.setting(hsid, 'multiple')) {
-    for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
-      for (var j = 0; j < HierarchicalSelect.dropboxContent[hsid][i].length; j++) {
+    for (var i = 0; i < this.dropboxContent[hsid].length; i++) {
+      for (var j = 0; j < this.dropboxContent[hsid][i].length; j++) {
         $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
-        .find('option[@value='+ HierarchicalSelect.dropboxContent[hsid][i][j] +']')
+        .find('option[@value='+ this.dropboxContent[hsid][i][j] +']')
         .attr('selected', 'selected');
       }
     }
