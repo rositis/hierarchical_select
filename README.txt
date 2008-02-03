@@ -54,6 +54,10 @@ admin/content/taxonomy and click the "edit" link for a vocabulary. Now scroll
 down and you'll find a whole range of Hierarchical Select settings. All
 settings are explained there as well.
 
+NOTE: When using a "multiple values" content_taxonomy CCK field, you must also
+      set your vocabulary to be "multiple select"!
+      See http://drupal.org/node/212398.
+
 In case of problems, don't forget to do a hard refresh in your browser!
 
 
@@ -67,6 +71,8 @@ Sponsors
     Paul Ektov of http://autobin.ru.
 * Multiple select support:
    Marmaladesoul, http://marmaladesoul.com.
+* Taxonomy Subscriptions support:
+   Mr Bidster Inc.
 
 
 Author
