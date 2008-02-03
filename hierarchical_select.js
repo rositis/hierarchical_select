@@ -54,11 +54,12 @@ HierarchicalSelect.waitToggle = function(hsid) {
 HierarchicalSelect.checkDropboxLimit = function(hsid, initial) {
   var HS = HierarchicalSelect;
   var dropboxLimit = HS.setting(hsid, 'dropboxLimit');
+  var multiple = HS.setting(hsid, 'multiple');
 
   // Set default value for the "initial" parameter.
   initial = (undefined === initial) ? false : initial;
 
-  if (dropboxLimit > 0) {
+  if (multiple && dropboxLimit > 0) {
     if (HS.dropboxContent[hsid].length == dropboxLimit) {
       $('#hierarchical-select-'+ hsid +'-container .hierarchical-select-input')
       .css('opacity', 0.5)
