@@ -178,13 +178,6 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
           // Hierarchical Select only makes sense if there's a hierarchy.
           if ($vocabulary->hierarchy > 0) {
-            // Remove the "operator" select form item.
-            unset($form["op$id"]);
-
-            // Enforce the "Force single" option.
-            $form['view']['#value']->exposed_filter[$id]['single'] = TRUE;
-            $form['#parameters']->exposed_filter[$id]['single'] = TRUE;
-
             // Make it use a hierarchical select.
             $form["filter$id"]['#type'] = 'hierarchical_select';
             $form["filter$id"]['#hierarchical_select_settings'] = array(
@@ -192,8 +185,12 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
               'params' => array(
                 'vid' => $vid,
               ),
+              '#multiple' => variable_get("hierarchical_select_multiple_{$vid}", FALSE),
             );
             taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid);
+          
+            // Remove the dropbox limit.
+            unset($form["filter$id"]['#hierarchical_select_settings']['dropbox_limit']);
 
             // Put the altered exposed filters in a separate table row.
             _hierarchical_select_views_exposed_filters_reposition();
