@@ -48,7 +48,7 @@ function subscriptions_taxonomy_hierarchical_select_form_alter($form_id, &$form)
         }
 
         // Add a taxonomy select instead.
-        $form[$name]['select'] = _taxonomy_term_select($vocabulary->name, 'this-argument-is-not-used', array(), $vocabulary->vid, '', TRUE, '', array());
+        $form[$name]['select'] = _taxonomy_term_select($vocabulary->name, 'this-argument-is-not-used', array(), $vocabulary->vid, '', TRUE, '<'. t('none') .'>', array());
 
         // Finally, make it a Hierarchical Select!
         $form[$name]['select']['#type'] = 'hierarchical_select';
