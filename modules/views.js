@@ -10,7 +10,7 @@ if (Drupal.jsEnabled) {
 	$(document).ready(function(){
 		var td;
 		var cols;
-	  $("form#views-filters table td[.hierarchical-select]").each(function() {
+	  $("form#views-filters table td[.hierarchical-select-original-select]").each(function() {
       td = $(this);
       cols = td.siblings().length;
 
