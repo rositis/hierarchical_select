@@ -8,6 +8,8 @@ define('HS_TAXONOMY_DO_SAVE_LINEAGE', 1);
 define('HS_TAXONOMY_DONT_SAVE_LINEAGE', 0);
 define('HS_TAXONOMY_DO_ENFORCE_DEEPEST', 1);
 define('HS_TAXONOMY_DONT_ENFORCE_DEEPEST', 0);
+define('HS_TAXONOMY_DO_ADD_ALL_OPTION', 1);
+define('HS_TAXONOMY_DONT_ADD_ALL_OPTION', 0);
 
 //----------------------------------------------------------------------------
 // Hierarchical Select hooks.
@@ -77,6 +79,21 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       ),
     );
 
+    $form['hierarchical_select']['all_option'] = array(
+      '#type' => 'select',
+      '#title' => t('Option to select all items at once'),
+      '#description' => t(
+        'After enabling this setting, a new "<all>" option will be prepended
+        the root level select. By choosing this option, all items in the
+        hierarchy will be selected at once.<br />This can be particularly
+        useful in a multiple select hierarchical select.'),
+      '#options' => array(
+        HS_TAXONOMY_DONT_ADD_ALL_OPTION => t('Disabled'),
+        HS_TAXONOMY_DO_ADD_ALL_OPTION => t('Enabled'),
+      ),
+      '#default_value' => -1,
+    );
+    
     $form['hierarchical_select']['level_labels'] = array(
       '#tree' => TRUE,
       '#type' => 'fieldset',
@@ -295,7 +312,7 @@ function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_v
  */
 function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_values) {
   $vid = $form_values['vid'];
-  $settings = array('status', 'save_lineage', 'enforce_deepest');
+  $settings = array('status', 'save_lineage', 'enforce_deepest', 'all_option');
   variable_set("hierarchical_select_multiple_{$vid}", $form_values['hierarchical_select_multiple']);
   foreach ($settings as $setting) {
     variable_set("hierarchical_select_{$setting}_{$vid}", $form_values['hierarchical_select'][$setting]);
@@ -387,6 +404,7 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $form_item['#multiple'] = variable_get("hierarchical_select_multiple_{$vid}", 0);
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
+  $form_item['#hierarchical_select_settings']['all_option'] = (bool) variable_get("hierarchical_select_all_option_$vid", 0);
   if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
     for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
       $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');

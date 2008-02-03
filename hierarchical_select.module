@@ -40,7 +40,6 @@ function hierarchical_select_menu($may_cache) {
       'callback arguments' => array('hierarchical_select_admin_settings'),
       'type' => MENU_NORMAL_ITEM,
     );
-    
   }
   return $items;
 }
@@ -65,6 +64,7 @@ function hierarchical_select_elements() {
     '#hierarchical_select_settings' => array(
       'save_lineage' => FALSE,
       'enforce_deepest' => FALSE,
+      'all_option' => FALSE,
       'level_labels' => array(),
       'params' => array(),
       'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
@@ -94,6 +94,7 @@ function hierarchical_select_json() {
   $selection    = (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']);
   $save_lineage = _hierarchical_select_str_to_bool($_POST['save_lineage']);
   $enforce_deepest = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
+  $all_option   = _hierarchical_select_str_to_bool($_POST['all_option']);
   $level_labels = explode('|', $_POST['level_labels']);
   $params       = unserialize($_POST['params']);
   $dropbox_title= $_POST['dropbox_title'];
@@ -133,6 +134,7 @@ function hierarchical_select_json() {
         array(), // We want to render an empty select.
         $save_lineage, 
         $enforce_deepest,
+        $all_option,
         $level_labels,
         $params,
         FALSE // Allow the user to select nothing, to prevent confusion.
@@ -152,6 +154,7 @@ function hierarchical_select_json() {
         $selection,
         $save_lineage, 
         $enforce_deepest,
+        $all_option,
         $level_labels,
         $params,
         $required
@@ -207,6 +210,7 @@ function hierarchical_select_process($element) {
   $dropbox_title = $element['#hierarchical_select_settings']['dropbox_title'];
   $dropbox_limit = (int) $element['#hierarchical_select_settings']['dropbox_limit'];
   $params = $element['#hierarchical_select_settings']['params'];
+  $all_option = (bool) $element['#hierarchical_select_settings']['all_option'];
   $required = (bool) $element['#required'];
   $multiple = (bool) $element['#multiple'];
 
@@ -217,7 +221,7 @@ function hierarchical_select_process($element) {
   $selection = (!empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
 
   // Render the initial HTML.
-  $hierarchy = hierarchical_select_get_hierarchy($module, ($multiple) ? -1 : $selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required);
+  $hierarchy = hierarchical_select_get_hierarchy($module, ($multiple) ? -1 : $selection, $save_lineage, $enforce_deepest, $all_option, $level_labels, $params, $required);
   $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, $level_labels, $params, $dropbox_title);
   $initial = theme('hierarchical_select_render_initial_html', $hsid, $hierarchy, $dropbox);
 
@@ -312,6 +316,8 @@ function hierarchical_select_admin_settings() {
  *   Whether the "save lineage" option is enabled or not.
  * @param $enforce_deepest
  *   Whether the "enforce deepest" option is enabled or not.
+ * @param $all_option
+ *   Prepends a new option, that allows you to select all items at once.
  * @param $level_labels
  *   An array of labels, one per level. Optional.
  * @param $params
@@ -322,7 +328,7 @@ function hierarchical_select_admin_settings() {
  * @return
  *   A hierarchy object.
  */
-function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required) {
+function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $enforce_deepest, $all_option, $level_labels = array(), $params = array(), $required) {
   $hierarchy = new stdClass();
 
   // Validate and clean up the selection.
@@ -346,6 +352,11 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
 
   // Start building the hierarchy, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
+
+  // Prepend a "all" option to the root level if enabled.
+  if ($all_option) {
+    $hierarchy->levels[0] = array('all' => '<'. t('all') .'>') + $hierarchy->levels[0];
+  }
 
   // If the form item is optional AND "enforce deepest" is enabled, prepend a
   // "none" option to the root level.

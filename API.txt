@@ -82,10 +82,11 @@ array. These are the items it can contain:
 
 Special values
 --------------
-- Ensure that your options don't have a "none" value or "label_\d+" values
-  (the latter means "label_" followed by one or more digits). Your values
-  should also not contain a pipe ("|"), since pipes are used to separate
-  the selection of values that are sent back to the server in the callbacks.
+- Ensure that your options don't have a "none" or "all" value, nor "label_\d+"
+  values (the latter means "label_" followed by one or more digits). Your
+  values should also not contain a pipe ("|"), since pipes are used to
+  separate the selection of values that are sent back to the server in the
+  callbacks.
 - Valid 'empty' selections (i.e. if you want to set the #default_value
   property of your form item), are -1 and the empty array. The empty string is
   also considered valid, because Drupal core's Taxonomy module uses this as

@@ -97,7 +97,12 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   // Update it to the current selection.
   var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
   var somethingSelectedInDropbox = (this.setting(hsid, 'multiple') && this.dropboxContent[hsid].length);
-  if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
+  if (rootLevelValue == 'all') {
+    // Select all options!
+    $('select.hierarchical-select-'+ hsid +'-original-select option', this.context)
+    .attr('selected', 'selected'); 
+  }
+  else if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
     // a "- None selected -" option, with the value "". We *must* select it if
     // we want to select nothing.
@@ -317,37 +322,43 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
 HierarchicalSelect.update = function(hsid, selection) {
   var HS = HierarchicalSelect;
 
-  var animationDelay = HS.setting(hsid, 'animationDelay');
+  // Don't query the server for the special cases.
+  if (selection == 'all' || selection == 'none' || selection.match(/^(none|label_\d+)$/)) {
+    HS.updateOriginalSelect(hsid);
+  }
+  else {    
+    var animationDelay = HS.setting(hsid, 'animationDelay');
 
-  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
-  var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-select option[@value='+ selection +']', HS.context).parent()[0]);
+    var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
+    var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-select option[@value='+ selection +']', HS.context).parent()[0]);
 
-  HS.waitToggle(hsid);
+    HS.waitToggle(hsid);
 
-  // Drop out the *original* selects of the levels deeper than the select of
-  // the level that just changed.
-  $selects.gt(lastUnchanged).DropOutLeft(animationDelay);
+    // Drop out the *original* selects of the levels deeper than the select of
+    // the level that just changed.
+    $selects.gt(lastUnchanged).DropOutLeft(animationDelay);
 
-  $.ajax({
-    type: "POST",
-    url: HierarchicalSelect.setting('global', 'url'),
-    data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), 'selects'),
-    dataType: "json",
-    success: function(json){
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-      .html(json.html);
+    $.ajax({
+      type: "POST",
+      url: HierarchicalSelect.setting('global', 'url'),
+      data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), 'selects'),
+      dataType: "json",
+      success: function(json){
+        $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
+        .html(json.html);
 
-      $selects = $('select.hierarchical-select-'+ hsid + '-select', HS.context);
+        $selects = $('select.hierarchical-select-'+ hsid + '-select', HS.context);
 
-      // Hide the loaded selects after the one that was just changed, then  drop
-      // them in.
-      $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
+        // Hide the loaded selects after the one that was just changed, then  drop
+        // them in.
+        $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
 
-      HS.waitToggle(hsid);
-      HS.updateOriginalSelect(hsid);
-      HS.attachBindings(hsid);
-    }
-  });
+        HS.waitToggle(hsid);
+        HS.updateOriginalSelect(hsid);
+        HS.attachBindings(hsid);
+      }
+    });
+  }
 };
 
 if (Drupal.jsEnabled) {
