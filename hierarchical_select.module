@@ -237,6 +237,7 @@ function hierarchical_select_process($element) {
             'module' => $module,
             'enforceDeepest' => $enforce_deepest,
             'saveLineage' => $save_lineage,
+            'allOption' => $all_option,
             'levelLabels' => implode('|', $level_labels),
             'params' => serialize($params),
             'dropboxTitle' => $dropbox_title,

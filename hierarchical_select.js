@@ -241,6 +241,7 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
   post['module'] = this.setting(hsid, 'module');
   post['save_lineage'] = this.setting(hsid, 'saveLineage');
   post['enforce_deepest'] = this.setting(hsid, 'enforceDeepest');
+  post['all_option'] = this.setting(hsid, 'allOption');
   post['level_labels'] = this.setting(hsid, 'levelLabels');
   post['params'] = this.setting(hsid, 'params');
   post['required'] = this.setting(hsid, 'required');
