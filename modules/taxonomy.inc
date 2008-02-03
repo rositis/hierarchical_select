@@ -28,7 +28,8 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     // for Hierarchical Select.
     // Also see the comment in hierarchical_select_taxonomy_form_vocabulary_validate().
     $form['hierarchical_select_multiple'] = $form['multiple'];
-    $form['multiple']['#type'] = 'value';
+    $form['hierarchical_select_multiple']['#default_value'] = variable_get("hierarchical_select_multiple_{$vid}", 0);
+    $form['multiple']['#type'] = 'hidden';
     $form += $second_part;
 
     $form['hierarchical_select'] = array(
@@ -112,7 +113,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#collapsed' => FALSE,
     );
 
-    if ($form['hs_multiple']['#default_value']) {
+    if ($form['hierarchical_select_multiple']['#default_value']) {
       $form['hierarchical_select']['dropbox']['dropbox_title'] = array(
         '#type' => 'textfield',
         '#title' => t('Title'),
@@ -295,6 +296,7 @@ function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_v
 function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_values) {
   $vid = $form_values['vid'];
   $settings = array('status', 'save_lineage', 'enforce_deepest');
+  variable_set("hierarchical_select_multiple_{$vid}", $form_values['hierarchical_select_multiple']);
   foreach ($settings as $setting) {
     variable_set("hierarchical_select_{$setting}_{$vid}", $form_values['hierarchical_select'][$setting]);
   }
@@ -382,6 +384,7 @@ function _taxonomy_hierarchical_select_get_depth($vid) {
 function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $enforce_deepest = variable_get("hierarchical_select_enforce_deepest_$vid", HS_TAXONOMY_DONT_ENFORCE_DEEPEST);
 
+  $form_item['#multiple'] = variable_get("hierarchical_select_multiple_{$vid}", 0);
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
   if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
