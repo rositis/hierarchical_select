@@ -175,6 +175,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
         // Only apply Hierarchical Select if it's enabled for this vocabulary.
         if (variable_get("hierarchical_select_status_$vid", FALSE)) {
           $vocabulary = taxonomy_get_vocabulary($vid);
+          $view = $form['view']['#value'];
 
           // Hierarchical Select only makes sense if there's a hierarchy.
           if ($vocabulary->hierarchy > 0) {
@@ -185,9 +186,14 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
               'params' => array(
                 'vid' => $vid,
               ),
-              '#multiple' => variable_get("hierarchical_select_multiple_{$vid}", FALSE),
             );
             taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid);
+            
+            // Inherit #multiple from the exposed filter settings.
+            $form["filter$id"]['#multiple'] = !((bool) $view->exposed_filter[$id]['single']);
+            
+            // Inherit #required from the exposed filter settings.
+            $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
           
             // Remove the dropbox limit.
             unset($form["filter$id"]['#hierarchical_select_settings']['dropbox_limit']);
