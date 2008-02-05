@@ -408,14 +408,20 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
     $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
   }
 
-  // If the "enforce deepest" option is disabled ... 
+  // We always prepend a level label to the root level, except when the form
+  // item is optional and enforce_deepest is enabled.
+  if (!(!$required && $enforce_deepest)) {
+    $hierarchy->levels[0] = array('label_0' => $level_labels[0]) + $hierarchy->levels[0];
+  }
+
+  // If the "enforce deepest" option is disabled …
   if (!$enforce_deepest) {
-    // ... we have to prepend labels to every level ...
-    for ($depth = 0; $depth <= $max_depth; $depth++) {
+    // … we have to prepend labels to every level below the root level …
+    for ($depth = 1; $depth <= $max_depth; $depth++) {
       $hierarchy->levels[$depth] = array('label_'. $depth => $level_labels[$depth]) + $hierarchy->levels[$depth];
     }
 
-    // ... and have to add one more level if appropriate.
+    // … and have to add one more level if appropriate.
     $parent = $hierarchy->lineage[$max_depth];
     if (module_invoke($module, 'hierarchical_select_valid_item', $parent, $params)) {
       $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);

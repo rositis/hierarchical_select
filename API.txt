@@ -54,10 +54,13 @@ array. These are the items it can contain:
    Adds an "<all>" option, which will select all (non-special) values.
 
 
- - level_labels (optional, only used if enforce_deepest is set to FALSE)
+ - level_labels (optional)
 
    An array of labels, one per level. The label for the first level should be
    the value of key 0.
+   When enforce_deepest is set to:
+   - FALSE, then you can provide n level labels, with n the number of levels
+   - TRUE, then you can provide only one level label.   
 
 
  - params (optional, may be necessary for some implementations)

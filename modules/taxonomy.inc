@@ -98,20 +98,31 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#tree' => TRUE,
       '#type' => 'fieldset',
       '#title' => t('Level labels'),
-      '#description' => ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) ? NULL : t(
-        'The user must be allowed to choose from any level in the <em>Level
-        choice</em> setting to enable level labels.'
+      '#description' => t(
+        'When the user is allowed to choose a term from any level in the
+        <em>Level choice</em> setting, you can enter a level label for each
+        level.<br /> However, when the user is only allowed to choose a term
+        from the deepest level, then you can enter only a label for the root
+        level.'
       ),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
 
+    $form['hierarchical_select']['level_labels']["level_0"] = array(
+      '#type' => 'textfield',
+      '#title' => t('Label for root level'),
+      '#size' => 40,
+      '#maxlength' => 255,
+      '#default_value' => variable_get("hierarchical_select_level_0_{$vid}", ''),
+    );
+
     if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
       // Create an option for each level in the hierarchy.
-      for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+      for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
         $form['hierarchical_select']['level_labels']["level_$depth"] = array(
           '#type' => 'textfield',
-          '#title' => t('Label for level !depth', array('!depth' => $depth)),
+          '#title' => t('Label for sublevel !depth', array('!depth' => $depth)),
           '#size' => 40,
           '#maxlength' => 255,
           '#default_value' => variable_get("hierarchical_select_level_{$depth}_{$vid}", ''),
@@ -408,8 +419,10 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
   $form_item['#hierarchical_select_settings']['all_option'] = (bool) variable_get("hierarchical_select_all_option_$vid", 0);
+  // Always get the root level label.
+  $form_item['#hierarchical_select_settings']['level_labels'][0] = variable_get("hierarchical_select_level_0_{$vid}", '');
   if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
-    for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+    for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
       $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
     }
   }
