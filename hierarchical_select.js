@@ -101,17 +101,25 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     // Select all options!
     $('select.hierarchical-select-'+ hsid +'-original-select option', this.context)
     .attr('selected', 'selected'); 
+
+    // Next, select all sublevel selects, drop them in and remove them.
+    $selects.gt(0)
+    .DropInLeft(this.setting(hsid, 'animationDelay'), function() {
+      $(this).remove();
+    });
   }
   else if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
     // a "- None selected -" option, with the value "". We *must* select it if
     // we want to select nothing.
+    // A similar system is used in the content_taxonomy implementation of HS,
+    // to allow deselection of an item when multiple select is enabled.
     // TODO: make sure Drupal standardizes on a form item with a value "" to
     // select nothing. Perhaps I should also make Hierarchical Select use this
     // for its "<none>" option?
     $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
     .find('option[@value=""]')
-    .attr('selected', 'selected'); 
+    .attr('selected', 'selected');
   }
   else if (!this.setting(hsid, 'saveLineage')) {
     // Get the deepest valid value of the current selection.
@@ -323,8 +331,9 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
 HierarchicalSelect.update = function(hsid, selection) {
   var HS = HierarchicalSelect;
 
-  // Don't query the server for the special cases.
-  if (selection == 'all' || selection == 'none' || selection.match(/^(none|label_\d+)$/)) {
+  // Don't query the server when we're selecting all items at once: then we
+  // can simply drop in the sublevels and remove them: no server query needed.
+  if (selection == 'all') {
     HS.updateOriginalSelect(hsid);
   }
   else {    
