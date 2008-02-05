@@ -13,6 +13,7 @@ element type:
       'module' => 'taxonomy',
       'save_lineage' => FALSE,
       'enforce_deepest' => FALSE,
+      'all_option' => FALSE,
       'level_labels' => array(
         0 => t('Main category'),
         1 => t('Subcategory'),
@@ -46,6 +47,11 @@ array. These are the items it can contain:
  - enforce_deepest (optional, defaults to FALSE)
 
    Triggers the enforcing of a selection in the deepest level.
+
+
+ - all_option (optional, defaults to FALSE)
+
+   Adds an "<all>" option, which will select all (non-special) values.
 
 
  - level_labels (optional, only used if enforce_deepest is set to FALSE)
