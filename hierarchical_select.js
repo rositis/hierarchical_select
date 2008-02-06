@@ -86,6 +86,7 @@ HierarchicalSelect.checkDropboxLimit = function(hsid, initial) {
 
 HierarchicalSelect.updateOriginalSelect = function(hsid) {
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
+  var $options = $('select.hierarchical-select-'+ hsid +'-original-select option', this.context);
 
   // Reset the current selection in the original select.
   $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
@@ -97,16 +98,19 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   // Update it to the current selection.
   var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
   var somethingSelectedInDropbox = (this.setting(hsid, 'multiple') && this.dropboxContent[hsid].length);
-  if (rootLevelValue == 'all') {
-    // Select all options!
-    $('select.hierarchical-select-'+ hsid +'-original-select option', this.context)
-    .attr('selected', 'selected'); 
-
+  if (rootLevelValue == 'all' || rootLevelValue == 'none') {
     // Next, select all sublevel selects, drop them in and remove them.
     $selects.gt(0)
     .DropInLeft(this.setting(hsid, 'animationDelay'), function() {
       $(this).remove();
     });
+    
+    if (rootLevelValue == 'all') {
+      $options.attr('selected', 'selected'); // Select all options.
+    }
+    else {
+      $options.filter('option[@value=""]').attr('selected', 'selected'); // Select the "<none>" option.
+    }
   }
   else if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
@@ -117,9 +121,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     // TODO: make sure Drupal standardizes on a form item with a value "" to
     // select nothing. Perhaps I should also make Hierarchical Select use this
     // for its "<none>" option?
-    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
-    .find('option[@value=""]')
-    .attr('selected', 'selected');
+    $options.filter('option[@value=""]').attr('selected', 'selected');
   }
   else if (!this.setting(hsid, 'saveLineage')) {
     // Get the deepest valid value of the current selection.
@@ -131,17 +133,14 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
 
     // Update the original select.
-    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
-    .val(deepestSelectValue);
+    $options.filter('option[@value="'+ deepestSelectValue +'"]').attr('selected', 'selected');
   }
   else {
     // Select each hierarchical select's selected option in the original
     // select (thus effectively saving the term lineage).
     $selects
     .each(function() { // Can be done cleaner in jQuery 1.2, because .val() can then accept an array.
-      $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
-      .find('option[@value='+ $(this).val() +']')
-      .attr('selected', 'selected');
+      $options.filter('option[@value='+ $(this).val() +']').attr('selected', 'selected');
     });
   }
 
@@ -149,8 +148,8 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   if (this.setting(hsid, 'multiple')) {
     for (var i = 0; i < this.dropboxContent[hsid].length; i++) {
       for (var j = 0; j < this.dropboxContent[hsid][i].length; j++) {
-        $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
-        .find('option[@value='+ this.dropboxContent[hsid][i][j] +']')
+        $options
+        .filter('option[@value='+ this.dropboxContent[hsid][i][j] +']')
         .attr('selected', 'selected');
       }
     }
@@ -161,7 +160,7 @@ HierarchicalSelect.initialize = function() {
   for (var hsid in Drupal.settings.hierarchical_select.settings) {
     // If multiple select is enabled, intialize the dropbox content array.
     if (this.setting(hsid, 'multiple')) {
-      HierarchicalSelect.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
+     this.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
     }
 
     $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
@@ -333,7 +332,7 @@ HierarchicalSelect.update = function(hsid, selection) {
 
   // Don't query the server when we're selecting all items at once: then we
   // can simply drop in the sublevels and remove them: no server query needed.
-  if (selection == 'all') {
+  if (selection == 'all' || selection == 'none') {
     HS.updateOriginalSelect(hsid);
   }
   else {    
