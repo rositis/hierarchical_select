@@ -98,19 +98,19 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
   // Update it to the current selection.
   var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
   var somethingSelectedInDropbox = (this.setting(hsid, 'multiple') && this.dropboxContent[hsid].length);
-  if (rootLevelValue == 'all' || rootLevelValue == 'none') {
-    // Next, select all sublevel selects, drop them in and remove them.
-    $selects.gt(0)
-    .DropInLeft(this.setting(hsid, 'animationDelay'), function() {
-      $(this).remove();
-    });
-    
+  if (rootLevelValue.match(/^(all|none|label_\d+)$/)) {
     if (rootLevelValue == 'all') {
       $options.attr('selected', 'selected'); // Select all options.
     }
     else {
       $options.filter('option[@value=""]').attr('selected', 'selected'); // Select the "<none>" option.
     }
+
+    // Get all sublevel selects, hide them (collapse effect) and remove them.
+    $selects.gt(0)
+    .hide(this.setting(hsid, 'animationDelay'), function() {
+      $(this).remove();
+    });
   }
   else if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
     // This is for compatibility with Drupal's Taxonomy form items. They have
@@ -330,9 +330,8 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
 HierarchicalSelect.update = function(hsid, selection) {
   var HS = HierarchicalSelect;
 
-  // Don't query the server when we're selecting all items at once: then we
-  // can simply drop in the sublevels and remove them: no server query needed.
-  if (selection == 'all' || selection == 'none') {
+  // Don't query the server in special cases.
+  if (selection.match(/^(all|none|label_\d+)$/)) {
     HS.updateOriginalSelect(hsid);
   }
   else {    
