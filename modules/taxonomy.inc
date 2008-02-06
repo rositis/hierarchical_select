@@ -80,18 +80,18 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     );
 
     $form['hierarchical_select']['all_option'] = array(
-      '#type' => 'select',
+      '#type' => ((bool) variable_get("hierarchical_select_multiple_{$vid}", 0)) ? 'select' : 'item',
       '#title' => t('Option to select all items at once'),
       '#description' => t(
-        'After enabling this setting, a new "<all>" option will be prepended
-        the root level select. By choosing this option, all items in the
-        hierarchy will be selected at once.<br />This can be particularly
-        useful in a multiple select hierarchical select.'),
+        'After enabling this setting, a new "&lt;all&gt;" option will be
+        prepended the root level select. By choosing this option, all items in
+        the hierarchy will be selected at once.<br />This setting is only
+        available if you\'ve enabled multiple select.'),
       '#options' => array(
         HS_TAXONOMY_DONT_ADD_ALL_OPTION => t('Disabled'),
         HS_TAXONOMY_DO_ADD_ALL_OPTION => t('Enabled'),
       ),
-      '#default_value' => -1,
+      '#default_value' => variable_get("hierarchical_select_all_option_$vid", HS_TAXONOMY_DONT_ADD_ALL_OPTION),
     );
     
     $form['hierarchical_select']['level_labels'] = array(
@@ -418,7 +418,7 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $form_item['#multiple'] = variable_get("hierarchical_select_multiple_{$vid}", 0);
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
-  $form_item['#hierarchical_select_settings']['all_option'] = (bool) variable_get("hierarchical_select_all_option_$vid", 0);
+  $form_item['#hierarchical_select_settings']['all_option'] = (bool) variable_get("hierarchical_select_all_option_$vid", HS_TAXONOMY_DONT_ADD_ALL_OPTION);
   // Always get the root level label.
   $form_item['#hierarchical_select_settings']['level_labels'][0] = variable_get("hierarchical_select_level_0_{$vid}", '');
   if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
