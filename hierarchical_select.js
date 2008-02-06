@@ -180,11 +180,13 @@ HierarchicalSelect.initialize = function() {
 };
 
 HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
+  var HS = HierarchicalSelect;
+
   // Update event: attach to every select of the current Hierarchical Select.
   $('select.hierarchical-select-'+ hsid +'-select', this.context)
   .unbind()
   .change(function(x) {
-    return function() { HierarchicalSelect.update(x, $(this).val()); };
+    return function() { HS.update(x, $(this).val()); };
   }(hsid));
 
   if (this.setting(hsid, 'multiple')) {
@@ -197,7 +199,7 @@ HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
       $('#hierarchical-select-'+ hsid +'-add-to-dropbox', this.context)
       .unbind()
       .click(function(x) {
-        return function() { HierarchicalSelect.add(x); };
+        return function() { HS.add(x); };
       }(hsid));
     }
 
@@ -206,7 +208,7 @@ HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
       $('#hierarchical-select-'+ hsid +'-remove-'+ i + '-from-dropbox', this.context)
       .unbind()
       .click(function(x, y) {
-        return function() { HierarchicalSelect.remove(x, y); };
+        return function() { HS.remove(x, y); };
       }(hsid, i));
     }    
   }
@@ -298,10 +300,10 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
   // for the one that has to be removed. If we submit this, the server will
   // reconstruct all lineages and thus remove the removed selection.
   var fullSelection = new Array();
-  for (var i = 0; i < HierarchicalSelect.dropboxContent[hsid].length; i++) {
+  for (var i = 0; i < HS.dropboxContent[hsid].length; i++) {
     if (i != dropboxEntry) {
-      for (var j = 0; j < HierarchicalSelect.dropboxContent[hsid][i].length; j++) {
-        fullSelection.push(HierarchicalSelect.dropboxContent[hsid][i][j]);
+      for (var j = 0; j < HS.dropboxContent[hsid][i].length; j++) {
+        fullSelection.push(HS.dropboxContent[hsid][i][j]);
       }
     }
   }
@@ -348,7 +350,7 @@ HierarchicalSelect.update = function(hsid, selection) {
 
     $.ajax({
       type: "POST",
-      url: HierarchicalSelect.setting('global', 'url'),
+      url: HS.setting('global', 'url'),
       data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), 'selects'),
       dataType: "json",
       success: function(json){
