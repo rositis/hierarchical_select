@@ -93,7 +93,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       ),
       '#default_value' => variable_get("hierarchical_select_all_option_$vid", HS_TAXONOMY_DONT_ADD_ALL_OPTION),
     );
-    
+
     $form['hierarchical_select']['level_labels'] = array(
       '#tree' => TRUE,
       '#type' => 'fieldset',
@@ -109,14 +109,22 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#collapsed' => FALSE,
     );
 
+    $form['hierarchical_select']['level_labels']['level_labels_status'] = array(
+      '#type' => 'select',
+      '#title' => t('Level labels'),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => variable_get("hierarchical_select_level_labels_status_$vid", 0),
+    );
     $form['hierarchical_select']['level_labels']["level_0"] = array(
       '#type' => 'textfield',
       '#title' => t('Label for root level'),
       '#size' => 40,
       '#maxlength' => 255,
-      '#default_value' => variable_get("hierarchical_select_level_0_{$vid}", ''),
+      '#default_value' => variable_get("hierarchical_select_level_0_$vid", ''),
     );
-
     if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
       // Create an option for each level in the hierarchy.
       for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
@@ -419,11 +427,12 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
   $form_item['#hierarchical_select_settings']['all_option'] = (bool) variable_get("hierarchical_select_all_option_$vid", HS_TAXONOMY_DONT_ADD_ALL_OPTION);
-  // Always get the root level label.
-  $form_item['#hierarchical_select_settings']['level_labels'][0] = variable_get("hierarchical_select_level_0_{$vid}", '');
-  if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
-    for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
-      $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
+  if (variable_get("hierarchical_select_level_labels_status_$vid", 0) == 1) {
+    $form_item['#hierarchical_select_settings']['level_labels'][0] = variable_get("hierarchical_select_level_0_{$vid}", '');
+    if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
+      for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+        $form_item['#hierarchical_select_settings']['level_labels'][$depth] = variable_get("hierarchical_select_level_{$depth}_{$vid}", '');
+      }
     }
   }
   $form_item['#hierarchical_select_settings']['dropbox_title'] = variable_get("hierarchical_select_dropbox_title_{$vid}", '');

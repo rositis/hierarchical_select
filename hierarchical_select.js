@@ -238,7 +238,7 @@ HierarchicalSelect.getFullSelection = function(hsid, selection) {
   return (undefined === lineageSelection) ? selection : lineageSelection;
 };
 
-HierarchicalSelect.post = function(hsid, fullSelection, type) {
+HierarchicalSelect.post = function(hsid, fullSelection, dropboxSelection, type) {
   var post = new Object();
   post['hsid'] = hsid;
   if (typeof(fullSelection) == "string") {
@@ -247,6 +247,7 @@ HierarchicalSelect.post = function(hsid, fullSelection, type) {
   else {
     post['selection'] = fullSelection.join('|');
   }
+  post['dropbox_selection'] = dropboxSelection.join('|');
   post['module'] = this.setting(hsid, 'module');
   post['save_lineage'] = this.setting(hsid, 'saveLineage');
   post['enforce_deepest'] = this.setting(hsid, 'enforceDeepest');
@@ -265,20 +266,21 @@ HierarchicalSelect.add = function(hsid) {
   var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
 
   // Get all selected items.
-  var fullSelection = new Array();
+  var dropboxSelection = new Array();
   $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
-    fullSelection.push($(this).val());
+    dropboxSelection.push($(this).val());
   });
 
   HS.waitToggle(hsid);
+
   $.ajax({
     type: "POST",
     url: HS.setting('global', 'url'),
-    data: HS.post(hsid, fullSelection, 'dropbox'),
+    data: HS.post(hsid, Array(), dropboxSelection, 'dropbox-add'),
     dataType: "json",
-    success: function(json){
+    success: function(json) {
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-      .html(json.selects);
+      .html(json.hierarchicalSelect);
       $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HS.context)
       .html(json.dropbox);
 
@@ -299,31 +301,41 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
   // Add the selections of all items in the dropbox to the selection, except
   // for the one that has to be removed. If we submit this, the server will
   // reconstruct all lineages and thus remove the removed selection.
-  var fullSelection = new Array();
+  var dropboxSelection = new Array();
   for (var i = 0; i < HS.dropboxContent[hsid].length; i++) {
     if (i != dropboxEntry) {
       for (var j = 0; j < HS.dropboxContent[hsid][i].length; j++) {
-        fullSelection.push(HS.dropboxContent[hsid][i][j]);
+        dropboxSelection.push(HS.dropboxContent[hsid][i][j]);
       }
     }
   }
 
+  // Get the deepest valid value of the current selection.
+  var level = $selects.length - 1;
+  var deepestSelectValue = '';
+  do {
+    deepestSelectValue = $selects.eq(level).val();
+    level--;
+  } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
+  
   HS.waitToggle(hsid);
 
   $.ajax({
     type: "POST",
     url: HS.setting('global', 'url'),
-    data: HS.post(hsid, fullSelection, 'dropbox-remove'),
+    data: HS.post(hsid, HS.getFullSelection(hsid, deepestSelectValue), dropboxSelection, 'dropbox-remove'),
     dataType: "json",
-    success: function(json){
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', this.context)
+    success: function(json) {
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
+      .html(json.hierarchicalSelect);
+      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HS.context)
       .html(json.dropbox);
 
       HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
 
       HS.waitToggle(hsid);
       HS.updateOriginalSelect(hsid);
-      HS.attachBindings(hsid, true);
+      HS.attachBindings(hsid);
       HS.checkDropboxLimit(hsid);
     }
   });
@@ -351,11 +363,11 @@ HierarchicalSelect.update = function(hsid, selection) {
     $.ajax({
       type: "POST",
       url: HS.setting('global', 'url'),
-      data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), 'selects'),
+      data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), Array(), 'hierarchical-select'),
       dataType: "json",
-      success: function(json){
+      success: function(json) {
         $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-        .html(json.html);
+        .html(json.hierarchicalSelect);
 
         $selects = $('select.hierarchical-select-'+ hsid + '-select', HS.context);
 
