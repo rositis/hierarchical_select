@@ -20,6 +20,8 @@ define('HS_TAXONOMY_DONT_ADD_ALL_OPTION', 0);
 function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/modules/taxonomy.js', 'module');
+
     $vid = $form['vid']['#value'];
     $first_part = array_slice($form, 0, 8);
     $second_part = array_slice($form, 8, 2);
@@ -124,6 +126,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#size' => 40,
       '#maxlength' => 255,
       '#default_value' => variable_get("hierarchical_select_level_0_$vid", ''),
+      '#attributes' => array('class' => 'hierarchical-select-level-label'),
     );
     if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
       // Create an option for each level in the hierarchy.
@@ -134,6 +137,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
           '#size' => 40,
           '#maxlength' => 255,
           '#default_value' => variable_get("hierarchical_select_level_{$depth}_{$vid}", ''),
+          '#attributes' => array('class' => 'hierarchical-select-level-label'),
         );
       }
     }
