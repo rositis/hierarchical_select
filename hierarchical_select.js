@@ -93,7 +93,7 @@ HierarchicalSelect.updateOriginalSelect = function(hsid) {
     $(this).removeAttr('selected');
   });
 
-  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-select-level-0', this.context).val();
+  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-select-level-0', this.context).val() || 'none';
 
   // Update it to the current selection.
   var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
