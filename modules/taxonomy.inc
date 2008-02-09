@@ -82,13 +82,13 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     );
 
     $form['hierarchical_select']['all_option'] = array(
-      '#type' => ((bool) variable_get("hierarchical_select_multiple_{$vid}", 0)) ? 'select' : 'item',
+      '#type' => 'select',
       '#title' => t('Option to select all items at once'),
       '#description' => t(
-        'After enabling this setting, a new "&lt;all&gt;" option will be
+        'This setting is only available if you\'ve enabled multiple select.<br
+        />After enabling this setting, a new "&lt;all&gt;" option will be
         prepended the root level select. By choosing this option, all items in
-        the hierarchy will be selected at once.<br />This setting is only
-        available if you\'ve enabled multiple select.'),
+        the hierarchy will be selected at once.'),
       '#options' => array(
         HS_TAXONOMY_DONT_ADD_ALL_OPTION => t('Disabled'),
         HS_TAXONOMY_DO_ADD_ALL_OPTION => t('Enabled'),
@@ -128,18 +128,16 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#default_value' => variable_get("hierarchical_select_level_0_$vid", ''),
       '#attributes' => array('class' => 'hierarchical-select-level-label'),
     );
-    if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
-      // Create an option for each level in the hierarchy.
-      for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
-        $form['hierarchical_select']['level_labels']["level_$depth"] = array(
-          '#type' => 'textfield',
-          '#title' => t('Label for sublevel !depth', array('!depth' => $depth)),
-          '#size' => 40,
-          '#maxlength' => 255,
-          '#default_value' => variable_get("hierarchical_select_level_{$depth}_{$vid}", ''),
-          '#attributes' => array('class' => 'hierarchical-select-level-label'),
-        );
-      }
+    // Create an option for each level in the hierarchy.
+    for ($depth = 1; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+      $form['hierarchical_select']['level_labels']["level_$depth"] = array(
+        '#type' => 'textfield',
+        '#title' => t('Label for sublevel !depth', array('!depth' => $depth)),
+        '#size' => 40,
+        '#maxlength' => 255,
+        '#default_value' => variable_get("hierarchical_select_level_{$depth}_{$vid}", ''),
+        '#attributes' => array('class' => 'hierarchical-select-level-label'),
+      );
     }
 
     $form['hierarchical_select']['dropbox'] = array(
@@ -153,31 +151,28 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       '#collapsed' => FALSE,
     );
 
-    if ($form['hierarchical_select_multiple']['#default_value']) {
-      $form['hierarchical_select']['dropbox']['dropbox_title'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Title'),
-        '#description' => t('The title you enter here appears above the dropbox.'),
-        '#size' => 40,
-        '#maxlength' => 255,
-        '#default_value' => variable_get("hierarchical_select_dropbox_title_{$vid}", ''),
-      );
-      $form['hierarchical_select']['dropbox']['dropbox_limit'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Limit the number of selections'),
-        '#description' => t(
-          'Limits the number of selections that can be added to the dropbox.
-          0 means no limit.
-          <br />
-          Note: the "Save term lineage" option has no effect on this, even if
-          a lineage consists of 3 terms, this will count as only one selection
-          in the dropbox.'),
-        '#size' => 5,
-        '#maxlength' => 5,
-        '#default_value' => variable_get("hierarchical_select_dropbox_limit_{$vid}", 0),
-      );
-      
-    }
+    $form['hierarchical_select']['dropbox']['dropbox_title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Title'),
+      '#description' => t('The title you enter here appears above the dropbox.'),
+      '#size' => 40,
+      '#maxlength' => 255,
+      '#default_value' => variable_get("hierarchical_select_dropbox_title_{$vid}", ''),
+    );
+    $form['hierarchical_select']['dropbox']['dropbox_limit'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Limit the number of selections'),
+      '#description' => t(
+        'Limits the number of selections that can be added to the dropbox.
+        0 means no limit.
+        <br />
+        Note: the "Save term lineage" option has no effect on this, even if
+        a lineage consists of 3 terms, this will count as only one selection
+        in the dropbox.'),
+      '#size' => 5,
+      '#maxlength' => 5,
+      '#default_value' => variable_get("hierarchical_select_dropbox_limit_{$vid}", 0),
+    );
 
     $form['#submit']['taxonomy_form_vocabulary_submit'] = array(); // Make sure the original submit handler is still called.
     $form['#validate']['hierarchical_select_taxonomy_form_vocabulary_validate'] = array();
