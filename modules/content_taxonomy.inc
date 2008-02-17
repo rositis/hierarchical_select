@@ -1,6 +1,16 @@
 <?php
 // $Id$
 
+
+/**
+ * Content Taxonomy's depth setting:
+ * - 0 means the entire tree
+ * - 1 means only the root level
+ * - 2 means the first two levels
+ * - etc.
+ */
+
+
 //----------------------------------------------------------------------------
 // Hierarchical Select hooks.
 
@@ -94,7 +104,15 @@ function content_taxonomy_hierarchical_select_root_level($params) {
  * Implementation of hook_hierarchical_select_children().
  */
 function content_taxonomy_hierarchical_select_children($parent, $params) {
-  $terms = taxonomy_get_tree($params['vid'], $parent, -1, $params['depth']);
+  static $tree;
+  
+  // Keep a static cache of the entire tree, this allows us to quickly look up
+  // if a term is not to deep – because if it's too deep, we don't want to
+  // return any children.
+  if (!isset($tree)) {
+    $tree = taxonomy_get_tree($params['vid'], 0);
+  }
+  $terms = ($tree[$parent]->depth >= $params['depth']) ? array() : taxonomy_get_tree($params['vid'], $parent, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -113,7 +131,7 @@ function content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  return ($term->vid == $params['vid'] && $term->depth <= $params['depth']);
+  return ($term->vid == $params['vid'] && $term->depth < $params['depth']);
 }
 
 /**
