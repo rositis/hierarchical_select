@@ -172,6 +172,15 @@ HierarchicalSelect.initialize = function() {
     // Now load the initial HTML *without* using AHAH.
     $('div#hierarchical-select-'+ hsid +'-container', this.context)
     .html(this.setting(hsid, 'initial'));
+    
+    // Mirror the 'error' class from the original select.
+    var classes = $('select.hierarchical-select-0-original-select', this.context).attr('class').split(' ');
+    for (var i = 0; i < classes.length; i++) { // TODO: I'm sure this can be done cleaner!
+      if (classes[i] == 'error') {
+        $('select.hierarchical-select-'+ hsid +'-select', this.context).addClass('error');
+        break;
+      }
+    }
 
     this.updateOriginalSelect(hsid);
     this.attachBindings(hsid);
