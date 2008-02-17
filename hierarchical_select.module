@@ -679,6 +679,9 @@ function _hierarchical_select_validate_selection($selection, $module, $params) {
         unset($selection[$i]);
       }
     }
+    if (empty($selection)) {
+      $selection = -1;
+    }
   }
   elseif ($selection != 'none' && !module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
     $selection = -1;
