@@ -303,10 +303,27 @@ HierarchicalSelect.remove = function(hsid, dropboxEntry) {
   // reconstruct all lineages and thus remove the removed selection.
   var dropboxSelection = new Array();
   for (var i = 0; i < HS.dropboxContent[hsid].length; i++) {
-    if (i != dropboxEntry) {
+    if (i != dropboxEntry) { // Don't add the entry that's being removed to the selection!
       for (var j = 0; j < HS.dropboxContent[hsid][i].length; j++) {
         dropboxSelection.push(HS.dropboxContent[hsid][i][j]);
       }
+    }
+  }
+  // Now remove the deepest item of the entry of the dropbox that's being
+  // removed.
+  // In case of a tree with multiple parents, the same item can exist in
+  // different entries, and thus it would stay in the selection. When the
+  // server then reconstructs all lineages, the lineage we're removing, will
+  // also be reconstructed: it will seem as if the removing didn't work!
+  // This will not break removing dropbox entries for hierarchies without
+  // multiple parents, since items at the deepest level are always unique to
+  // that specific lineage.
+  // Easier explanation at http://drupal.org/node/221210#comment-733715.
+  var deepestItemIndex = HS.dropboxContent[hsid][dropboxEntry].length - 1;
+  var deepestItem = HS.dropboxContent[hsid][dropboxEntry][deepestItemIndex];
+  for (var i = 0; i < dropboxSelection.length; i++) {  
+    if (deepestItem == dropboxSelection[i]) {
+      dropboxSelection = dropboxSelection.slice(0, i).concat(dropboxSelection.slice(i + 1));
     }
   }
 
