@@ -89,17 +89,17 @@ function hierarchical_select_json() {
   drupal_set_header('Content-Type: text/javascript; charset=utf-8');
 
   // Extract the common parameters.
-  $hsid         = $_POST['hsid'];
-  $module       = $_POST['module'];
-  $selection    = (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']);
+  $hsid              = $_POST['hsid'];
+  $module            = $_POST['module'];
+  $selection         = (!strstr($_POST['selection'], '|')) ? $_POST['selection'] : explode('|', $_POST['selection']);
   $dropbox_selection = (!strstr($_POST['dropbox_selection'], '|')) ? $_POST['dropbox_selection'] : explode('|', $_POST['dropbox_selection']);
-  $save_lineage = _hierarchical_select_str_to_bool($_POST['save_lineage']);
-  $enforce_deepest = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
-  $all_option   = _hierarchical_select_str_to_bool($_POST['all_option']);
-  $level_labels = explode('|', $_POST['level_labels']);
-  $params       = unserialize($_POST['params']);
-  $dropbox_title= $_POST['dropbox_title'];
-  $required     = _hierarchical_select_str_to_bool($_POST['required']);
+  $save_lineage      = _hierarchical_select_str_to_bool($_POST['save_lineage']);
+  $enforce_deepest   = _hierarchical_select_str_to_bool($_POST['enforce_deepest']);
+  $all_option        = _hierarchical_select_str_to_bool($_POST['all_option']);
+  $level_labels      = explode('|', $_POST['level_labels']);
+  $params            = unserialize($_POST['params']);
+  $dropbox_title     = $_POST['dropbox_title'];
+  $required          = _hierarchical_select_str_to_bool($_POST['required']);
 
   switch ($_POST['type']) {
     case 'hierarchical-select':
@@ -124,9 +124,8 @@ function hierarchical_select_json() {
 
     case 'dropbox-add':
       // We want to render an empty select.
-      $selection = array();
+      $selection = -1;
     case 'dropbox-remove':
-
     default:
       $dropbox = hierarchical_select_get_dropbox(
         $module,
@@ -376,14 +375,14 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
     $hierarchy->lineage[0] = ($dropbox && count($dropbox->lineages) > 0) ? 'none' : 'label_0';
   }
   else {
-    // If the "save lineage" option is enabled, then the selection *is* a
-    // lineage. If it's disabled, we have to generate one ourselves based on the
+    // If save_lineage option is enabled, then the selection *is* a lineage.
+    // If it's disabled, we have to generate one ourselves based on the
     // (deepest) selected item.
     if ($save_lineage) {
-      // When the form item is optional, the "none" option can be selected, thus
-      // only the first level will be displayed. As a result, we won't receive
-      // an array as the selection, but only a single item. We conver this into
-      // an array.
+      // When the form item is optional, the "<none>" option can be selected,
+      // thus only the first level will be displayed. As a result, we won't
+      // receive an array as the selection, but only a single item. We convert
+      // this into an array.
       $hierarchy->lineage = (is_array($selection)) ? $selection : array(0 => $selection);
     }
     else {
@@ -416,7 +415,7 @@ function hierarchical_select_get_hierarchy($module, $selection, $save_lineage, $
     $hierarchy->levels[0] = array('all' => '<'. t('all') .'>') + $hierarchy->levels[0];
   }
 
-  // Prepend a "none" option to the root level when:
+  // Prepend a "<none>" option to the root level when:
   // - the form item is optional.
   // - enforce_deepest is enabled (use case: when level labels are disabled,
   //   this will be the initial value when the form item is required, so that
@@ -758,7 +757,7 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
 
 
 //----------------------------------------------------------------------------
-// Themeing callbacks.
+// Theming callbacks.
 
 /**
  * @ingroup themeable
