@@ -17,8 +17,9 @@ this form element greatly simplifies the user's search for the right option.
 Hierarchical Select has the ability to save the entire lineage of a selection
 or only the "deepest" selection. You can configure it to force the user to
 make a selection as deep as possible in the tree, or allow the user to select
-an item anywhere in the tree. In the latter case, you can also label each
-level.
+an item anywhere in the tree. Levels can be labeled, you can configure limit
+the number of items that can be selected, configure a title for the dropbox,
+choose a site-wide animation delay, and so on.
 
 The Taxonomy implementation of Hierarchical Select can be configured per
 vocabulary: it can be turned on/off and you can take advantage of all features
@@ -62,7 +63,7 @@ NOTE: When using a "multiple values" content_taxonomy CCK field, you must also
       set your vocabulary to be "multiple select"!
       See http://drupal.org/node/212398.
 
-In case of problems, don't forget to do a hard refresh in your browser!
+In case of problems, don't forget to try a hard refresh in your browser!
 
 
 Sponsors
@@ -87,4 +88,4 @@ Wim Leers
 * website: http://wimleers.com/work
 
 The author can be contacted for paid customizations of this module as well as
-Drupal consulting, development and installation.
+Drupal consulting and development.
