@@ -194,23 +194,7 @@ function hierarchical_select_process($element) {
     $hsid++;
   }
 
-  // Extract settings.
-  $module = $element['#hierarchical_select_settings']['module'];
-  $enforce_deepest = (bool) $element['#hierarchical_select_settings']['enforce_deepest'];
-  $save_lineage = (bool) $element['#hierarchical_select_settings']['save_lineage'];
-  $level_labels = (array) $element['#hierarchical_select_settings']['level_labels'];
-  $animation_delay = (int) $element['#hierarchical_select_settings']['animation_delay'];
-  $dropbox_title = $element['#hierarchical_select_settings']['dropbox_title'];
-  $dropbox_limit = (int) $element['#hierarchical_select_settings']['dropbox_limit'];
-  $params = $element['#hierarchical_select_settings']['params'];
-  $all_option = (bool) $element['#hierarchical_select_settings']['all_option'];
-  $required = (bool) $element['#required'];
-  $multiple = (bool) $element['#multiple'];
-  // When the #value property is empty, we're rendering this form (and thus
-  // the form element) for the first time. When it's no longer empty, this
-  // means that the validation failed and that we must keep the option that
-  // was selected by the user.
-  $selection = (!empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
+  extract(_hierarchical_select_extract_settings($element));
 
   // If the form item is not required, then we must ensure we have a "<none>"
   // option in the original select. If one exists already, we overwrite it: we
@@ -255,10 +239,30 @@ function hierarchical_select_process($element) {
     $element['#multiple'] = TRUE;
   }
 
+  // If multiple select is enabled, then add a validate callback that will
+  // ensure the dropbox limit won't be exceeded.
+  $element['#validate'] = array('_hierarchical_select_validate' => array(_hierarchical_select_extract_settings($element)));
+
   // Set the unique class.
   $element['#attributes']['class'] .= " hierarchical-select-original-select hierarchical-select-$hsid-original-select";
 
   return $element;
+}
+
+/**
+ * Hierarchical select form element validate callback.
+ */
+function _hierarchical_select_validate($element, $settings) {
+  // Extract the settings for this hierarchical select from the settings we're
+  // receiving via the extra parameter.
+  extract($settings);
+
+  // Generate the dropbox again and use it to count the number of lineages
+  // that the user selected. This must be below the dropbox limit.
+  $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, array(), $params, '');
+  if (count($dropbox->lineages) > $dropbox_limit) {
+    form_error($element, t("You've selected %select-count items, but you're only allowed to select %dropbox-limit items.", array('%select-count' => count($dropbox->lineages), '%dropbox-limit' => $dropbox_limit)));
+  }
 }
 
 /**
@@ -544,6 +548,36 @@ function hierarchical_select_get_dropbox($module, $selection, $save_lineage, $le
   }
 
   return $dropbox;
+}
+
+
+/**
+ * Helper function to extract the settings from a form item.
+ *
+ * @param $element
+ *   A form item.
+ * @return
+ *   An array of setting name - setting value pairs.
+ */
+function _hierarchical_select_extract_settings($element) {
+  return array(
+    'module'          => $element['#hierarchical_select_settings']['module'],
+    'enforce_deepest' => (bool) $element['#hierarchical_select_settings']['enforce_deepest'],
+    'save_lineage'    => (bool) $element['#hierarchical_select_settings']['save_lineage'],
+    'level_labels'    => (array) $element['#hierarchical_select_settings']['level_labels'],
+    'animation_delay' => (int) $element['#hierarchical_select_settings']['animation_delay'],
+    'dropbox_title'   => $element['#hierarchical_select_settings']['dropbox_title'],
+    'dropbox_limit'   => (int) $element['#hierarchical_select_settings']['dropbox_limit'],
+    'params'          => $element['#hierarchical_select_settings']['params'],
+    'all_option'      => (bool) $element['#hierarchical_select_settings']['all_option'],
+    'required'        => (bool) $element['#required'],
+    'multiple'        => (bool) $element['#multiple'],
+    // When the #value property is empty, we're rendering this form (and thus
+    // the form element) for the first time. When it's no longer empty, this
+    // means that the validation failed and that we must keep the option that
+    // was selected by the user.
+    'selection'       => (!empty($element['#value'])) ? $element['#value'] : $element['#default_value'],
+  );
 }
 
 /**
