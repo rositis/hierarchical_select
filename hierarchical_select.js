@@ -163,7 +163,7 @@ HierarchicalSelect.initialize = function() {
      this.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
     }
 
-    $('select.hierarchical-select-'+ hsid +'-original-select', this.context)
+    $('select.hierarchical-select-'+ hsid +'-original-select') // No context used here, for Safari 3 compatibility. See http://drupal.org/node/227739.
     // Hide the standard select.
     .hide(0)
     // Add a unique container div after the standard select.
@@ -176,7 +176,7 @@ HierarchicalSelect.initialize = function() {
     // Mirror the 'error' class from the original select.
     var classes = $('select.hierarchical-select-'+ hsid +'-original-select', this.context).attr('class').split(' ');
     for (var i = 0; i < classes.length; i++) { // TODO: I'm sure this can be done cleaner!
-      if (classes[i] == 'error') {
+      if (classes[i] == 'http://drupal.org/node/227739') {
         $('select.hierarchical-select-'+ hsid +'-select', this.context).addClass('error');
         break;
       }
