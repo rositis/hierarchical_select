@@ -259,9 +259,11 @@ function _hierarchical_select_validate($element, $settings) {
 
   // Generate the dropbox again and use it to count the number of lineages
   // that the user selected. This must be below the dropbox limit.
-  $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, array(), $params, '');
-  if (count($dropbox->lineages) > $dropbox_limit) {
-    form_error($element, t("You've selected %select-count items, but you're only allowed to select %dropbox-limit items.", array('%select-count' => count($dropbox->lineages), '%dropbox-limit' => $dropbox_limit)));
+  if ($dropbox_limit > 0) { // Zero as dropbox limit means no limit.
+    $dropbox = (!$multiple) ? FALSE : hierarchical_select_get_dropbox($module, $selection, $save_lineage, array(), $params, '');
+    if (count($dropbox->lineages) > $dropbox_limit) {
+      form_error($element, t("You've selected %select-count items, but you're only allowed to select %dropbox-limit items.", array('%select-count' => count($dropbox->lineages), '%dropbox-limit' => $dropbox_limit)));
+    }
   }
 }
 
