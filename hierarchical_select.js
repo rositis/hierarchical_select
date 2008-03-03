@@ -176,7 +176,7 @@ HierarchicalSelect.initialize = function() {
     // Mirror the 'error' class from the original select.
     var classes = $('select.hierarchical-select-'+ hsid +'-original-select', this.context).attr('class').split(' ');
     for (var i = 0; i < classes.length; i++) { // TODO: I'm sure this can be done cleaner!
-      if (classes[i] == 'http://drupal.org/node/227739') {
+      if (classes[i] == 'error') {
         $('select.hierarchical-select-'+ hsid +'-select', this.context).addClass('error');
         break;
       }
