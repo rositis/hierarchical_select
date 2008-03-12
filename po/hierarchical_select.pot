@@ -1,0 +1,204 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (hierarchical_select.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  hierarchical_select.module,v 1.36 2008/02/08 17:38:26 wimleers
+#  hierarchical_select.info,v 1.6 2008/01/25 15:01:11 wimleers
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-03-12 17:41+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: hierarchical_select.module:38
+msgid "Configure site-wide settings for the Hierarchical Select form element."
+msgstr ""
+
+#: hierarchical_select.module:71;487
+msgid "All selections"
+msgstr ""
+
+#: hierarchical_select.module:270
+msgid "All settings below will be used as site-wide defaults."
+msgstr ""
+
+#: hierarchical_select.module:276
+msgid "Animation delay"
+msgstr ""
+
+#: hierarchical_select.module:277
+msgid "The delay that will be used for the \"drop in/out\" effect when a\n      hierarchical select is being updated (in milliseconds)."
+msgstr ""
+
+#: hierarchical_select.module:287
+msgid "Level labels style"
+msgstr ""
+
+#: hierarchical_select.module:288
+msgid "The style that will be used for level labels. This is not supported by\n      all browsers! If you want a consistent interface, choose to use no\n      style."
+msgstr ""
+
+#: hierarchical_select.module:294
+msgid "No style"
+msgstr ""
+
+#: hierarchical_select.module:295
+msgid "Bold"
+msgstr ""
+
+#: hierarchical_select.module:296
+msgid "Inversed"
+msgstr ""
+
+#: hierarchical_select.module:297
+msgid "Underlined"
+msgstr ""
+
+#: hierarchical_select.module:416
+msgid "all"
+msgstr ""
+
+#: hierarchical_select.module:847
+msgid "Remove"
+msgstr ""
+
+#: hierarchical_select.module:853
+msgid "Nothing has been selected yet."
+msgstr ""
+
+#: hierarchical_select.module:906
+msgid "Add"
+msgstr ""
+
+#: hierarchical_select.info:0
+msgid "Simplifies the selection of one or multiple items in a hierarchical tree."
+msgstr ""
+
+#: hierarchical_select.info:0
+msgid "Form Elements"
+msgstr ""
+
+#: hierarchical_select.info:0
+msgid "hierarchical_select"
+msgstr ""
+
+#: hierarchical_select.info:0
+msgid "1202581508"
+msgstr ""
+
+#: hierarchical_select.module:220;426 modules/subscriptions_taxonomy.inc:51
+msgid "none"
+msgstr ""
+
+#: hierarchical_select.module:37 hierarchical_select.info:0
+msgid "Hierarchical Select"
+msgstr ""
+
+#: modules/subscriptions_taxonomy.inc:63
+msgid "Subscribed to:"
+msgstr ""
+
+#: modules/taxonomy.inc:42
+msgid "Hierarchical Select settings"
+msgstr ""
+
+#: modules/taxonomy.inc:46
+msgid "Use the Hierarchical Select form element for this vocabulary"
+msgstr ""
+
+#: modules/taxonomy.inc:52
+msgid "Save lineage"
+msgstr ""
+
+#: modules/taxonomy.inc:54
+msgid "Save term lineage"
+msgstr ""
+
+#: modules/taxonomy.inc:55
+msgid "Save only the deepest term"
+msgstr ""
+
+#: modules/taxonomy.inc:58
+msgid "Saving the term lineage means saving the the term itself and all its\n        ancestors. This is enabled by default if the vocabulary has the\n        multiple parents options enabled (otherwise it would try to\n        reconstruct the lineage and possibly choose the wrong parent)."
+msgstr ""
+
+#: modules/taxonomy.inc:69
+msgid "Level choice"
+msgstr ""
+
+#: modules/taxonomy.inc:71
+msgid "Force the user to choose a term from the deepest level"
+msgstr ""
+
+#: modules/taxonomy.inc:72
+msgid "Allow the user to choose a term from any level"
+msgstr ""
+
+#: modules/taxonomy.inc:75
+msgid "This setting determines from which level in the vocabulary tree a\n        user can select a term. Either you can force the user to choose from\n        the deepest level (based on what has been selected before, this does\n        not mean that every branch in your vocabulary tree must be equally\n        deep), or from any level."
+msgstr ""
+
+#: modules/taxonomy.inc:86
+msgid "Option to select all items at once"
+msgstr ""
+
+#: modules/taxonomy.inc:87
+msgid "This setting is only available if you've enabled multiple select.<br\n        />After enabling this setting, a new \"&lt;all&gt;\" option will be\n        prepended the root level select. By choosing this option, all items in\n        the hierarchy will be selected at once."
+msgstr ""
+
+#: modules/taxonomy.inc:93;118
+msgid "Disabled"
+msgstr ""
+
+#: modules/taxonomy.inc:94;119
+msgid "Enabled"
+msgstr ""
+
+#: modules/taxonomy.inc:102;116
+msgid "Level labels"
+msgstr ""
+
+#: modules/taxonomy.inc:103
+msgid "When the user is allowed to choose a term from any level in the\n        <em>Level choice</em> setting, you can enter a level label for each\n        level.<br /> However, when the user is only allowed to choose a term\n        from the deepest level, then you can enter only a label for the root\n        level."
+msgstr ""
+
+#: modules/taxonomy.inc:125
+msgid "Label for root level"
+msgstr ""
+
+#: modules/taxonomy.inc:135
+msgid "Label for sublevel !depth"
+msgstr ""
+
+#: modules/taxonomy.inc:145
+msgid "Dropbox settings"
+msgstr ""
+
+#: modules/taxonomy.inc:146
+msgid "The dropbox is the area where all selected items are displayed when\n        multiple select is enabled."
+msgstr ""
+
+#: modules/taxonomy.inc:156
+msgid "Title"
+msgstr ""
+
+#: modules/taxonomy.inc:157
+msgid "The title you enter here appears above the dropbox."
+msgstr ""
+
+#: modules/taxonomy.inc:164
+msgid "Limit the number of selections"
+msgstr ""
+
+#: modules/taxonomy.inc:165
+msgid "Limits the number of selections that can be added to the dropbox.\n        0 means no limit.\n        <br />\n        Note: the \"Save term lineage\" option has no effect on this, even if\n        a lineage consists of 3 terms, this will count as only one selection\n        in the dropbox."
+msgstr ""
