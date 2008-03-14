@@ -38,6 +38,7 @@ HierarchicalSelect.waitToggle = function(hsid) {
     // Indicate that the user has to wait.
     $('body').css('cursor', 'wait');  
   }
+  /*
   else {
     $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
     .add('#hierarchical-select-' + hsid +'-container .hierarchical-select-input').children()
@@ -47,6 +48,7 @@ HierarchicalSelect.waitToggle = function(hsid) {
 
     $('body').css('cursor', 'auto');  
   }
+  */
 };
 
 // Should always be called *after* attachBindings(), because this method

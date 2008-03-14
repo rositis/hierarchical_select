@@ -1,0 +1,100 @@
+/* $Id$ */
+
+div.hierarchical-select-container select.hierarchical-select-select,
+div.hierarchical-select-container .hierarchical-select-add-to-dropbox {
+  margin: 0;
+  margin-left: .5em; /* margin-right: .5em; */
+  margin-bottom: 1em;
+  float: right; /* float: left; */
+}
+
+.dropbox-title {
+  font-size: 115%;
+  color: #898989;
+}
+
+.hierarchical-select-dropbox {
+  margin: 0px;
+  width: auto;
+  max-width: 100%;
+  min-width: 20em;
+  margin-bottom: 1em;
+  padding: 0px;
+  color: grey;
+  font-size: 90%;
+  padding: 1em;
+  margin-right: 1px; /* margin-left: 1px; */
+}
+
+.hierarchical-select-dropbox tbody {
+  margin: 0;
+  padding: 0;
+  border: 1px solid grey;
+}
+
+tr.dropbox-entry {
+  line-height: 1em;
+  padding: .3em .6em;
+}  
+
+tr.dropbox-entry.even {
+  background-color: transparent;
+  border-bottom: 1px solid #CCCCCC;
+}
+
+tr.dropbox-entry.odd {
+  background-color: #EDF5FA;
+  border-bottom: 1px solid #CCCCCC;
+}
+
+tr.dropbox-entry.first {
+  border-top: 1px solid grey;
+}
+
+tr.dropbox-entry.last {
+  border-bottom: 1px solid grey;
+}
+
+.dropbox-selected-item {
+  font-weight: bold;
+}
+
+.dropbox-item-separator {
+  padding-left: .5em;
+  padding-right: .5em;
+}
+
+.hierarchical-select-remove-from-dropbox {
+  color: #F7A54F;
+  cursor: pointer;
+}
+
+.dropbox-is-empty {
+  padding: .5em 1em;
+}
+
+
+/* Level labels styles */
+
+.hierarchical-select-level-label-bold {
+  font-weight: bold;
+}
+
+.hierarchical-select-level-label-inversed {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+.hierarchical-select-level-label-underlined {
+  text-decoration: underline;
+}
+
+
+/* Dropbox limit */
+
+p.hierarchical-select-dropbox-limit-warning {
+  padding: 0;
+  color: #F7A54F;
+  font-size: 110%;
+  padding-left: .5em;
+}
