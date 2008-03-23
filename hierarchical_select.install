@@ -10,6 +10,9 @@ function hierarchical_select_install() {
   // idiot module developer is changing the weight of the Taxonomy module...
   $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  // Also ensure the Hierarchical Select module runs after the i18ntaxonomy
+  // module.
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
   db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight + 1, 'hierarchical_select');
 }
 
@@ -26,7 +29,21 @@ function hierarchical_select_update_1() {
   // idiot module developer is changing the weight of the Taxonomy module...
   $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
-  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight + 1, 'hierarchical_select');
+  $weight++;
+  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name  = 'hierarchical_select'");
+
+  return $ret;
+}
+
+// Update module weight again, this time for i18ntaxonomy compatibility.
+function hierarchical_select_update_2() {
+  $ret = array();
+
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
+  $weight++;
+  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name  = 'hierarchical_select'");
 
   return $ret;
 }
