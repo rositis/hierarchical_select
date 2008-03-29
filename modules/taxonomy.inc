@@ -307,7 +307,8 @@ function taxonomy_hierarchical_select_item_get_label($item, $params) {
   
   if (!isset($labels[$item])) {
     $term = taxonomy_get_term($item);
-    $labels[$item] = $term->name;
+    // Use the translated term when available!
+    $labels[$item] = t($term->name);
   }
 
   return $labels[$item];
@@ -366,7 +367,8 @@ function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_val
 function _taxonomy_hierarchical_select_terms_to_options($terms) {
   $options = array();
   foreach ($terms as $key => $term) {
-    $options[$term->tid] = $term->name;
+    // Use the translated term when available!
+    $options[$term->tid] = t($term->name);
   }
   return $options;
 }
