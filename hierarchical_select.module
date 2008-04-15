@@ -1448,7 +1448,7 @@ function theme_hierarchical_select_dropbox_table($element) {
   }
   else {
     $output .= '<tr class="dropbox-entry first last dropbox-is-empty"><td>';
-    $output .= t('Nothing has been selected yet.');
+    $output .= t('Nothing has been selected.');
     $output .= '</td></tr>';
   }
 
