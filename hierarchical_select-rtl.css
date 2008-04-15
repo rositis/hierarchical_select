@@ -1,19 +1,53 @@
 /* $Id$ */
 
-div.hierarchical-select-container select.hierarchical-select-select,
-div.hierarchical-select-container .hierarchical-select-add-to-dropbox {
-  margin: 0;
-  margin-left: .5em; /* margin-right: .5em; */
+
+/* The hierarchical select. */
+.hierarchical-select-wrapper .hierarchical-select {
   margin-bottom: 1em;
+}
+
+.hierarchical-select-wrapper .hierarchical-select * {
+  margin: 0;
+}
+
+.hierarchical-select-wrapper .hierarchical-select > * {
+  margin-left: .5em; /* margin-right: .5em; */
   float: right; /* float: left; */
 }
 
+
+/* Level labels styles. */
+.hierarchical-select-level-labels-style-bold .hierarchical-select select option:first-child {
+  font-weight: bold;
+}
+
+.hierarchical-select-level-labels-style-inversed .hierarchical-select select option:first-child {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+.hierarchical-select-level-labels-style-underlined .hierarchical-select select option:first-child {
+  text-decoration: underline;
+}
+
+
+/* Dropbox limit warning.*/
+p.hierarchical-select-dropbox-limit-warning {
+  padding: 0;
+  color: #F7A54F;
+  font-size: 110%;
+  padding-left: .5em;
+}
+
+
+/* The dropbox table. */
 .dropbox-title {
   font-size: 115%;
   color: #898989;
+  margin-bottom: 0.2em;
 }
 
-.hierarchical-select-dropbox {
+.hierarchical-select-wrapper table.dropbox {
   margin: 0px;
   width: auto;
   max-width: 100%;
@@ -26,14 +60,14 @@ div.hierarchical-select-container .hierarchical-select-add-to-dropbox {
   margin-right: 1px; /* margin-left: 1px; */
 }
 
-.hierarchical-select-dropbox tbody {
+.hierarchical-select-wrapper table.dropbox tbody {
   margin: 0;
   padding: 0;
   border: 1px solid grey;
 }
 
 tr.dropbox-entry {
-  line-height: 1em;
+  line-height: 1.3em;
   padding: .3em .6em;
 }  
 
@@ -64,37 +98,49 @@ tr.dropbox-entry.last {
   padding-right: .5em;
 }
 
-.hierarchical-select-remove-from-dropbox {
+td.dropbox-remove *,
+td.dropbox-remove a:link,
+td.dropbox-remove a:visited {
+  margin: 0px;
+  padding: 0px;
   color: #F7A54F;
-  cursor: pointer;
 }
 
-.dropbox-is-empty {
+tr.dropbox-is-empty {
   padding: .5em 1em;
 }
 
 
-/* Level labels styles */
-
-.hierarchical-select-level-label-bold {
-  font-weight: bold;
+/* The "Update" button and help text (used when Javascript is disabled). */
+.hierarchical-select-wrapper .nojs .update-button {
+  margin-top: 0;  
 }
 
-.hierarchical-select-level-label-inversed {
-  background-color: #000000;
-  color: #FFFFFF;
+.hierarchical-select-wrapper .nojs .help-text {
+  font-size: 90%;
+  color: grey;
+  display: block;
+  border: 1px dotted black;
+  min-width: 30em;
+  max-width: 45em;
+  padding: .8em;
 }
 
-.hierarchical-select-level-label-underlined {
-  text-decoration: underline;
+.hierarchical-select-wrapper .nojs .help-text .warning {
+  color: red;
 }
 
-
-/* Dropbox limit */
-
-p.hierarchical-select-dropbox-limit-warning {
+.hierarchical-select-wrapper .nojs .help-text .solutions {
+  margin: 0;
   padding: 0;
-  color: #F7A54F;
-  font-size: 110%;
-  padding-left: .5em;
+}
+
+
+/* The 'waiting' class is set dynamically, during a callback to the server. */
+.hierarchical-select-wrapper.waiting {
+  opacity: 0.5;
+
+  /* IE doesn't support CSS 2 properly. */
+  zoom: 1;
+  filter: alpha(opacity=50);
 }

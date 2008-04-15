@@ -1,418 +1,185 @@
 // $Id$
 
-var HierarchicalSelect = HierarchicalSelect || {};
+Drupal.HierarchicalSelect = {};
 
-HierarchicalSelect.dropboxContent = new Array();
-
-HierarchicalSelect.context = function() {
-  return $("form div.form-item");
+Drupal.HierarchicalSelect.context = function() {
+  return $("form .hierarchical-select-wrapper");
 };
 
-HierarchicalSelect.setting = function(hsid, settingName, newValue) {
-  // Global settings.
-  if (hsid == 'global') {
-    return Drupal.settings.hierarchical_select[settingName];
-  }
-  else {
-    // Per-Hierarchical Select settings.
-    if (undefined === newValue) {
-      return Drupal.settings.hierarchical_select.settings[hsid][settingName];
-    }
-    else {
-      Drupal.settings.hierarchical_select.settings[hsid][settingName] = newValue;
-    }
-  }
-};
-
-HierarchicalSelect.waitToggle = function(hsid) {
-  if ($('#hierarchical-select-' + hsid +'-container').css('opacity') != 0.5) {
-    // Disable *all* submit buttons in this form, as well as all input-related
-    // elements of the current hierarchical select.
-    $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
-    .add('#hierarchical-select-' + hsid +'-container .hierarchical-select-input').children()
-    .attr('disabled', 'disabled');
-
-    // Make everything related to the hierarchical select form item transparent.
-    $('#hierarchical-select-' + hsid +'-container').css('opacity', 0.5);
-
-    // Indicate that the user has to wait.
-    $('body').css('cursor', 'wait');  
-  }
-  else {
-    $('form[#hierarchical-select-' + hsid +'-container] input[@type=submit]')
-    .add('#hierarchical-select-' + hsid +'-container .hierarchical-select-input').children()
-    .removeAttr('disabled');
-
-    $('#hierarchical-select-' + hsid +'-container').css('opacity', 1);
-
-    $('body').css('cursor', 'auto');  
-  }
-};
-
-// Should always be called *after* attachBindings(), because this method
-// disables the "Add" button, which is only available after that method call.
-HierarchicalSelect.checkDropboxLimit = function(hsid, initial) {
-  var HS = HierarchicalSelect;
-  var dropboxLimit = HS.setting(hsid, 'dropboxLimit');
-  var multiple = HS.setting(hsid, 'multiple');
-
-  // Set default value for the "initial" parameter.
-  initial = (undefined === initial) ? false : initial;
-
-  if (multiple && dropboxLimit > 0) {
-    if (HS.dropboxContent[hsid].length == dropboxLimit) {
-      $('#hierarchical-select-'+ hsid +'-container .hierarchical-select-input')
-      .css('opacity', 0.5)
-      // TODO: should be translatable. But that's a lot easier in Drupal 6, so let's postpone it.
-      .after('<p class="hierarchical-select-dropbox-limit-warning">You\'ve reached the maximal number of items you can select.</p>')
-      .children()
-      .attr('disabled', 'disabled');
-      $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context)
-      .hide()
-      .show((initial) ? 0 : 'fast');
-    }
-    else if (HS.dropboxContent[hsid].length < dropboxLimit && $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context).size()) {
-      $('#hierarchical-select-'+ hsid +'-container .hierarchical-select-input')
-      .css('opacity', 1)
-      .children()
-      .removeAttr('disabled');
-      $('#hierarchical-select-'+ hsid +'-container p.hierarchical-select-dropbox-limit-warning', HS.context)
-      .hide('fast', function() {
-        $(this).remove();
-      });
-    }
-  }
-};
-
-HierarchicalSelect.updateOriginalSelect = function(hsid) {
-  var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
-  var $options = $('select.hierarchical-select-'+ hsid +'-original-select option', this.context);
-
-  // Reset the current selection in the original select.
-  $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
-    $(this).removeAttr('selected');
-  });
-
-  var rootLevelValue = $('select#hierarchical-select-'+ hsid +'-select-level-0', this.context).val() || 'none';
-
-  // Update it to the current selection.
-  var currentSelectionIsLabelOrNone = (typeof(rootLevelValue) == "string" && rootLevelValue.match(/^(none|label_\d+)$/));
-  var somethingSelectedInDropbox = (this.setting(hsid, 'multiple') && this.dropboxContent[hsid].length);
-  if (rootLevelValue.match(/^(all|none|label_\d+)$/)) {
-    if (rootLevelValue == 'all') {
-      $options.attr('selected', 'selected'); // Select all options.
-    }
-    else {
-      $options.filter('option[@value=""]').attr('selected', 'selected'); // Select the "<none>" option.
-    }
-
-    // Get all sublevel selects, hide them (collapse effect) and remove them.
-    $selects.gt(0)
-    .hide(this.setting(hsid, 'animationDelay'), function() {
-      $(this).remove();
-    });
-  }
-  else if (currentSelectionIsLabelOrNone && !somethingSelectedInDropbox) {
-    // This is for compatibility with Drupal's Taxonomy form items. They have
-    // a "- None selected -" option, with the value "". We *must* select it if
-    // we want to select nothing.
-    // A similar system is used in the content_taxonomy implementation of HS,
-    // to allow deselection of an item when multiple select is enabled.
-    // TODO: make sure Drupal standardizes on a form item with a value "" to
-    // select nothing. Perhaps I should also make Hierarchical Select use this
-    // for its "<none>" option?
-    $options.filter('option[@value=""]').attr('selected', 'selected');
-  }
-  else if (!this.setting(hsid, 'saveLineage')) {
-    // Get the deepest valid value of the current selection.
-    var level = $selects.length - 1;
-    var deepestSelectValue = '';
-    do {
-      deepestSelectValue = $selects.eq(level).val();
-      level--;
-    } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
-
-    // Update the original select.
-    $options.filter('option[@value="'+ deepestSelectValue +'"]').attr('selected', 'selected');
-  }
-  else {
-    // Select each hierarchical select's selected option in the original
-    // select (thus effectively saving the term lineage).
-    $selects
-    .each(function() { // Can be done cleaner in jQuery 1.2, because .val() can then accept an array.
-      $options.filter('option[@value='+ $(this).val() +']').attr('selected', 'selected');
-    });
-  }
-
-  // If multiple select is enabled, also add the selections in the dropbox.
-  if (this.setting(hsid, 'multiple')) {
-    for (var i = 0; i < this.dropboxContent[hsid].length; i++) {
-      for (var j = 0; j < this.dropboxContent[hsid][i].length; j++) {
-        $options
-        .filter('option[@value='+ this.dropboxContent[hsid][i][j] +']')
-        .attr('selected', 'selected');
-      }
-    }
-  }
-};
-
-HierarchicalSelect.initialize = function() {
-  for (var hsid in Drupal.settings.hierarchical_select.settings) {
-    // If multiple select is enabled, intialize the dropbox content array.
-    if (this.setting(hsid, 'multiple')) {
-     this.dropboxContent[hsid] = this.setting(hsid, 'initialDropboxLineagesSelections');
-    }
-
-    $('select.hierarchical-select-'+ hsid +'-original-select') // No context used here, for Safari 3 compatibility. See http://drupal.org/node/227739.
-    // Hide the standard select.
-    .hide(0)
-    // Add a unique container div after the standard select.
-    .after('<div id="hierarchical-select-'+ hsid +'-container" class="hierarchical-select-container clear-block" />');
-
-    // Now load the initial HTML *without* using AHAH.
-    $('div#hierarchical-select-'+ hsid +'-container', this.context)
-    .html(this.setting(hsid, 'initial'));
-    
-    // Mirror the 'error' class from the original select.
-    var classAttribute = $('select.hierarchical-select-'+ hsid +'-original-select', this.context).attr('class');
-    classAttribute = (classAttribute != null) ? classAttribute : ''; // Work-around for Internet Explorer 6/7 compatibility. See http://drupal.org/node/229513.
-    var classes = classAttribute.split(' ');
-    for (var i = 0; i < classes.length; i++) { // TODO: I'm sure this can be done cleaner!
-      if (classes[i] == 'error') {
-        $('select.hierarchical-select-'+ hsid +'-select', this.context).addClass('error');
-        break;
-      }
-    }
-
-    this.updateOriginalSelect(hsid);
+Drupal.HierarchicalSelect.initialize = function() {
+  for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
+    this.transform(hsid);
     this.attachBindings(hsid);
-    this.checkDropboxLimit(hsid, true);
   }
 };
 
-HierarchicalSelect.attachBindings = function(hsid, dropboxOnly) {
-  var HS = HierarchicalSelect;
+Drupal.HierarchicalSelect.transform = function(hsid) {
+  var removeString = $('#hierarchical-select-'+ hsid +'-wrapper .dropbox .dropbox-remove:first', Drupal.HierarchicalSelect.context).text();
 
-  // Update event: attach to every select of the current Hierarchical Select.
-  $('select.hierarchical-select-'+ hsid +'-select', this.context)
+  $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+  // Remove the .nojs div.
+  .find('.nojs').remove().end()
+  // Find all .dropbox-remove cells in the dropbox table.
+  .find('.dropbox .dropbox-remove')
+  // Hide the children of these table cells. We're not removing them because
+  // we want to continue to use the "Remove" checkboxes.
+  .find('*').hide().end()
+  // Put a "Remove" link there instead.
+  .append('<a href="">'+ removeString +'</a>');
+};
+
+Drupal.HierarchicalSelect.disableForm = function(hsid) {
+  // Disable *all* submit buttons in this form, as well as all input-related
+  // elements of the current hierarchical select.
+  $('form[#hierarchical-select-' + hsid +'-wrapper] input[@type=submit]')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select > *')
+  .enable(false);
+
+  // Add the 'waiting' class. Default style: make everything transparent.
+  $('#hierarchical-select-' + hsid +'-wrapper').addClass('waiting');
+
+  // Indicate that the user has to wait.
+  $('body').css('cursor', 'wait');
+};
+
+Drupal.HierarchicalSelect.enableForm = function(hsid) {
+  // This method undoes everything the disableForm() method did.
+
+  $('form[#hierarchical-select-' + hsid +'-wrapper] input[@type=submit]')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select > *')
+  .enable(true);
+
+  $('#hierarchical-select-' + hsid +'-wrapper').removeClass('waiting');
+
+  $('body').css('cursor', 'auto');
+};
+
+Drupal.HierarchicalSelect.attachBindings = function(hsid) {
+  var addOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select input', Drupal.HierarchicalSelect.context).val();
+
+  $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
+  // "Update" event will be attached to:
+  // - selects in the .hierarchical-select div;
+  .find('.hierarchical-select select')
   .unbind()
-  .change(function(x) {
-    return function() { HS.update(x, $(this).val()); };
+  .change(function(_hsid) {
+    return function() { Drupal.HierarchicalSelect.update(_hsid, 'hierarchical select', { select_id : $(this).attr('id') }); };
+  }(hsid)).end()
+
+  // - if the dropbox is enabled: anchors in the .dropbox-remove cells in the
+  //   .dropbox table.
+  .find('.dropbox .dropbox-remove a')
+  .unbind()
+  .click(function(_hsid) {
+    return function() {
+      // Check the (hidden, because JS is enabled) checkbox that marks this
+      // dropbox entry for removal. 
+      $(this).parent().find('input[@type=checkbox]').attr('checked', true);
+      
+      Drupal.HierarchicalSelect.update(_hsid, 'remove', {});
+
+      // Prevent the browser from POSTing the page.
+      return false;
+    };
+  }(hsid)).end()
+
+  // "Add" event will be attached to:
+  // - the add button in the .hierarchical-select div.
+  .find('.hierarchical-select input').unbind().click(function(_hsid) {
+    return function() {
+      Drupal.HierarchicalSelect.update(_hsid, 'add', { opString : addOpString });
+
+      // Prevent the browser from POSTing the page.
+      return false; 
+    };
   }(hsid));
-
-  if (this.setting(hsid, 'multiple')) {
-    if (!dropboxOnly) {
-      // Add the "Add" button.
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', this.context)
-      .append(this.setting(hsid, 'addButton'));
-
-      // Add event: attach to the "Add" button.
-      $('#hierarchical-select-'+ hsid +'-add-to-dropbox', this.context)
-      .unbind()
-      .click(function(x) {
-        return function() { HS.add(x); };
-      }(hsid));
-    }
-
-    for (var i = 0; i < this.dropboxContent[hsid].length; i++) {
-      // Remove event: attach to the "Remove" links.
-      $('#hierarchical-select-'+ hsid +'-remove-'+ i + '-from-dropbox', this.context)
-      .unbind()
-      .click(function(x, y) {
-        return function() { HS.remove(x, y); };
-      }(hsid, i));
-    }    
-  }
 };
 
-HierarchicalSelect.getFullSelection = function(hsid, selection) {
-  var $selects = $('select.hierarchical-select-'+ hsid +'-select', this.context);
+Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
+  var post = $('form[#hierarchical-select-' + hsid +'-wrapper]', Drupal.HierarchicalSelect.context).formToArray();
 
-  // Make sure selection is always an array.
-  if ("string" == typeof(selection)) {
-    selection = new Array(selection);
+  // Pass the hierarchical_select id via POST.
+  post.push({ name : 'hsid', value : hsid });
+
+  // updateType is one of:
+  // - 'none' (default)
+  // - 'hierarchical select'
+  // - 'remove'
+  switch (updateType) {
+    case 'hierarchical select':
+      var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
+      var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1");
+      break;
+
+    case 'add':
+      post.push({ name : 'op', value : settings.opString });
+      break;
   }
-
-  if (this.setting(hsid, 'saveLineage')) {
-    var lineageSelection = new Array();
-    for (var level = 0; level < $selects.size(); level++) {
-      var s = $('select#hierarchical-select-'+ hsid +'-select-level-'+ level, this.context).val();
-      lineageSelection[level] = s;
-      if (s == selection) {
-        // Don't go collect values from levels deeper than the clicked level,
-        // they have to be tossed away anyway.
-        break;
-      }
-    }
-  }
-
-  return (undefined === lineageSelection) ? selection : lineageSelection;
-};
-
-HierarchicalSelect.post = function(hsid, fullSelection, dropboxSelection, type) {
-  var post = new Object();
-  post['hsid'] = hsid;
-  if (typeof(fullSelection) == "string") {
-    post['selection'] = fullSelection;
-  }
-  else {
-    post['selection'] = fullSelection.join('|');
-  }
-  post['dropbox_selection'] = dropboxSelection.join('|');
-  post['module'] = this.setting(hsid, 'module');
-  post['save_lineage'] = this.setting(hsid, 'saveLineage');
-  post['enforce_deepest'] = this.setting(hsid, 'enforceDeepest');
-  post['all_option'] = this.setting(hsid, 'allOption');
-  post['level_labels'] = this.setting(hsid, 'levelLabels');
-  post['params'] = this.setting(hsid, 'params');
-  post['required'] = this.setting(hsid, 'required');
-  post['dropbox_title'] = this.setting(hsid, 'dropboxTitle');
-  post['type'] = type;
-
-  return post;
-};
-
-HierarchicalSelect.add = function(hsid) {
-  var HS = HierarchicalSelect;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
-
-  // Get all selected items.
-  var dropboxSelection = new Array();
-  $('select.hierarchical-select-'+ hsid  +'-original-select option:selected', this.context).each(function() {
-    dropboxSelection.push($(this).val());
-  });
-
-  HS.waitToggle(hsid);
-
-  $.ajax({
-    type: "POST",
-    url: HS.setting('global', 'url'),
-    data: HS.post(hsid, Array(), dropboxSelection, 'dropbox-add'),
-    dataType: "json",
-    success: function(json) {
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-      .html(json.hierarchicalSelect);
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HS.context)
-      .html(json.dropbox);
-
-      HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
-
-      HS.waitToggle(hsid);
-      HS.updateOriginalSelect(hsid); // In theory we don't have to do this, but it's a safety net: it will only set valid selections.
-      HS.attachBindings(hsid);
-      HS.checkDropboxLimit(hsid);
-    }
-  });
-};
-
-HierarchicalSelect.remove = function(hsid, dropboxEntry) {
-  var HS = HierarchicalSelect;
-  var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
-
-  // Add the selections of all items in the dropbox to the selection, except
-  // for the one that has to be removed. If we submit this, the server will
-  // reconstruct all lineages and thus remove the removed selection.
-  var dropboxSelection = new Array();
-  for (var i = 0; i < HS.dropboxContent[hsid].length; i++) {
-    if (i != dropboxEntry) { // Don't add the entry that's being removed to the selection!
-      for (var j = 0; j < HS.dropboxContent[hsid][i].length; j++) {
-        dropboxSelection.push(HS.dropboxContent[hsid][i][j]);
-      }
-    }
-  }
-  // Now remove the deepest item of the entry of the dropbox that's being
-  // removed.
-  // In case of a tree with multiple parents, the same item can exist in
-  // different entries, and thus it would stay in the selection. When the
-  // server then reconstructs all lineages, the lineage we're removing, will
-  // also be reconstructed: it will seem as if the removing didn't work!
-  // This will not break removing dropbox entries for hierarchies without
-  // multiple parents, since items at the deepest level are always unique to
-  // that specific lineage.
-  // Easier explanation at http://drupal.org/node/221210#comment-733715.
-  var deepestItemIndex = HS.dropboxContent[hsid][dropboxEntry].length - 1;
-  var deepestItem = HS.dropboxContent[hsid][dropboxEntry][deepestItemIndex];
-  for (var i = 0; i < dropboxSelection.length; i++) {  
-    if (deepestItem == dropboxSelection[i]) {
-      dropboxSelection = dropboxSelection.slice(0, i).concat(dropboxSelection.slice(i + 1));
-    }
-  }
-
-  // Get the deepest valid value of the current selection.
-  var level = $selects.length - 1;
-  var deepestSelectValue = '';
-  do {
-    deepestSelectValue = $selects.eq(level).val();
-    level--;
-  } while (level >= 0 && deepestSelectValue.match(/label_\d+/));
   
-  HS.waitToggle(hsid);
-
-  $.ajax({
-    type: "POST",
-    url: HS.setting('global', 'url'),
-    data: HS.post(hsid, HS.getFullSelection(hsid, deepestSelectValue), dropboxSelection, 'dropbox-remove'),
-    dataType: "json",
-    success: function(json) {
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-      .html(json.hierarchicalSelect);
-      $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-dropbox', HS.context)
-      .html(json.dropbox);
-
-      HS.dropboxContent[hsid] = json.dropboxLineagesSelections;
-
-      HS.waitToggle(hsid);
-      HS.updateOriginalSelect(hsid);
-      HS.attachBindings(hsid);
-      HS.checkDropboxLimit(hsid);
+  // beforeSend callback: effects and disabling the form.
+  var beforeSendCallback = function(_hsid) {
+    switch (updateType) {
+      case 'hierarchical select':
+        // Drop out the selects of the levels deeper than the select of the
+        // level that just changed.
+        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context)
+        .gt(lastUnchanged).DropOutLeft(animationDelay);
+        break;
     }
+
+    Drupal.HierarchicalSelect.disableForm(_hsid);
+  }(hsid);
+
+  var successCallback = function(response) {
+    var _hsid = hsid;
+
+    // Replace the old HTML with the (relevant part of) retrieved HTML.
+    $('#hierarchical-select-'+ _hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+    .html($('.hierarchical-select-wrapper > *', $(response.output)));
+
+    // TODO: use HTML client storage when available. Only for caching the
+    // results of the hierarchical select. See http://drupal.org/node/235932.
+    // This is why we're still using JSON as the response format and not HTML.
+
+    // Transform the hierarchical select and/or dropbox to the JS variant and
+    // re-enable the disabled form items.
+    Drupal.HierarchicalSelect.transform(_hsid);
+    Drupal.HierarchicalSelect.enableForm(_hsid);
+
+    // Apply effects if applicable.
+    switch (updateType) {
+      case 'hierarchical select':
+        // Hide the loaded selects after the one that was just changed, then
+        // drop them in.
+        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context)
+        .gt(lastUnchanged).hide().DropInLeft(animationDelay);
+        break;
+    } 
+
+    // Reattach the bindings.
+    Drupal.HierarchicalSelect.attachBindings(_hsid);
+  };
+
+  // Perform the dynamic form submit.
+  $.ajax({
+    url:        Drupal.settings.HierarchicalSelect.url,
+    type:       'POST',
+    dataType:   'json',
+    data:       post,
+    beforeSend: beforeSendCallback,
+    success:    successCallback
   });
-};
-
-HierarchicalSelect.update = function(hsid, selection) {
-  var HS = HierarchicalSelect;
-
-  // Don't query the server in special cases.
-  if (selection.match(/^(all|none|label_\d+)$/)) {
-    HS.updateOriginalSelect(hsid);
-  }
-  else {    
-    var animationDelay = HS.setting(hsid, 'animationDelay');
-
-    var $selects = $('select.hierarchical-select-'+ hsid +'-select', HS.context);
-    var lastUnchanged = $selects.index($('select.hierarchical-select-'+ hsid +'-select option[@value='+ selection +']', HS.context).parent()[0]);
-
-    HS.waitToggle(hsid);
-
-    // Drop out the *original* selects of the levels deeper than the select of
-    // the level that just changed.
-    $selects.gt(lastUnchanged).DropOutLeft(animationDelay);
-
-    $.ajax({
-      type: "POST",
-      url: HS.setting('global', 'url'),
-      data: HierarchicalSelect.post(hsid, HS.getFullSelection(hsid, selection), Array(), 'hierarchical-select'),
-      dataType: "json",
-      success: function(json) {
-        $('div#hierarchical-select-'+ hsid +'-container .hierarchical-select-input', HS.context)
-        .html(json.hierarchicalSelect);
-
-        $selects = $('select.hierarchical-select-'+ hsid + '-select', HS.context);
-
-        // Hide the loaded selects after the one that was just changed, then  drop
-        // them in.
-        $selects.gt(lastUnchanged).hide(0).DropInLeft(animationDelay);
-
-        HS.waitToggle(hsid);
-        HS.updateOriginalSelect(hsid);
-        HS.attachBindings(hsid);
-      }
-    });
-  }
 };
 
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
-    HierarchicalSelect.initialize();
+    // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
+    // and as such, Hierarchical Select won't initialize its Javascript! It
+    // will seem as if your browser had Javascript disabled.
+    if (undefined != Drupal.settings.HierarchicalSelect.pretendNoJS) {
+      return false;
+    }
+    
+    Drupal.HierarchicalSelect.initialize();
   });
 }

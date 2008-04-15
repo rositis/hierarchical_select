@@ -28,8 +28,10 @@ mentioned above.
 
 Dependencies
 ------------
+* jQuery Form (http://drupal.org/project/jquery_form)
 * jQuery Interface (http://drupal.org/project/jquery_interface)
   * jQuery Update (http://drupal.org/project/jquery_update)
+
 
 
 Integrates with

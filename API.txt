@@ -8,12 +8,10 @@ element type:
   $form['select_some_term'] = array(
     '#type' => 'hierarchical_select',
     '#title' => t('Select the tag you wish to use.'),
-    '#options' => $options, // Contains an array of tid - term name pairs.
     '#hierarchical_select_settings' => array(
       'module' => 'taxonomy',
       'save_lineage' => FALSE,
       'enforce_deepest' => FALSE,
-      'all_option' => FALSE,
       'level_labels' => array(
         0 => t('Main category'),
         1 => t('Subcategory'),
@@ -32,61 +30,42 @@ Now, let's explain what we see here:
 1) We've set the #type property to "hierarchical_select" instead of "select".
 2) There's a new property: #hierarchical_select_settings. This must be an
 array. These are the items it can contain:
-
  - module (obligated)
-
    This will be passed through in the AHAH requests, to let the HS module know
    which module's hooks should be used.
 
-
  - save_lineage (optional, defaults to FALSE)
- 
    Triggers the lineage saving functionality.
 
-
  - enforce_deepest (optional, defaults to FALSE)
-
    Triggers the enforcing of a selection in the deepest level.
 
-
- - all_option (optional, defaults to FALSE)
-
-   Adds an "<all>" option, which will select all (non-special) values.
-
-
  - level_labels (optional)
-
    An array of labels, one per level. The label for the first level should be
    the value of key 0.
    When enforce_deepest is set to:
    - FALSE, then you can provide n level labels, with n the number of levels
    - TRUE, then you can provide only one level label.   
 
-
  - params (optional, may be necessary for some implementations)
-
    An array of parameters that will also be passed through in every AHAH
    request.
    e.g. In the case of taxonomy, this is the vocabulary id (vid). In case of
    content_taxonomy, there's two parameters: vid and the depth.
 
-
  - animation_delay (optional, defaults to 400)
-
    The delay of each animation (the drop in left and right animations), in ms.
 
-
  - dropbox_title (optional, defaults to "All selections:")
-
    The title of the dropbox. The dropbox is the area where all selected items
    are displayed when multiple select is enabled.
 
-
  - dropbox_limit (optional, defaults to 0, which means "no limit")
-
    Limit the number of items that can be added to the dropbox. So this allows
    you the restrict the number of items that can be selected when multiple
    select has been enabled.
+3) We *don't* specify a list of options: Hierarchical Select automatically
+generates the options for us, thanks to the 'module' and 'params' settings.
 
 
 Special values
@@ -105,38 +84,25 @@ Special values
 Hooks
 -----
 1) hook_hierarchial_select_form_alter($form_id, &$form);
-
    This hook is absolutely optional! The sole reason for its existence, is to
    allow easy altering of forms of modules that don't support Hierarchical
    Select natively, to use the hierarchical_select form item.
 
-
 2) hook_hierarchical_select_params();
-
    Returns the names of all parameters that should be present.
 
-
 3) hook_hierarchical_select_root_level($params);
-
    Returns the root level of the hierarchy.
 
-
 4) hook_hierarchical_select_children($parent, $params);
-
    Gets the children of $parent and returns them.
 
-
 5) hook_hierarchical_select_lineage($item, $params);
-
    Calculates the lineage of $item and returns it. Necessary when the
    "enforce_deepest" option is enabled.
 
-
 6) hook_hierarchical_select_valid_item($item, $params);
-
    Validates an item, returns TRUE if valid, FALSE if invalid.
 
-
 7) hook_hierarchical_select_item_get_label($item, $params);
-
    Given a valid item, returns the label.
