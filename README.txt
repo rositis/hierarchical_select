@@ -64,6 +64,9 @@ NOTE: When using a content_taxonomy CCK field, you must configure it to use
 NOTE: When using a "multiple values" content_taxonomy CCK field, you must also
       set your vocabulary to be "multiple select"!
       See http://drupal.org/node/212398.
+NOTE: When using Hierarchical Select for forum selection (with forum.module),
+      you *must* enable the setting "Save only the deepest item".
+      See http://drupal.org/node/241766#comment-808464.
 
 In case of problems, don't forget to try a hard refresh in your browser!
 
