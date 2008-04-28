@@ -6,11 +6,9 @@
   margin-bottom: 1em;
 }
 
-.hierarchical-select-wrapper .hierarchical-select * {
-  margin: 0;
-}
-
-.hierarchical-select-wrapper .hierarchical-select > * {
+.hierarchical-select-wrapper .hierarchical-select select,
+.hierarchical-select-wrapper .hierarchical-select input {
+  margin: 0pt;
   margin-right: .5em;
   float: left;
 }
