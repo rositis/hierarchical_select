@@ -753,7 +753,6 @@ function _hierarchical_select_setup_js() {
     // selects.
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
     jquery_interface_add();
-    jquery_form_add();
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
     drupal_add_js(array('HierarchicalSelect' => array('url' => $url)), 'setting');
   }
