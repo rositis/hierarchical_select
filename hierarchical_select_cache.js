@@ -190,7 +190,7 @@ Drupal.HierarchicalSelect.cache.createAndUpdateSelects = function(hsid, subLevel
   }
 };
 
-Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value, lastUnchanged) {
+Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value, lastUnchanged, ajaxOptions) {
   // If the selected value has children
   Drupal.HierarchicalSelect.cache.hasChildren(hsid, value, function() {
     console.log("Cache hit.");

@@ -213,7 +213,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - the cache system is running.
   // Otherwise, perform a normal dynamic form submit.
   if (updateType == 'hierarchical select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
-    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, $('#'+ settings.select_id).val(), lastUnchanged);
+    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, $('#'+ settings.select_id).val(), lastUnchanged, ajaxOptions);
   }
   else {
     Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
