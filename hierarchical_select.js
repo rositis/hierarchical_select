@@ -7,9 +7,16 @@ Drupal.HierarchicalSelect.context = function() {
 };
 
 Drupal.HierarchicalSelect.initialize = function() {
+  if (this.cache != null) {
+    this.cache.initialize();
+  }
+
   for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
     this.transform(hsid);
     this.attachBindings(hsid);
+    if (this.cache != null && this.cache.status()) {
+      this.cache.load(hsid);
+    }
   }
 };
 
@@ -95,11 +102,62 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   }(hsid));
 };
 
+Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
+  switch (updateType) {
+    case 'hierarchical select':
+      // Drop out the selects of the levels deeper than the select of the
+      // level that just changed.
+      var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
+      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context).gt(lastUnchanged);
+      if ($animatedSelects.size() > 0) {
+        $animatedSelects.DropOutLeft(animationDelay, callback);
+      }
+      else if (callback) {
+        callback();
+      }
+      break;
+    default:
+      if (callback) {
+        callback();
+      }  
+      break;
+  }
+};
+
+Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
+  switch (updateType) {
+    case 'hierarchical select':
+      // Hide the loaded selects after the one that was just changed, then
+      // drop them in.
+      var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
+      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context).gt(lastUnchanged);
+      if ($animatedSelects.size() > 0) {
+        $animatedSelects.hide().DropInLeft(animationDelay, callback);
+      }
+      else if (callback) {
+        callback();
+      }
+      break;
+    default:
+      if (callback) {
+        callback();
+      }
+      break;
+  } 
+};
+
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   var post = $('form[#hierarchical-select-' + hsid +'-wrapper]', Drupal.HierarchicalSelect.context).formToArray();
 
   // Pass the hierarchical_select id via POST.
   post.push({ name : 'hsid', value : hsid });
+  
+  // If a cache system is installed, let the server know if it's running
+  // properly. If it is running properly, the server will send back additional
+  // information to maintain a lazily-loaded cache.
+  if (Drupal.HierarchicalSelect.cache != null) {
+    post.push({ name : 'client_supports_caching', value : Drupal.HierarchicalSelect.cache.status() });
+  }
 
   // updateType is one of:
   // - 'none' (default)
@@ -107,7 +165,6 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - 'remove'
   switch (updateType) {
     case 'hierarchical select':
-      var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
       var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1");
       break;
 
@@ -115,62 +172,56 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       post.push({ name : 'op', value : settings.opString });
       break;
   }
-  
-  // beforeSend callback: effects and disabling the form.
-  var beforeSendCallback = function(_hsid) {
-    switch (updateType) {
-      case 'hierarchical select':
-        // Drop out the selects of the levels deeper than the select of the
-        // level that just changed.
-        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context)
-        .gt(lastUnchanged).DropOutLeft(animationDelay);
-        break;
-    }
 
-    Drupal.HierarchicalSelect.disableForm(_hsid);
-  }(hsid);
-
-  var successCallback = function(response) {
-    var _hsid = hsid;
-
-    // Replace the old HTML with the (relevant part of) retrieved HTML.
-    $('#hierarchical-select-'+ _hsid +'-wrapper', Drupal.HierarchicalSelect.context)
-    .html($('.hierarchical-select-wrapper > *', $(response.output)));
-
-    // TODO: use HTML client storage when available. Only for caching the
-    // results of the hierarchical select. See http://drupal.org/node/235932.
-    // This is why we're still using JSON as the response format and not HTML.
-
-    // Transform the hierarchical select and/or dropbox to the JS variant and
-    // re-enable the disabled form items.
-    Drupal.HierarchicalSelect.transform(_hsid);
-    Drupal.HierarchicalSelect.enableForm(_hsid);
-
-    // Apply effects if applicable.
-    switch (updateType) {
-      case 'hierarchical select':
-        // Hide the loaded selects after the one that was just changed, then
-        // drop them in.
-        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select', Drupal.HierarchicalSelect.context)
-        .gt(lastUnchanged).hide().DropInLeft(animationDelay);
-        break;
-    } 
-
-    // Reattach the bindings.
-    Drupal.HierarchicalSelect.attachBindings(_hsid);
-  };
-
-  // Perform the dynamic form submit.
-  $.ajax({
+  // Construct the object that contains the options for a callback to the
+  // server. If a client-side cache is found however, it's possible that this
+  // won't be used.
+  var ajaxOptions = {
     url:        Drupal.settings.HierarchicalSelect.url,
     type:       'POST',
     dataType:   'json',
     data:       post,
-    beforeSend: beforeSendCallback,
-    success:    successCallback
-  });
-};
+    beforeSend: function() { Drupal.HierarchicalSelect.disableForm(hsid); },
+    success:    function(response) {
+      // Replace the old HTML with the (relevant part of) retrieved HTML.
+      $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+      .html($('.hierarchical-select-wrapper > *', $(response.output)));
 
+      // Transform the hierarchical select and/or dropbox to the JS variant and
+      // re-enable the disabled form items.
+      Drupal.HierarchicalSelect.transform(hsid);
+      Drupal.HierarchicalSelect.enableForm(hsid);
+
+      Drupal.HierarchicalSelect.postUpdateAnimations(hsid, updateType, lastUnchanged, function() {
+        // Reattach the bindings.
+        Drupal.HierarchicalSelect.attachBindings(hsid);
+
+        // Update the client-side cache when:
+        // - information for in the cache is provided in the response, and
+        // - the cache system is available, and
+        // - the cache system is running.
+        if (response.cache != null && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
+          Drupal.HierarchicalSelect.cache.sync(hsid, response.cache);
+        }
+      });
+    }
+  };
+
+  // Use the client-side cache to update the hierarchical select when:
+  // - the hierarchical select is being updated (i.e. no add/remove), and
+  // - the cache system is available, and
+  // - the cache system is running.
+  // Otherwise, perform a normal dynamic form submit.
+  if (updateType == 'hierarchical select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
+    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, $('#'+ settings.select_id).val(), lastUnchanged);
+  }
+  else {
+    Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
+      $.ajax(ajaxOptions); 
+    });
+  }
+};
+  
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
     // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,

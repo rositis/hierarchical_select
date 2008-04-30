@@ -96,7 +96,7 @@ function hierarchical_select_json() {
 
   $form_id = $_POST['form_id'];
   $hs_form_build_id = $_POST['hs_form_build_id'];
-  
+
   // Collect all necessary variables.
   $cached = cache_get($hs_form_build_id, 'cache');
   $storage = unserialize($cached->data);
@@ -112,10 +112,20 @@ function hierarchical_select_json() {
   $part_of_form = _hierarchical_select_get_form_element($form, $parents);
   $output = drupal_render($part_of_form);
 
-  // TODO: http://drupal.org/node/235932. This is why we're continuing to
-  // use JSON as the response format and not HTML.
+  // If the user's browser supports the active cache system, then send the
+  // currently requested hierarchy in an easy-to-manage form.
+  $cache = array();
+  if ($_POST['client_supports_caching'] == 'true') {
+    $cache = _hierarchical_select_json_convert_hierarchy_to_cache($part_of_form['hierarchy']['#value']);
+  }
+  else if ($_POST['client_supports_caching'] == 'false') {
+    // This indicates that a client-side cache is installed, but not working
+    // properly.
+    // TODO: figure out a clean way to notify the administrator.
+  }
 
   print drupal_to_js(array(
+    'cache'  => $cache,
     'output' => $output,
   ));
   exit;
@@ -153,6 +163,7 @@ function hierarchical_select_process($element) {
         'settings' => array(
           $hsid => array(
             'animationDelay' => ($animation_delay == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $animation_delay,
+            'cacheId'        => $module .'_'. implode('_', $params),
           ),
         ),
       )
@@ -168,6 +179,10 @@ function hierarchical_select_process($element) {
   // were just calculated.
   $dropbox = (!$element['#multiple']) ? FALSE : _hierarchical_select_dropbox_generate($module, $db_selection, $save_lineage, $level_labels, $params, $dropbox_title);
   $hierarchy = _hierarchical_select_hierarchy_generate($module, $hs_selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required, $dropbox);
+
+  // Store the hierarchy object in the element, we'll need this if the user's
+  // browser supports the active cache system.
+  $element['hierarchy'] = array('#type' => 'value', '#value' => $hierarchy);
 
 
   // Ensure that #tree is enabled!
@@ -402,6 +417,25 @@ function hierarchical_select_admin_settings() {
     ),
     '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
   );
+  $form['hierarchical_select_js_cache_system'] = array(
+    '#type' => 'radios',
+    '#title' => t('Cache in a HTML 5 client-side database'),
+    '#description' => t(
+      'This feature only works in browsers that support the
+      <a href="!spec-url">HTML 5 client-side database storage specification
+      </a> will be able to take advantage of this feature.</br>
+      After enabling this, you will notice (in supporting browsers) that
+      refreshing the hierarchical select will not require a request to the
+      server when a part is being requested that has been requested before.',
+      array('!spec-url' => url('http://www.whatwg.org/specs/web-apps/current-work/multipage/section-sql.html'))
+    ),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled'),
+    ),
+    '#default_value' => variable_get('hierarchical_select_js_cache_system', 0),
+  );
+  
 
   return system_settings_form($form);
 }
@@ -753,6 +787,9 @@ function _hierarchical_select_setup_js() {
     // selects.
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
+    if (variable_get('hierarchical_select_js_cache', 0) == 1) {
+      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_cache.js');
+    }
     if (!module_exists('jquery_form')) {
       drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_formtoarray.js');
     }
@@ -761,6 +798,44 @@ function _hierarchical_select_setup_js() {
     }
     drupal_add_js(array('HierarchicalSelect' => array('url' => $url)), 'setting');
   }
+}
+
+/**
+ * Convert a hierarchy object into an array of arrays that can be used for
+ * caching an entire hierarchy in a client-side database.
+ *
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @return
+ *   An array of arrays.
+ */
+function _hierarchical_select_json_convert_hierarchy_to_cache($hierarchy) {
+  // Convert the hierarchy object to an array of values like these:
+  // array('value' => $term_id, 'label => $term_name, 'parent' => $term_id)
+  $cache = array();
+  foreach ($hierarchy->levels as $depth => $items) {
+    $weight = 0;
+    foreach ($items as $value => $label) {
+      $weight++;
+      $cache[] = array(
+        'value'  => $value,
+        'label'  => $label,
+        'parent' => ($depth == 0) ? 0 : $hierarchy->lineage[$depth - 1],
+        'weight'  => $weight,
+      );
+    }
+  }
+
+  // The last item in the lineage never has any children.
+  $value = end($hierarchy->lineage);
+  $cache[] = array(
+    'value'  => $value .'-has-no-children', // Construct a pseudo-value (will never be actually used).
+    'label'  => '',
+    'parent' => $value,
+    'weight' => 0,
+  );
+
+  return $cache;
 }
 
 /**
