@@ -1062,11 +1062,14 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
     }
   }
 
-  // When nothing is currently selected, the dropbox is enabled and at least
-  // one selection has been added to the dropbox, then set the root level to
-  // "<none>". Otherwise, default to the root level label.
+  // When nothing is currently selected, set the root level to:
+  // - "<none>" when:
+  //    - enforce_deepest is enabled, or
+  //    - the dropbox is enabled *and* at least one selection has been added
+  //      to the dropbox
+  // - "label_0" (the root level label) in all other cases.
   if ($selection == -1) {
-    $hierarchy->lineage[0] = ($dropbox && count($dropbox->lineages) > 0) ? 'none' : 'label_0';
+    $hierarchy->lineage[0] = ($enforce_deepest || ($dropbox && count($dropbox->lineages) > 0)) ? 'none' : 'label_0';
   }
   else {
     // If save_lineage setting is enabled, then the selection *is* a lineage.
