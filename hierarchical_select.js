@@ -150,6 +150,11 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   var post = $('form[#hierarchical-select-' + hsid +'-wrapper]', Drupal.HierarchicalSelect.context).formToArray();
+  var value = $('#'+ settings.select_id).val();
+
+  // Don't do anything if it's one of the "no action values".
+  if (value == 'none' || value.matches(/^label_\d+$/))
+    return;
 
   // Pass the hierarchical_select id via POST.
   post.push({ name : 'hsid', value : hsid });
@@ -215,7 +220,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - the cache system is running.
   // Otherwise, perform a normal dynamic form submit.
   if (updateType == 'hierarchical select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
-    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, $('#'+ settings.select_id).val(), lastUnchanged, ajaxOptions);
+    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, value, lastUnchanged, ajaxOptions);
   }
   else {
     Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
