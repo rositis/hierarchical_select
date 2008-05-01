@@ -77,6 +77,7 @@ function hierarchical_select_elements() {
       'dropbox_title' => t('All selections'),
       'dropbox_limit' => 0,
     ),
+    '#multiple' => FALSE,
     '#default_value' => -1,
   );
   return $type;
