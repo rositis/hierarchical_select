@@ -788,7 +788,7 @@ function _hierarchical_select_setup_js() {
     // selects.
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
-    if (variable_get('hierarchical_select_js_cache', 0) == 1) {
+    if (variable_get('hierarchical_select_js_cache_system', 0) == 1) {
       drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_cache.js');
     }
     if (!module_exists('jquery_form')) {
