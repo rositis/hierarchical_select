@@ -21,6 +21,7 @@
  * TODO: better documentation
  */
 
+(function ($) {
 
 Drupal.HierarchicalSelect.cache = {};
 
@@ -220,3 +221,5 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
     });
   });
 };
+
+})(jQuery);

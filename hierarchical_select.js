@@ -1,5 +1,7 @@
 // $Id$
 
+(function ($) {
+
 Drupal.HierarchicalSelect = {};
 
 Drupal.HierarchicalSelect.context = function() {
@@ -234,3 +236,5 @@ if (Drupal.jsEnabled) {
     Drupal.HierarchicalSelect.initialize();
   });
 }
+
+})(jQuery);

@@ -6,6 +6,7 @@
  * jQuery Form Plugin 2.07. (http://www.malsup.com/jquery/form/)
  */
 
+(function ($) {
 
 $.fn.formToArray = function(semantic) {
     var a = [];
@@ -77,3 +78,5 @@ $.fieldValue = function(el, successful) {
     }
     return el.value;
 };
+
+})(jQuery);
