@@ -153,7 +153,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   var value = $('#'+ settings.select_id).val();
 
   // Don't do anything if it's one of the "no action values".
-  if (value == 'none' || value.matches(/^label_\d+$/))
+  if (value == 'none' || value.match(/^label_\d+$/))
     return;
 
   // Pass the hierarchical_select id via POST.
