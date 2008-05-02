@@ -903,6 +903,9 @@ function _hierarchical_select_setup_js() {
     if (!module_exists('jquery_interface')) {
       drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_effects.js');
     }
+    else {
+      jquery_interface_add();
+    }
     drupal_add_js(array('HierarchicalSelect' => array('url' => $url)), 'setting');
   }
 }
