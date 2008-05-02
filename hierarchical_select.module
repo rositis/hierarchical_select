@@ -76,6 +76,12 @@ function hierarchical_select_elements() {
       'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
       'dropbox_title' => t('All selections'),
       'dropbox_limit' => 0,
+      'editable' => FALSE,
+      'editable_settings' => array(
+        'item_types' => array(),
+        'allow_new_levels' => FALSE,
+        'max_levels' => 3,
+      ),
     ),
     '#multiple' => FALSE,
     '#default_value' => -1,
@@ -179,7 +185,7 @@ function hierarchical_select_process($element) {
   // Generate the $hierarchy and $dropbox objects using the selections that
   // were just calculated.
   $dropbox = (!$element['#multiple']) ? FALSE : _hierarchical_select_dropbox_generate($module, $db_selection, $save_lineage, $level_labels, $params, $dropbox_title);
-  $hierarchy = _hierarchical_select_hierarchy_generate($module, $hs_selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required, $dropbox);
+  $hierarchy = _hierarchical_select_hierarchy_generate($module, $hs_selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required, $dropbox, $editable, $editable_settings);
 
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.
@@ -196,13 +202,66 @@ function hierarchical_select_process($element) {
   );
   $element['hierarchical_select']['selects'] = _hierarchical_select_process_render_hs_selects($hsid, $hierarchy);
 
+  // Check if a new item is being created.
+  if (isset($element['#value']['hierarchical_select']['selects'])) {
+    foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
+      if (in_array($value, array('create_new_item', 'create_new_level'))) {
+        // We want to override the select in which the "create_new_item"
+        // option was selected and hide all selects after that, if they exist.
+        $element['hierarchical_select']['selects'] = array_slice($element['hierarchical_select']['selects'], 0, $depth + 1);
+
+        $element['hierarchical_select']['create_new_item'] = array(
+          '#prefix' => '<div class="'. str_replace('_', '-', $value) .'">',
+          '#suffix' => '</div>',
+        );
+
+        $item_type = ($value == 'create_new_item') ? $editable_settings['item_types'][$depth] : t('level');
+
+        if ($value == 'create_new_level') {
+          $element['hierarchical_select']['create_new_item']['parent'] = array(
+            '#type' => 'select',
+            '#options' => module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params),
+            '#default_value' => -1,
+            // Use a #theme callback to prevent the select from being wrapped in a
+            // div. This simplifies the CSS and JS code.
+            '#theme' => 'hierarchical_select_select',
+            '#attributes' => array('class' => 'create-new-level-parent'),
+          );
+          
+        }
+        $element['hierarchical_select']['create_new_item']['input'] = array(
+          '#type' => 'textfield',
+          '#size' => 20,
+          '#maxlength' => 255,
+          '#default_value' => t('new @item', array('@item' => $item_type)),
+          '#attributes' => array('class' => 'create-new-item-input'),
+          // Use a #theme callback to prevent the textfield from being wrapped
+          // in a div. This simplifies the CSS and JS code.
+          '#theme' => 'hierarchical_select_textfield',
+        );
+
+        $element['hierarchical_select']['create_new_item']['create'] = array(
+          '#type' => 'button', 
+          '#value' => t('Create'),
+          '#attributes' => array('class' => 'create-new-item-create'),
+        );
+      
+        $element['hierarchical_select']['create_new_item']['cancel'] = array(
+          '#type' => 'button', 
+          '#value' => t('Cancel'),
+          '#attributes' => array('class' => 'create-new-item-cancel'),
+        );
+      }
+    }
+  }
+
 
   if ($element['#multiple']) {
     // Append an "Add" button to the selects.    
     $element['hierarchical_select']['dropbox-add'] = array(
       '#type'       => 'button', 
       '#value'      => t('Add'),
-      '#attributes' => array('class' => 'hierarchical-select-add-button'),
+      '#attributes' => array('class' => 'add-to-dropbox'),
     );
 
     if ($dropbox_limit > 0) { // Zero as dropbox limit means no limit.
@@ -588,9 +647,53 @@ function _hierarchical_select_process_calculate_selections($element) {
       $db_selection = array_merge($db_selection, $hs_selection);
       $hs_selection = array();
     }
+    else if ($op == t('Create')) {
+      // This code handles both the creation of a new item in an existing
+      // level and the creation of an item that also creates a new level.
+
+      // TODO: http://drupal.org/node/253868
+      // TODO: http://drupal.org/node/253869
+
+      extract(_hierarchical_select_extract_settings($element));
+      $selects = $element['#value']['hierarchical_select']['selects'];
+
+      // Create the new item in the hierarchy and retrieve its value.
+      $label  = $element['#value']['hierarchical_select']['create_new_item']['input'];
+      if (isset($element['#value']['hierarchical_select']['create_new_item']['parent'])) {
+        $parent = $element['#value']['hierarchical_select']['create_new_item']['parent']; // New level.
+      }
+      else {
+        $parent = (count($selects) > 0) ? end($selects) : 0; // New item.
+      }
+      $value = module_invoke($module, 'hierarchical_select_create_item', check_plain($label), $parent, $params);
+
+      // Ensure the newly created item or level will be selected after
+      // rendering.
+      if ($value) {
+        if (isset($element['#value']['hierarchical_select']['create_new_item']['parent'])) {
+          // Pretend there were two selects where the "create new level"
+          // section was, and assign the first one the value of the selected
+          // parent item, the second one the value of the item that was just
+          // created.
+          $element['#value']['hierarchical_select']['selects'][count($selects)] = $parent;
+          $element['#value']['hierarchical_select']['selects'][count($selects) + 1] = $value;
+        }
+        else {
+          // Pretend there was a select where the "create new item" section
+          // was, and assign it the value of the item that was just created.
+          $element['#value']['hierarchical_select']['selects'][count($selects)] = $value;
+        }
+      }
+      $hs_selection = _hierarchical_select_process_get_hs_selection($element);
+      if ($dropbox) {
+        $db_selection = _hierarchical_select_process_get_db_selection($element);
+      }
+    }
     else {
-      // This handles both the case of $op == t('Update') and the case of any
-      // other submit button, e.g. the "Preview" button.
+      // This handles the cases of:
+      // - $op == t('Update')
+      // - $op == t('Cancel') (used when creating a new item or a new level)
+      // - any other submit button, e.g. the "Preview" button
       $hs_selection = _hierarchical_select_process_get_hs_selection($element);
       if ($dropbox) {
         $db_selection = _hierarchical_select_process_get_db_selection($element);
@@ -856,6 +959,8 @@ function _hierarchical_select_extract_settings($element) {
     'animation_delay' => (int) $element['#hierarchical_select_settings']['animation_delay'],
     'dropbox_title'   => $element['#hierarchical_select_settings']['dropbox_title'],
     'dropbox_limit'   => (int) $element['#hierarchical_select_settings']['dropbox_limit'],
+    'editable'        => (bool) $element['#hierarchical_select_settings']['editable'],
+    'editable_settings' => $element['#hierarchical_select_settings']['editable_settings'],
     'params'          => $element['#hierarchical_select_settings']['params'],
     'required'        => (bool) $element['#required'],
     'multiple'        => (bool) $element['#multiple'],
@@ -1021,10 +1126,14 @@ function _hierarchical_select_form_has_hierarchical_select($form) {
  *   Whether the form element is required or not. (#required in Forms API)
  * @param $dropbox
  *   A dropbox object, or FALSE.
+ * @param $editable
+ *   Whether the hierarchy is editable or not.
+ * @param $editable_settings
+ *   An array of settings that will be used when $editable is enabled.
  * @return
  *   A hierarchy object.
  */
-function _hierarchical_select_hierarchy_generate($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required, $dropbox = FALSE) {
+function _hierarchical_select_hierarchy_generate($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required, $dropbox = FALSE, $editable = FALSE, $editable_settings = array()) {
   $hierarchy = new stdClass();
 
   //
@@ -1107,6 +1216,12 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
   // Start building the levels, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
 
+  // Prepend a "<create new item>" option to the root level when the editable
+  // setting is enabled.
+  if ($editable) {
+    $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[0];
+  }
+
   // Prepend a "<none>" option to the root level when:
   // - the form element is optional.
   // - enforce_deepest is enabled (use case: when level labels are disabled,
@@ -1125,18 +1240,30 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
     $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
   }
 
-  // If enforce_deepest is enabled and the root label is set, prepend it.
-  if ($enforce_deepest && isset($level_labels[0])) {
-    $hierarchy->levels[0] = array('label_0' => $level_labels[0]) + $hierarchy->levels[0];  
+  if ($enforce_deepest) {
+    // If the editable setting is enabled, create "<create new item>" options
+    // in all levels below the root level.
+    if ($editable) {
+      for ($depth = 1; $depth <= $max_depth; $depth++) {
+        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
+      }
+    }
+
+    // If the root label is set, prepend it.
+    if (isset($level_labels[0])) {
+      $hierarchy->levels[0] = array('label_0' => $level_labels[0]) + $hierarchy->levels[0];  
+    }
   }
-  // If enforce_deepest is disabled …
   else if (!$enforce_deepest) {
-    // … prepend labels to every level …
+    // Prepend special options to every level.
     for ($depth = 0; $depth <= $max_depth; $depth++) {
+      // A "<create new item>" option, if the editable setting is enabled.
+      $hierarchy->levels[$depth] = array('create_new_item_'. $depth => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
+      // Level label.
       $hierarchy->levels[$depth] = array('label_'. $depth => $level_labels[$depth]) + $hierarchy->levels[$depth];
     }
 
-    // … and add one more level if appropriate.
+    // Add one more level if appropriate.
     $parent = $hierarchy->lineage[$max_depth];
     if (module_invoke($module, 'hierarchical_select_valid_item', $parent, $params)) {
       $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
@@ -1146,6 +1273,25 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
         $first_child = reset(array_keys($children));
         $hierarchy->lineage[$max_depth] = 'label_'. $max_depth;
         $hierarchy->levels[$max_depth] = array('label_'. $max_depth => $level_labels[$max_depth]) + $children;
+      }
+    }
+  }
+
+  // If the editable setting and allow_new_levels settings are enabled: add a
+  // "<create new level>" option to each level, as long as it is a level below
+  // the max_levels setting.
+  if ($editable && $editable_settings['allow_new_levels']) {
+    foreach ($hierarchy->levels as $depth => $level) {
+      if ($last < $editable_settings['max_levels'] - 1) {
+        foreach (array_keys($hierarchy->levels[$depth]) as $id => $value) {
+          if ($value == 'create_new_item') {
+            $offset = $id;
+            break;
+          }
+        }
+        $first_slice  = array_slice($hierarchy->levels[$depth], 0, $offset + 1, TRUE);
+        $second_slice = array_slice($hierarchy->levels[$depth], $offset + 1, count($hierarchy->levels[$depth]) - ($offset + 1), TRUE);
+        $hierarchy->levels[$depth] = $first_slice + array('create_new_level' => '<'. t('create new level') .'>') + $second_slice;
       }
     }
   }
@@ -1477,6 +1623,41 @@ function theme_hierarchical_select_select($element) {
   _form_set_class($element, array('form-select'));
   $multiple = isset($element['#multiple']) && $element['#multiple'];
   return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. form_select_options($element) .'</select>';
+}
+
+/**
+ * Format a textfield in the .hierarchial-select div: prevent it from being
+ * wrapped in a div. This simplifies the CSS and JS code.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ * @return
+ *   A themed HTML string representing the form element.
+ */
+function theme_hierarchical_select_textfield($element) {
+  $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
+  $class = array('form-text');
+  $extra = '';
+  $output = '';
+
+  if ($element['#autocomplete_path']) {
+    drupal_add_js('misc/autocomplete.js');
+    $class[] = 'form-autocomplete';
+    $extra =  '<input class="autocomplete" type="hidden" id="'. $element['#id'] .'-autocomplete" value="'. check_url(url($element['#autocomplete_path'], NULL, NULL, TRUE)) .'" disabled="disabled" />';
+  }
+  _form_set_class($element, $class);
+
+  if (isset($element['#field_prefix'])) {
+    $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
+  }
+
+  $output .= '<input type="text" maxlength="'. $element['#maxlength'] .'" name="'. $element['#name'] .'" id="'. $element['#id'] .'" '. $size .' value="'. check_plain($element['#value']) .'"'. drupal_attributes($element['#attributes']) .' />';
+
+  if (isset($element['#field_suffix'])) {
+    $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
+  }
+
+  return $output . $extra;
 }
 
 /**

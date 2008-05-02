@@ -47,7 +47,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     );
 
     $form['hierarchical_select']['save_lineage'] = array(
-      '#type' => 'select',
+      '#type' => 'radios',
       '#title' => t('Save lineage'),
       '#options' => array(
         HS_TAXONOMY_DO_SAVE_LINEAGE => t('Save term lineage'),
@@ -64,7 +64,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
     $enforce_deepest = variable_get("hierarchical_select_enforce_deepest_$vid", HS_TAXONOMY_DONT_ENFORCE_DEEPEST);
     $form['hierarchical_select']['enforce_deepest'] = array(
-      '#type' => 'select',
+      '#type' => 'radios',
       '#title' => t('Level choice'),
       '#options' => array(
         HS_TAXONOMY_DO_ENFORCE_DEEPEST => t('Force the user to choose a term from the deepest level'),
@@ -77,6 +77,65 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
         the deepest level (based on what has been selected before, this does
         not mean that every branch in your vocabulary tree must be equally
         deep), or from any level.'
+      ),
+    );
+
+    $form['hierarchical_select']['editability'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Editability settings'),
+      '#description' => t(
+        'You can make this %hierarchy editable through Hierarchical Select,
+        and if you do, you can allow the user to create new %items
+        <em>through</em> Hierarchical Select.',
+        array('%hierarchy' => t('vocabulary'), '%items' => t('terms'))
+      ),
+      '#collapsible' => TRUE,
+    );    
+    $form['hierarchical_select']['editability']['editable'] = array(
+      '#type' => 'radios',
+      '#title' => t('Allow creation of new %items', array('%items' => t('terms'))),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => variable_get("hierarchical_select_editable_$vid", 0),
+      '#attributes' => array('class' => 'hierarchical-select-editable'),
+    );
+    for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+      $form['hierarchical_select']['editability']["level_{$depth}_item_type"] = array(
+        '#type' => 'textfield',
+        '#title' => t(($depth == 0) ? '%item_type for root level' : '%item_type for sublevel !depth', array('%item_type' => t('Term type'), '!depth' => $depth)),
+        '#size' => 20,
+        '#maxlength' => 255,
+        '#default_value' => variable_get("hierarchical_select_level_{$depth}_item_type_{$vid}", ''),
+        '#attributes' => array('class' => 'hierarchical-select-item-type'),
+      );
+    }
+    $form['hierarchical_select']['editability']['allow_new_levels'] = array(
+      '#type' => 'radios',
+      '#title' => t('Allow creation of new levels'),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => variable_get("hierarchical_select_allow_new_levels_$vid", 0),
+      '#description' => t(
+        'Allow the user to create child %items for %items that do not yet have
+        children.',
+        array('%items' => t('terms'))
+      ),
+      '#attributes' => array('class' => 'hierarchical-select-allow-new-levels'),
+    );
+    $form['hierarchical_select']['editability']['max_levels'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Maximum number of levels allowed'),
+      '#size' => 3  ,
+      '#maxlength' => 255,
+      '#default_value' => variable_get("hierarchical_select_max_levels_$vid", _taxonomy_hierarchical_select_get_depth($vid)),
+      '#description' => t(
+        'When the user is allowed to create new levels, this option prevents
+        the user from creating extremely deep %hierarchies.',
+        array('%hierarchies' => t('vocabularies'))
       ),
     );
 
@@ -189,7 +248,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
                 'vid' => $vid,
               ),
             );
-            taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid);
+            taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid, FALSE);
             
             // Inherit #multiple from the exposed filter settings.
             $form["filter$id"]['#multiple'] = !((bool) $view->exposed_filter[$id]['single']);
@@ -214,7 +273,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     foreach ($form['taxonomy'] as $vid => $form_item) {
 
       // Only apply Hierarchical Select if it's enabled for this vocabulary.
-      if (variable_get("hierarchical_select_status_$vid", FALSE)) {
+      if (is_numeric($vid) && variable_get("hierarchical_select_status_$vid", FALSE)) {
         $vocabulary = taxonomy_get_vocabulary($vid);
 
         // Hierarchical Select only makes sense if there's a hierarchy.
@@ -247,7 +306,7 @@ function taxonomy_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function taxonomy_hierarchical_select_root_level($params) {
-  $terms = taxonomy_get_tree($params['vid'], 0, -1, 1);
+  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -298,7 +357,36 @@ function taxonomy_hierarchical_select_item_get_label($item, $params) {
   return $labels[$item];
 }
 
- 
+
+/**
+ * Implementation of hook_hierarchical_select_create_item().
+ */
+function taxonomy_hierarchical_select_create_item($label, $parent, $params) {
+  $form_values = array(
+    'name'   => $label,
+    'parent' => $parent,
+    'vid'    => $params['vid'],
+  );
+  $status = taxonomy_save_term($form_values);
+  
+  if ($status == SAVED_NEW) {
+    // Reset the cached tree.
+    _taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
+
+    // Retrieve the tid.
+    $children = taxonomy_get_children($parent, $params['vid']);
+    foreach ($children as $tid => $term) {
+      if ($term->name == $label) {
+        return $tid;
+      }
+    }
+  }
+  else {
+    return FALSE;
+  }
+}
+
+
 //----------------------------------------------------------------------------
 // FAPI callbacks.
 
@@ -311,6 +399,11 @@ function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_v
   // - Hierarchical Select's "save term lineage" setting is enabled
   $multiple_select_enabled = ($form_values['hierarchical_select_multiple'] || _taxonomy_hierarchical_select_get_save_linage($form_values['vid']));
   form_set_value($form['multiple'], (int) $multiple_select_enabled);
+  
+  // If Hierarchical Select is enabled, disable freetagging.
+  if ($form_values['hierarchical_select']['status']) {
+    form_set_value($form['tags'], 0);
+  }
 }
 
 /**
@@ -328,6 +421,11 @@ function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_val
       variable_set("hierarchical_select_{$setting}_{$vid}", $value);
     }
   }
+  if (isset($form_values['hierarchical_select']['editability'])) {
+    foreach ($form_values['hierarchical_select']['editability'] as $setting => $value) {
+      variable_set("hierarchical_select_{$setting}_{$vid}", $value);
+    }
+  }
   if (isset($form_values['hierarchical_select']['dropbox'])) {
     foreach ($form_values['hierarchical_select']['dropbox'] as $setting => $value) {
       variable_set("hierarchical_select_{$setting}_{$vid}", $value);
@@ -339,6 +437,53 @@ function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_val
 //----------------------------------------------------------------------------
 // Private functions.
 
+/**
+ * Drupal core's taxonomy_get_tree() doesn't allow us to reset the cached
+ * trees, which obviously causes problems when you create new items between
+ * two calls to it.
+ */
+function _taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -1, $max_depth = NULL, $reset = FALSE) {
+  static $children, $parents, $terms;
+
+  if ($reset) {
+    $children = $parents = $terms = array();
+  }
+
+  $depth++;
+
+  // We cache trees, so it's not CPU-intensive to call get_tree() on a term
+  // and its children, too.
+  if (!isset($children[$vid])) {
+    $children[$vid] = array();
+
+    $result = db_query(db_rewrite_sql('SELECT t.tid, t.*, parent FROM {term_data} t INNER JOIN  {term_hierarchy} h ON t.tid = h.tid WHERE t.vid = %d ORDER BY weight, name', 't', 'tid'), $vid);
+    while ($term = db_fetch_object($result)) {
+      $children[$vid][$term->parent][] = $term->tid;
+      $parents[$vid][$term->tid][] = $term->parent;
+      $terms[$vid][$term->tid] = $term;
+    }
+  }
+
+  $max_depth = (is_null($max_depth)) ? count($children[$vid]) : $max_depth;
+  if ($children[$vid][$parent]) {
+    foreach ($children[$vid][$parent] as $child) {
+      if ($max_depth > $depth) {
+        $term = drupal_clone($terms[$vid][$child]);
+        $term->depth = $depth;
+        // The "parent" attribute is not useful, as it would show one parent only.
+        unset($term->parent);
+        $term->parents = $parents[$vid][$child];
+        $tree[] = $term;
+
+        if ($children[$vid][$child]) {
+          $tree = array_merge($tree, _taxonomy_hierarchical_select_get_tree($vid, $child, $depth, $max_depth));
+        }
+      }
+    }
+  }
+
+  return $tree ? $tree : array();
+}
 /**
  * Transform an array of terms into an associative array of options, for use
  * in a select form item.
@@ -385,7 +530,7 @@ function _taxonomy_hierarchical_select_get_save_linage($vid) {
  *   The depth of the vocabulary's tree.
  */
 function _taxonomy_hierarchical_select_get_depth($vid) {
-  $tree = taxonomy_get_tree($vid);
+  $tree = _taxonomy_hierarchical_select_get_tree($vid);
   foreach ($tree as $term) {
     if ($term->depth > $depth) {
       $depth = $term->depth;
@@ -404,8 +549,10 @@ function _taxonomy_hierarchical_select_get_depth($vid) {
  *   The form item to update.
  * @param $vid
  *   The id of the vocabulary of which the settings should be applied.
+ * @param $override_editable
+ *   Allows to override the editable setting.
  */
-function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
+function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid, $override_editable = NULL) {
   $enforce_deepest = variable_get("hierarchical_select_enforce_deepest_$vid", HS_TAXONOMY_DONT_ENFORCE_DEEPEST);
 
   unset($form_item['#options']);
@@ -414,6 +561,12 @@ function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   $form_item['#multiple'] = variable_get("hierarchical_select_multiple_{$vid}", 0);
   $form_item['#hierarchical_select_settings']['save_lineage'] = _taxonomy_hierarchical_select_get_save_linage($vid);
   $form_item['#hierarchical_select_settings']['enforce_deepest'] = $enforce_deepest;
+  $form_item['#hierarchical_select_settings']['editable'] = (!isset($override_editable)) ? variable_get("hierarchical_select_editable_{$vid}", 0) : $override_editable;
+  for ($depth = 0; $depth <= _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+    $form_item['#hierarchical_select_settings']['editable_settings']['item_types'][$depth] = variable_get("hierarchical_select_level_{$depth}_item_type_{$vid}", '');
+  }
+  $form_item['#hierarchical_select_settings']['editable_settings']['allow_new_levels'] = variable_get("hierarchical_select_allow_new_levels_{$vid}", 0);
+  $form_item['#hierarchical_select_settings']['editable_settings']['max_levels'] = variable_get("hierarchical_select_max_levels_{$vid}", _taxonomy_hierarchical_select_get_depth($vid));
   if (variable_get("hierarchical_select_level_labels_status_$vid", 0) == 1) {
     $form_item['#hierarchical_select_settings']['level_labels'][0] = variable_get("hierarchical_select_level_0_{$vid}", '');
     if ($enforce_deepest == HS_TAXONOMY_DONT_ENFORCE_DEEPEST) {
