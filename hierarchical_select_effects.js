@@ -18,6 +18,41 @@ jQuery.fxCheckTag = function(e)
 		return true;
 };
 
+/**
+ * CSS rules that can be animated
+ */
+jQuery.fx.cssProps = {
+    borderBottomWidth:1,
+    borderLeftWidth:1,
+    borderRightWidth:1,
+    borderTopWidth:1,
+    bottom:1,
+    fontSize:1,
+    height:1,
+    left:1,
+    letterSpacing:1,
+    lineHeight:1,
+    marginBottom:1,
+    marginLeft:1,
+    marginRight:1,
+    marginTop:1,
+    maxHeight:1,
+    maxWidth:1,
+    minHeight:1,
+    minWidth:1,
+    opacity:1,
+    outlineOffset:1,
+    outlineWidth:1,
+    paddingBottom:1,
+    paddingLeft:1,
+    paddingRight:1,
+    paddingTop:1,
+    right:1,
+    textIndent:1,
+    top:1,
+    width:1,
+    zIndex:1
+};
 
 /**
  * Overwrite animation to use new FX function
