@@ -341,7 +341,7 @@ function hierarchical_select_after_build($form, $form_values) {
   $parents_per_hierarchical_select = _hierarchical_select_collect_form_parents(NULL, NULL, TRUE);
 
   if (!isset($_POST['hs_form_build_id']) && count($parents_per_hierarchical_select)) {
-    $parameters = (isset($form['#parameters']) && count($form['#parameters']) > 1) ? $form['#parameters'] : array();
+    $parameters = (isset($form['#parameters'])) ? $form['#parameters'] : array();
 
     // Collect information in this array, which will be used in dynamic form
     // updates, to …
