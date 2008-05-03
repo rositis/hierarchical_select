@@ -179,7 +179,7 @@ function hierarchical_select_process($element) {
         'settings' => array(
           $hsid => array(
             'animationDelay' => ($animation_delay == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $animation_delay,
-            'cacheId'        => $module .'_'. implode('_', $params),
+            'cacheId'        => $module .'_'. implode('_', (is_array($params)) ? $params : array()),
           ),
         ),
       )
