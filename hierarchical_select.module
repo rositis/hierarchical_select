@@ -156,6 +156,15 @@ function hierarchical_select_process($element) {
   }
   $element['hsid'] = array('#type' => 'value', '#value' => $hsid);
 
+  // A hierarchical_select form element expands to multiple items. For example
+  // $element['hsid'] got set just above. If #value is not an array, then
+  // form_set_value(), which is called by form_builder() will fail, because it
+  // assumes that #value is an array, because we are trying to set a child of
+  // it.
+  if (!is_array($element['#value'])) {
+    $element['#value'] = array($element['#value']);
+  }
+  
   // Collect the parents of each hierarchical_select form element, this is
   // necessary for the dynamic updates.
   _hierarchical_select_collect_form_parents($element, $hsid);
@@ -539,7 +548,7 @@ function _hierarchical_select_process_get_hs_selection($element) {
       $hs_selection = ($hs_selection != -1) ? array(end($hs_selection)) : array();
     }
   }
-  
+
   return $hs_selection;
 }
 
@@ -630,6 +639,7 @@ function _hierarchical_select_process_calculate_selections($element) {
 
   if (empty($element['#post'])) {
     $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
+    $value = (is_array($value)) ? $value : array($value);
     if ($dropbox) {
       $db_selection = $value;
     }
