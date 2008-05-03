@@ -196,7 +196,7 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
   Drupal.HierarchicalSelect.cache.hasChildren(hsid, value, function() {
     console.log("Cache hit.");
     Drupal.HierarchicalSelect.cache.getSubLevels(hsid, value, function(subLevels) {
-      Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'hierarchical select', lastUnchanged, function() {        
+      Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {        
         if (subLevels !== false) {
           Drupal.HierarchicalSelect.cache.createAndUpdateSelects(hsid, subLevels, lastUnchanged);              
         }
@@ -206,9 +206,11 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
           $('#hierarchical-select-0-wrapper .hierarchical-select select').gt(lastUnchanged).remove();
         }
 
-        Drupal.HierarchicalSelect.postUpdateAnimations(hsid, 'hierarchical select', lastUnchanged, function() {
+        Drupal.HierarchicalSelect.postUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {
           // Reattach the bindings.
           Drupal.HierarchicalSelect.attachBindings(hsid);
+
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'update hierarchical select');
         });
       });
     });   
@@ -216,7 +218,7 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
     // This item was not yet requested before, so we still have to perform
     // the dynamic form submit.
     console.log("Cache miss. Querying the server.");
-    Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'hierarchical select', lastUnchanged, function() {
+    Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {
       $.ajax(ajaxOptions); 
     });
   });

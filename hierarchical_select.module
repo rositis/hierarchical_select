@@ -658,7 +658,7 @@ function _hierarchical_select_process_calculate_selections($element) {
       $selects = $element['#value']['hierarchical_select']['selects'];
 
       // Create the new item in the hierarchy and retrieve its value.
-      $label  = $element['#value']['hierarchical_select']['create_new_item']['input'];
+      $label = $element['#value']['hierarchical_select']['create_new_item']['input'];
       if (isset($element['#value']['hierarchical_select']['create_new_item']['parent'])) {
         $parent = $element['#value']['hierarchical_select']['create_new_item']['parent']; // New level.
       }

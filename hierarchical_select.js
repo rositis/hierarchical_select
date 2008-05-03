@@ -71,15 +71,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
   // "hierarchical select" event
   .find('.hierarchical-select > select').unbind().change(function(_hsid) {
-    return function() { Drupal.HierarchicalSelect.update(_hsid, 'hierarchical select', { select_id : $(this).attr('id') }); };
-  }(hsid)).end()
-
-  // "cancel new item" event"
-  .find('.hierarchical-select .create-new-item .create-new-item-cancel').unbind().click(function(_hsid) {
-    return function() {
-      Drupal.HierarchicalSelect.update(_hsid, 'cancel new item', { opString : cancelNewItemOpString });
-      return false; // Prevent the browser from POSTing the page (in case of the "Cancel" button).
-    };
+    return function() { Drupal.HierarchicalSelect.update(_hsid, 'update hierarchical select', { select_id : $(this).attr('id') }); };
   }(hsid)).end()
 
   // "create new item" event
@@ -87,6 +79,14 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
     return function() {
       Drupal.HierarchicalSelect.update(_hsid, 'create new item', { opString : createNewItemOpString });
       return false; // Prevent the browser from POSTing the page.
+    };
+  }(hsid)).end()
+
+  // "cancel new item" event"
+  .find('.hierarchical-select .create-new-item .create-new-item-cancel').unbind().click(function(_hsid) {
+    return function() {
+      Drupal.HierarchicalSelect.update(_hsid, 'cancel new item', { opString : cancelNewItemOpString });
+      return false; // Prevent the browser from POSTing the page (in case of the "Cancel" button).
     };
   }(hsid)).end()
 
@@ -106,22 +106,22 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
     };
   }(hsid)).end()
 
-  // "remove" event
+  // "add to dropbox" event
+  .find('.hierarchical-select .add-to-dropbox').unbind().click(function(_hsid) {
+    return function() {
+      Drupal.HierarchicalSelect.update(_hsid, 'add to dropbox', { opString : addOpString });
+      return false; // Prevent the browser from POSTing the page.
+    };
+  }(hsid)).end()
+
+  // "remove from dropbox" event
   // (anchors in the .dropbox-remove cells in the .dropbox table)
   .find('.dropbox .dropbox-remove a').unbind().click(function(_hsid) {
     return function() {
       // Check the (hidden, because JS is enabled) checkbox that marks this
       // dropbox entry for removal. 
       $(this).parent().find('input[@type=checkbox]').attr('checked', true);
-      Drupal.HierarchicalSelect.update(_hsid, 'remove', {});
-      return false; // Prevent the browser from POSTing the page.
-    };
-  }(hsid)).end()
-
-  // "add" event
-  .find('.hierarchical-select .add-to-dropbox').unbind().click(function(_hsid) {
-    return function() {
-      Drupal.HierarchicalSelect.update(_hsid, 'add', { opString : addOpString });
+      Drupal.HierarchicalSelect.update(_hsid, 'remove from dropbox', {});
       return false; // Prevent the browser from POSTing the page.
     };
   }(hsid));
@@ -129,13 +129,21 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
 
 Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
   switch (updateType) {
-    case 'hierarchical select':
+    case 'update hierarchical select':
       // Drop out the selects of the levels deeper than the select of the
       // level that just changed.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
       var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context).gt(lastUnchanged);
       if ($animatedSelects.size() > 0) {
-        $animatedSelects.DropOutLeft(animationDelay, callback);
+        $animatedSelects.hide();
+        for (var i = 0; i < $animatedSelects.size(); i++) {
+          if (i < $animatedSelects.size() - 1) {
+            $animatedSelects.eq(i).DropOutLeft(animationDelay);
+          }
+          else {
+            $animatedSelects.eq(i).DropOutLeft(animationDelay, callback);
+          }
+        }
       }
       else if (callback) {
         callback();
@@ -151,7 +159,7 @@ Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastU
 
 Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
   switch (updateType) {
-    case 'hierarchical select':
+    case 'update hierarchical select':
       // Give focus to the input field of the "create new item" section, if it
       // exists.
       $('.hierarchical-select .create-new-item-input').focus();
@@ -160,7 +168,15 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
       var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context).gt(lastUnchanged);
       if ($animatedSelects.size() > 0) {
-        $animatedSelects.hide().DropInLeft(animationDelay, callback);
+        $animatedSelects.hide();
+        for (var i = 0; i < $animatedSelects.size(); i++) {
+          if (i < $animatedSelects.size() - 1) {
+            $animatedSelects.eq(i).DropInLeft(animationDelay);
+          }
+          else {
+            $animatedSelects.eq(i).DropInLeft(animationDelay, callback);
+          }
+        }
       }
       else if (callback) {
         callback();
@@ -172,6 +188,11 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       }
       break;
   } 
+};
+
+Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType) {
+  $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+  .trigger(updateType);
 };
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
@@ -189,12 +210,12 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
   // updateType is one of:
   // - 'none' (default)
-  // - 'hierarchical select'
+  // - 'update hierarchical select'
   // - 'create new item'
   // - 'create new level'
-  // - 'remove'
+  // - 'remove from dropbox'
   switch (updateType) {
-    case 'hierarchical select':
+    case 'update hierarchical select':
       var value = $('#'+ settings.select_id).val();
       var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1");
 
@@ -213,7 +234,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     case 'cancel new item':
     case 'create new level':
     case 'cancel new level':
-    case 'add':
+    case 'add to dropbox':
       post.push({ name : 'op', value : settings.opString });
       break;
   }
@@ -248,6 +269,8 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         if (response.cache != null && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
           Drupal.HierarchicalSelect.cache.sync(hsid, response.cache);
         }
+
+        Drupal.HierarchicalSelect.triggerEvents(hsid, updateType);
       });
     }
   };
@@ -257,7 +280,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - the cache system is available, and
   // - the cache system is running.
   // Otherwise, perform a normal dynamic form submit.
-  if (updateType == 'hierarchical select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
+  if (updateType == 'update hierarchical select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
     Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, value, lastUnchanged, ajaxOptions);
   }
   else {

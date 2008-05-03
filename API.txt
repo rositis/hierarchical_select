@@ -136,3 +136,42 @@ Hooks
 8) hook_hierarchical_select_create_item($label, $parent, $params);
    Given a parent item and the label of a new item, create a new item as a
    child of the parent item.
+
+
+JavaScript events
+-----------------
+The Hierarchical Select module's JavaScript code triggers several events, to
+allow for advanced interactions.
+
+You can find all hierarchical_select form items using this selector:
+
+  $('.hierarchical-select-wrapper');
+
+You can find a *specific* hierarchical_select form item using this selector:
+
+  $('#hierarchical-select-x-wrapper');
+
+where x is a number, or more accurately: a hsid (hierarchical select id).
+Retrieving all hsids in the current document can be done like this:
+
+  for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
+    // …
+  }
+
+The following events are triggered:
+  - update hierarchical select
+  - create new item
+  - cancel new item
+  - create new level
+  - cancel new level
+  - add to dropbox
+  - remove from dropbox
+All events are triggered *after* the animations have completed.
+
+An example of binding a function to the 'create new item' event of the second
+(hsid == 1) hierarchical_select form item on the page:
+
+  $('#hierarchical-select-1-wrapper')
+  .bind('create new item', function() {
+    // …
+  });
