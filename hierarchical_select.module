@@ -1240,11 +1240,12 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
 
   // Prepend a "<none>" option to the root level when:
   // - the form element is optional.
-  // - enforce_deepest is enabled (use case: when level labels are disabled,
-  //   this will be the initial value when the form element is required, so
-  //   that the user /can/ select nothing, but will get a validation error)
+  // - enforce_deepest is enabled and no root level label is set
+  //   (use case: when level labels are disabled, this will be the initial
+  //   value when the form element is required, so that the user /can/ select
+  //   nothing, but will get a validation error)
   // - a dropbox is in use and at least one item has been selected.
-  if (!$required || $enforce_deepest || ($dropbox && count($dropbox->lineages) > 0)) {
+  if (!$required || ($enforce_deepest && !isset($level_labels[0])) || ($dropbox && count($dropbox->lineages) > 0)) {
     $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
   } 
 
