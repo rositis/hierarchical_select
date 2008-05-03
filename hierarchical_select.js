@@ -196,12 +196,17 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   switch (updateType) {
     case 'hierarchical select':
       var value = $('#'+ settings.select_id).val();
+      var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1");
 
       // Don't do anything if it's one of the "no action values".
-      if (value == 'none' || value.match(/^label_\d+$/))
+      if (value == 'none' || value.match(/^label_\d+$/)) {
+        Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
+          // Remove the sublevels.
+          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+          .gt(lastUnchanged).remove();
+        });
         return;
-
-      var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1");
+      }
       break;
 
     case 'create new item':
