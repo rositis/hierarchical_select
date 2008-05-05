@@ -160,9 +160,9 @@ Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastU
 Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
   switch (updateType) {
     case 'update hierarchical select':
-      // Give focus to the input field of the "create new item" section, if it
-      // exists.
-      $('.hierarchical-select .create-new-item-input').focus();
+      // Give focus to the input field of the "create new item/level" section,
+      //  if it exists, and also select the existing text.
+      $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-input', Drupal.HierarchicalSelect.context).focus()[0].select();
       // Hide the loaded selects after the one that was just changed, then
       // drop them in.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
