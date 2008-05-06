@@ -47,3 +47,56 @@ function hierarchical_select_update_2() {
 
   return $ret;
 }
+
+// Convert the Hierarchical Select settings for each vocabulary to the
+// standardized format.
+function hierarchical_select_update_3() {
+  $ret = array();
+
+  $vocabularies = taxonomy_get_vocabularies();
+  foreach ($vocabularies as $vid => $vocabulary) {
+    $config = array();
+
+    // Generate the config_id.
+    $config['config_id'] = "taxonomy-$vid";
+
+    // save_lineage and enforce_deepest settings.
+    foreach (array('save_lineage', 'enforce_deepest') as $setting) {
+      $var = "hierarchical_select_{$setting}_{$vid}";
+      $config[$setting] = (int) variable_get($var, 0);
+      variable_del($var);
+    }
+
+    // Level labels.
+    $var = "hierarchical_select_level_labels_status_{$vid}";
+    $config['level_labels']['status'] = variable_get($var, 0);
+    variable_del($var);
+    $config['level_labels']['labels'] = array();
+    for ($depth = 0; $depth < _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+      $var = "hierarchical_select_level_{$depth}_{$vid}";
+      $config['level_labels']['labels'][$depth] = variable_get($var, '');
+      variable_del($var);
+    }
+
+    // Dropbox settings.
+    $var = "hierarchical_select_multiple_{$vid}";
+    $config['dropbox']['status'] = variable_get($var, 0);
+    variable_del($var);
+    foreach (array('title', 'limit') as $setting) {
+      $var = "hierarchical_select_dropbox_{$setting}_{$vid}";
+      $config['dropbox'][$setting] = variable_get($var, 0);
+      variable_del($var);
+    }
+    variable_set('hierarchical_select_config_'. $config['config_id'], $config);
+
+    // Rename the variable that indicates if a vocabulary is using
+    // Hierarchical Select or not.
+    $var = "hierarchical_select_status_$vid";
+    variable_set("taxonomy_hierarchical_select_$vid", variable_get($var, 0));
+    variable_del($var);
+
+    drupal_set_message('Migrated Hierarchical Select settings for vocabulary '. $vid .'.');
+  }
+  
+  return $ret;
+}
