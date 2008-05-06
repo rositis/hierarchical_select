@@ -13,8 +13,8 @@ element type:
       'params' => array(
         'vid' => $vid,
       ),
-      'save_lineage' => FALSE,
-      'enforce_deepest' => FALSE,
+      'save_lineage'    => 0,
+      'enforce_deepest' => 0,
       'level_labels' => array(
         'status' => 0,
         'labels' => array(
@@ -31,7 +31,7 @@ element type:
       'editability' => array(
         'status'           => 0,
         'item_types'       => array(),
-        'allow_new_levels' => FALSE,
+        'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
       'animation_delay' => 400,
@@ -41,24 +41,11 @@ element type:
 
 Now, let's explain what we see here:
 1) We've set the #type property to "hierarchical_select" instead of "select".
-2) There's a new property: #hierarchical_select_settings. This must be an
+2) There's a new property: #config. This must be an
 array. These are the items it can contain:
  - module (obligated)
    This will be passed through in the AHAH requests, to let the HS module know
    which module's hooks should be used.
-
- - save_lineage (optional, defaults to FALSE)
-   Triggers the lineage saving functionality.
-
- - enforce_deepest (optional, defaults to FALSE)
-   Triggers the enforcing of a selection in the deepest level.
-
- - level_labels (optional)
-   An array of labels, one per level. The label for the first level should be
-   the value of key 0.
-   When enforce_deepest is set to:
-   - FALSE, then you can provide n level labels, with n the number of levels
-   - TRUE, then you can provide only one level label.   
 
  - params (optional, may be necessary for some implementations)
    An array of parameters that will also be passed through in every AHAH
@@ -66,37 +53,59 @@ array. These are the items it can contain:
    e.g. In the case of taxonomy, this is the vocabulary id (vid). In case of
    content_taxonomy, there's two parameters: vid and the depth.
 
- - animation_delay (optional, defaults to 400)
-   The delay of each animation (the drop in left and right animations), in ms.
+ - save_lineage (optional, defaults to 0)
+   Triggers the lineage saving functionality.
 
- - dropbox_title (optional, defaults to "All selections:")
+ - enforce_deepest (optional, defaults to 0)
+   Triggers the enforcing of a selection in the deepest level.
+
+ - level_labels['status'] (optional, defaults to 0)
+   Whether level labels should be enabled or not. When save_lineage is
+   enabled, this will result in *empty* level labels.
+
+ - level_labels['labels] (optional)
+   An array of labels, one per level. The label for the first level should be
+   the value of key 0.
+   When enforce_deepest is set to:
+   - 0, then you can provide n level labels, with n the number of levels
+   - 1, then you can provide only one level label.   
+
+ - dropbox['status'] (optional, defaults to 0)
+   Whether the dropbox is enabled or not (the dropbox allows the user to make
+   multiple selections).
+
+ - dropbox['title'] (optional, defaults to "All selections:")
    The title of the dropbox. The dropbox is the area where all selected items
    are displayed when multiple select is enabled.
 
- - dropbox_limit (optional, defaults to 0, which means "no limit")
+ - dropbox['limit'] (optional, defaults to 0, which means "no limit")
    Limit the number of items that can be added to the dropbox. So this allows
    you the restrict the number of items that can be selected when multiple
    select has been enabled.
 
- - editable (optional, defaults to FALSE)
+ - editability['status] (optional, defaults to 0)
    Allow the user to create new items in the hierarchy.
 
- - editable_settings['item_types'] (optional, defaults to the empty array)
+ - editability['item_types'] (optional, defaults to the empty array)
    Only meaningful when editable is set to TRUE.
    Set the item type for each level. E.g.: "country" for the first level,
    "region" for the second and "city" for the third. When the user then wants
    to create a new item, the default label for the new item will be of the
    form "new <item type>", e.g. "new region".
 
- - editable_settings['allow_new_levels'] (optional, defaults to FALSE)
+ - editability['allow_new_levels'] (optional, defaults to 0)
    Only meaningful when editable is set to TRUE.
    Allow the user to create new levels, i.e. when a certain item does not yet
    have children, the user can create a first child for it.
 
- - editable_settings['max_levels'] (optional, defaults to 3)
+ - editability['max_levels'] (optional, defaults to 3)
    Only meaningful when editable_settings['allow_new_levels'] is set to TRUE.
    Limits the maximum number of levels. Don't set this too high or you'll end
    up with very deep hierarchies.
+
+ - animation_delay (optional, defaults to 400)
+   The delay of each animation (the drop in left and right animations), in ms.
+
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 
