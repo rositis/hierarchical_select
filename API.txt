@@ -8,26 +8,33 @@ element type:
   $form['select_some_term'] = array(
     '#type' => 'hierarchical_select',
     '#title' => t('Select the tag you wish to use.'),
-    '#hierarchical_select_settings' => array(
+    '#config' => array(
       'module' => 'taxonomy',
-      'save_lineage' => FALSE,
-      'enforce_deepest' => FALSE,
-      'level_labels' => array(
-        0 => t('Main category'),
-        1 => t('Subcategory'),
-      ),
       'params' => array(
         'vid' => $vid,
       ),
-      'animation_delay' => 400,
-      'dropbox_title' => t('All selections:'),
-      'dropbox_limit' => 0,
-      'editable' => FALSE,
-      'editable_settings' => array(
-        'item_types' => array(),
-        'allow_new_levels' => FALSE,
-        'max_levels' => 3,
+      'save_lineage' => FALSE,
+      'enforce_deepest' => FALSE,
+      'level_labels' => array(
+        'status' => 0,
+        'labels' => array(
+          0 => t('Main category'),
+          1 => t('Subcategory'),
+          2 => t('Third level category'),
+        ),
       ),
+      'dropbox' => array(
+        'status' => 0,
+        'title'  => t('All selections'),
+        'limit'  => 0,
+      ),
+      'editability' => array(
+        'status'           => 0,
+        'item_types'       => array(),
+        'allow_new_levels' => FALSE,
+        'max_levels'       => 3,
+      ),
+      'animation_delay' => 400,
     ),
     '#default_value' => '83',
   ); 

@@ -7,8 +7,6 @@
  * greatly enhanced way for letting the user select items in a hierarchy.
  */
 
-// TODO: check if we should move #hierarchical_select_settings' child properties up a level, rename #multiple to #dropbox
-
 
 // Enable out-of-the-box support for some modules, if they are enabled.
 $modules = array('taxonomy', 'content_taxonomy', 'subscriptions_taxonomy');
@@ -68,22 +66,28 @@ function hierarchical_select_elements() {
   $type['hierarchical_select'] = array(
     '#input' => TRUE, 
     '#process' => array('hierarchical_select_process' => array()),
-    '#hierarchical_select_settings' => array(
+    '#config' => array(
+      'module' => 'some_module',
+      'params' => array(),
       'save_lineage' => FALSE,
       'enforce_deepest' => FALSE,
-      'level_labels' => array(),
-      'params' => array(),
-      'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
-      'dropbox_title' => t('All selections'),
-      'dropbox_limit' => 0,
-      'editable' => FALSE,
-      'editable_settings' => array(
-        'item_types' => array(),
-        'allow_new_levels' => FALSE,
-        'max_levels' => 3,
+      'level_labels' => array(
+        'status' => 0,
+        'labels' => array()
       ),
+      'dropbox' => array(
+        'status'        => 0,
+        'dropbox_title' => t('All selections'),
+        'dropbox_limit' => 0,
+      ),
+      'editability' => array(
+        'status'           => 0,
+        'item_types'       => array(),
+        'allow_new_levels' => FALSE,
+        'max_levels'       => 3,
+      ),
+      'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
     ),
-    '#multiple' => FALSE,
     '#default_value' => -1,
   );
   return $type;
@@ -172,14 +176,14 @@ function hierarchical_select_process($element) {
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
   _hierarchical_select_setup_js();
-  extract(_hierarchical_select_extract_settings($element));
+  $config = $element['#config'];
   drupal_add_js(
     array(
       'HierarchicalSelect' => array(
         'settings' => array(
           $hsid => array(
-            'animationDelay' => ($animation_delay == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $animation_delay,
-            'cacheId'        => $module .'_'. implode('_', (is_array($params)) ? $params : array()),
+            'animationDelay' => ($config['animation_delay'] == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
+            'cacheId'        => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
           ),
         ),
       )
@@ -193,8 +197,8 @@ function hierarchical_select_process($element) {
 
   // Generate the $hierarchy and $dropbox objects using the selections that
   // were just calculated.
-  $dropbox = (!$element['#multiple']) ? FALSE : _hierarchical_select_dropbox_generate($module, $db_selection, $save_lineage, $level_labels, $params, $dropbox_title);
-  $hierarchy = _hierarchical_select_hierarchy_generate($module, $hs_selection, $save_lineage, $enforce_deepest, $level_labels, $params, $required, $dropbox, $editable, $editable_settings);
+  $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
+  $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
 
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.
@@ -224,12 +228,13 @@ function hierarchical_select_process($element) {
           '#suffix' => '</div>',
         );
 
-        $item_type = ($value == 'create_new_item') ? $editable_settings['item_types'][$depth] : t('level');
+        $item_type_depth = ($value == 'create_new_item') ? $depth : $depth + 1;
+        $item_type = (!empty($config['editability']['item_types'][$item_type_depth])) ? $config['editability']['item_types'][$item_type_depth] : t('item');
 
         if ($value == 'create_new_level') {
           $element['hierarchical_select']['create_new_item']['parent'] = array(
             '#type' => 'select',
-            '#options' => module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params),
+            '#options' => module_invoke($config['module'], 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $config['params']),
             '#default_value' => -1,
             // Use a #theme callback to prevent the select from being wrapped in a
             // div. This simplifies the CSS and JS code.
@@ -243,7 +248,10 @@ function hierarchical_select_process($element) {
           '#size' => 20,
           '#maxlength' => 255,
           '#default_value' => t('new @item', array('@item' => $item_type)),
-          '#attributes' => array('class' => 'create-new-item-input'),
+          '#attributes' => array(
+            'title' => t('new @item', array('@item' => $item_type)),
+            'class' => 'create-new-item-input'
+          ),
           // Use a #theme callback to prevent the textfield from being wrapped
           // in a div. This simplifies the CSS and JS code.
           '#theme' => 'hierarchical_select_textfield',
@@ -265,7 +273,7 @@ function hierarchical_select_process($element) {
   }
 
 
-  if ($element['#multiple']) {
+  if ($element['#config']['dropbox']['status']) {
     // Append an "Add" button to the selects.    
     $element['hierarchical_select']['dropbox-add'] = array(
       '#type'       => 'button', 
@@ -273,8 +281,8 @@ function hierarchical_select_process($element) {
       '#attributes' => array('class' => 'add-to-dropbox'),
     );
 
-    if ($dropbox_limit > 0) { // Zero as dropbox limit means no limit.
-      if (count($dropbox->lineages) == $dropbox_limit) {
+    if ($config['dropbox']['limit'] > 0) { // Zero as dropbox limit means no limit.
+      if (count($dropbox->lineages) == $config['dropbox']['limit']) {
         $element['dropbox_limit_warning'] = array(
           '#value'  => t("You've reached the maximal number of items you can select."),
           '#prefix' => '<p class="hierarchical-select-dropbox-limit-warning">',
@@ -310,7 +318,7 @@ function hierarchical_select_process($element) {
     '#attributes' => array('class' => 'update-button'),
   );
   $element['nojs']['update_button_help_text'] = array(
-    '#value'  => _hierarchical_select_nojs_helptext((bool) $element['#multiple']),
+    '#value'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
     '#prefix' => '<div class="help-text">',
     '#suffix' => '</div>',
   );
@@ -333,7 +341,7 @@ function hierarchical_select_process($element) {
   // Finally, calculate the return value of this hierarchical_select form
   // element. This will be set in _hierarchical_select_validate(). (If we'd
   // set it now, it would be overridden again.)
-  $element['#return_value'] = _hierarchical_select_process_calculate_return_value($hierarchy, ($element['#multiple']) ? $dropbox : FALSE, $module, $params, $save_lineage);
+  $element['#return_value'] = _hierarchical_select_process_calculate_return_value($hierarchy, ($config['dropbox']['status']) ? $dropbox : FALSE, $config['module'], $config['params'], $config['save_lineage']);
 
   // Add a validate callback, which will:
   // - validate that the dropbox limit was not exceeded.
@@ -399,14 +407,13 @@ function hierarchical_select_after_build($form, $form_values) {
 function _hierarchical_select_validate(&$element) {
   // If the dropbox is enabled and a dropbox limit is configured, check if
   // this limit is not exceeded.
-  if ($element['#multiple']) {
-    extract(_hierarchical_select_extract_settings($element));
-
-    if ($dropbox_limit > 0) { // Zero as dropbox limit means no limit.
+  $config = $element['#config'];
+  if ($config['dropbox']['status']) {
+    if ($config['dropbox']['limit'] > 0) { // Zero as dropbox limit means no limit.
       // TRICKY: #validate is not called upon the initial rendering. Running
       // _form_validate($element) doesn't help either.      
       $lineage_count = count($element['#value']['dropbox']['hidden']['lineages_selections']);
-      if ($lineage_count > $dropbox_limit) {
+      if ($lineage_count > $config['dropbox']['limit']) {
         // TRICKY: this should propagate the error down to the children, but
         // this doesn't seem to happen, since for example the selects of the
         // hierarchical select don't get the error class set. Further
@@ -416,7 +423,7 @@ function _hierarchical_select_validate(&$element) {
           t("You've selected %lineage-count items, but you're only allowed to select %dropbox-limit items.",
             array(
               '%lineage-count' => $lineage_count,
-              '%dropbox-limit' => $dropbox_limit
+              '%dropbox-limit' => $config['dropbox']['limit'],
             )
           )
         );
@@ -530,18 +537,18 @@ function _hierarchical_select_process_get_hs_selection($element) {
   $hs_selection = array();
 
   if (count($element['#value']['hierarchical_select']['selects'])) {
-    if ($element['#hierarchical_select_settings']['save_lineage']) {
+    if ($element['#config']['save_lineage']) {
       foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
     }
     else {
-      extract(_hierarchical_select_extract_settings($element));
+      $config = $element['#config'];
 
       foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
-      $hs_selection = _hierarchical_select_hierarchy_validate($hs_selection, $module, $params);
+      $hs_selection = _hierarchical_select_hierarchy_validate($hs_selection, $config['module'], $config['params']);
 
       // Get the last valid value. (Only the deepest item gets saved). Make
       // sure $hs_selection is an array at all times.
@@ -631,11 +638,9 @@ function _hierarchical_select_process_calculate_selections($element) {
   $hs_selection = array(); // hierarchical select selection
   $db_selection = array(); // dropbox selection
 
-
-  // Aliases for more readable code.
-  $dropbox = (bool) $element['#multiple'];
+  $config = $element['#config'];
+  $dropbox = (bool) $config['dropbox']['status'];
   $op = $element['#post']['op'];
-
 
   if (empty($element['#post'])) {
     $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
@@ -664,7 +669,6 @@ function _hierarchical_select_process_calculate_selections($element) {
       // TODO: http://drupal.org/node/253868
       // TODO: http://drupal.org/node/253869
 
-      extract(_hierarchical_select_extract_settings($element));
       $selects = $element['#value']['hierarchical_select']['selects'];
 
       // Create the new item in the hierarchy and retrieve its value.
@@ -675,7 +679,7 @@ function _hierarchical_select_process_calculate_selections($element) {
       else {
         $parent = (count($selects) > 0) ? end($selects) : 0; // New item.
       }
-      $value = module_invoke($module, 'hierarchical_select_create_item', check_plain($label), $parent, $params);
+      $value = module_invoke($config['module'], 'hierarchical_select_create_item', check_plain($label), $config['parent'], $config['params']);
 
       // Ensure the newly created item or level will be selected after
       // rendering.
@@ -959,31 +963,6 @@ function _hierarchical_select_json_convert_hierarchy_to_cache($hierarchy) {
 }
 
 /**
- * Helper function to extract the settings from a form element.
- *
- * @param $element
- *   A form element.
- * @return
- *   An array of setting name - setting value pairs.
- */
-function _hierarchical_select_extract_settings($element) {
-  return array(
-    'module'          => $element['#hierarchical_select_settings']['module'],
-    'enforce_deepest' => (bool) $element['#hierarchical_select_settings']['enforce_deepest'],
-    'save_lineage'    => (bool) $element['#hierarchical_select_settings']['save_lineage'],
-    'level_labels'    => (array) $element['#hierarchical_select_settings']['level_labels'],
-    'animation_delay' => (int) $element['#hierarchical_select_settings']['animation_delay'],
-    'dropbox_title'   => $element['#hierarchical_select_settings']['dropbox_title'],
-    'dropbox_limit'   => (int) $element['#hierarchical_select_settings']['dropbox_limit'],
-    'editable'        => (bool) $element['#hierarchical_select_settings']['editable'],
-    'editable_settings' => $element['#hierarchical_select_settings']['editable_settings'],
-    'params'          => $element['#hierarchical_select_settings']['params'],
-    'required'        => (bool) $element['#required'],
-    'multiple'        => (bool) $element['#multiple'],
-  );
-}
-
-/**
  * Helper function that adds the JS to reposition the exposed filters of a
  * View just once.
  */
@@ -1125,31 +1104,29 @@ function _hierarchical_select_form_has_hierarchical_select($form) {
 /**
  * Generate the hierarchy object.
  *
- * @param $module
- *   The module that should be used for HS hooks.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - params
+ *   - enforce_deepest
+ *   - save_lineage
+ *   - level_labels
+ *     - status
+ *     - labels 
+ *   - editability
+ *     - status
+ *     - allow_new_levels
+ *     - max_levels
  * @param $selection
  *   The selection based on which a HS should be rendered.
- * @param $save_lineage
- *   Whether the "save lineage" setting is enabled or not.
- * @param $enforce_deepest
- *   Whether the "enforce deepest" setting is enabled or not.
- * @param $level_labels
- *   Optional. An array of labels, one per level. 
- * @param $params
- *   Optional. An array of parameters, which may be necessary for some
- *   implementations.
  * @param $required
  *   Whether the form element is required or not. (#required in Forms API)
  * @param $dropbox
  *   A dropbox object, or FALSE.
- * @param $editable
- *   Whether the hierarchy is editable or not.
- * @param $editable_settings
- *   An array of settings that will be used when $editable is enabled.
  * @return
  *   A hierarchy object.
  */
-function _hierarchical_select_hierarchy_generate($module, $selection, $save_lineage, $enforce_deepest, $level_labels = array(), $params = array(), $required, $dropbox = FALSE, $editable = FALSE, $editable_settings = array()) {
+function _hierarchical_select_hierarchy_generate($config, $selection, $required, $dropbox = FALSE) {
   $hierarchy = new stdClass();
 
   //
@@ -1157,14 +1134,14 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
   //
 
   // Validate and clean up the selection.
-  $selection = _hierarchical_select_hierarchy_validate($selection, $module, $params);
+  $selection = _hierarchical_select_hierarchy_validate($selection, $config['module'], $config['params']);
 
   // If save_linage is enabled, reconstruct the lineage. This is necessary
   // because e.g. the taxonomy module stores the terms by order of weight and
   // lexicography, rather than by hierarchy.
-  if ($save_lineage && is_array($selection) && count($selection) >= 2) {
+  if ($config['save_lineage'] && is_array($selection) && count($selection) >= 2) {
     // Ensure the item in the root level is the first item in the selection.
-    $root_level = array_keys(module_invoke($module, 'hierarchical_select_root_level', $params));
+    $root_level = array_keys(module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']));
 
     for ($i = 0; $i < count($selection); $i++) {
       if (in_array($selection[$i], $root_level)) {
@@ -1176,7 +1153,7 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
     }
     // Reconstruct all sublevels.
     for ($i = 0; $i < count($selection); $i++) {
-      $children = array_keys(module_invoke($module, 'hierarchical_select_children', $selection[$i], $params));
+      $children = array_keys(module_invoke($config['module'], 'hierarchical_select_children', $selection[$i], $config['params']));
 
       // Ensure the next item in the selection is a child of the current item.
       for ($j = $i + 1; $j < count($selection); $j++) {
@@ -1189,18 +1166,21 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
 
   // When nothing is currently selected, set the root level to:
   // - "<none>" when:
-  //    - enforce_deepest is enabled *and* no root level label is set, or
+  //    - enforce_deepest is enabled *and* level labels are enabled *and
+  //      no root level label is set, or
   //    - the dropbox is enabled *and* at least one selection has been added
   //      to the dropbox
   // - "label_0" (the root level label) in all other cases.
   if ($selection == -1) {
-    $hierarchy->lineage[0] = (($enforce_deepest && !isset($level_labels[0])) || ($dropbox && count($dropbox->lineages) > 0)) ? 'none' : 'label_0';
+    $first_case  = $config['enforce_deepest'] && $config['level_labels']['status'] && !isset($config['level_labels']['labels'][0]);
+    $second_case = $dropbox && count($dropbox->lineages) > 0;
+    $hierarchy->lineage[0] = ($first_case || $second_case) ? 'none' : 'label_0';
   }
   else {
     // If save_lineage setting is enabled, then the selection *is* a lineage.
     // If it's disabled, we have to generate one ourselves based on the
     // (deepest) selected item.
-    if ($save_lineage) {
+    if ($config['save_lineage']) {
       // When the form element is optional, the "<none>" setting can be
       // selected, thus only the first level will be displayed. As a result,
       // we won't receive an array as the selection, but only a single item.
@@ -1209,8 +1189,8 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
     }
     else {
       $selection = (is_array($selection)) ? $selection[0] : $selection;
-      if (module_invoke($module, 'hierarchical_select_valid_item', $selection, $params)) {
-        $hierarchy->lineage = module_invoke($module, 'hierarchical_select_lineage', $selection, $params);
+      if (module_invoke($config['module'], 'hierarchical_select_valid_item', $selection, $config['params'])) {
+        $hierarchy->lineage = module_invoke($config['module'], 'hierarchical_select_lineage', $selection, $config['params']);
       }
       else {
         // If the selected item is invalid, then start with an empty lineage.
@@ -1221,8 +1201,8 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
 
   // If enforce_deepest is enabled, ensure that the lineage goes as deep as
   // possible: append values of items that will be selected by default.
-  if ($enforce_deepest && !in_array($hierarchy->lineage[0], array('none', 'label_0'))) {
-    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $module, $params);
+  if ($config['enforce_deepest'] && !in_array($hierarchy->lineage[0], array('none', 'label_0'))) {
+    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $module, $config['params']);
   }
 
   //
@@ -1230,22 +1210,24 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
   //
 
   // Start building the levels, initialize with the root level.
-  $hierarchy->levels[0] = module_invoke($module, 'hierarchical_select_root_level', $params);
+  $hierarchy->levels[0] = module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']);
 
   // Prepend a "<create new item>" option to the root level when the editable
   // setting is enabled.
-  if ($editable) {
+  if ($config['editability']['status']) {
     $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[0];
   }
 
   // Prepend a "<none>" option to the root level when:
-  // - the form element is optional.
-  // - enforce_deepest is enabled and no root level label is set
-  //   (use case: when level labels are disabled, this will be the initial
-  //   value when the form element is required, so that the user /can/ select
-  //   nothing, but will get a validation error)
-  // - a dropbox is in use and at least one item has been selected.
-  if (!$required || ($enforce_deepest && !isset($level_labels[0])) || ($dropbox && count($dropbox->lineages) > 0)) {
+  // - the form element is optional, or
+  // - enforce_deepest is enabled *and* level labels are enabled *and no root
+  //   level label is set, or
+  // - the dropbox is enabled *and* at least one selection has been added to
+  //   the dropbox
+  $first_case  = !$required;
+  $second_case = $config['enforce_deepest'] && $config['level_labels']['status'] && !isset($config['level_labels']['labels'][0]);
+  $third_case  = $dropbox && count($dropbox->lineages) > 0;
+  if ($first_case || $second_case || $third_case) {
     $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
   } 
 
@@ -1254,42 +1236,50 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
 
   // Build all sublevels, based on the lineage.
   for ($depth = 1; $depth <= $max_depth; $depth++) {
-    $hierarchy->levels[$depth] = module_invoke($module, 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $params);
+    $hierarchy->levels[$depth] = module_invoke($config['module'], 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $config['params']);
   }
 
-  if ($enforce_deepest) {
+  if ($config['enforce_deepest']) {
     // If the editable setting is enabled, create "<create new item>" options
     // in all levels below the root level.
-    if ($editable) {
+    if ($config['editability']['status']) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
       }
     }
 
-    // If the root label is set, prepend it.
-    if (isset($level_labels[0])) {
-      $hierarchy->levels[0] = array('label_0' => $level_labels[0]) + $hierarchy->levels[0];  
+    // If level labels are enabled and the root label is set, prepend it.
+    if ($config['level_labels']['status'] && isset($config['level_labels'][0])) {
+      $hierarchy->levels[0] = array('label_0' => $config['level_labels']['labels'][0]) + $hierarchy->levels[0];  
     }
   }
-  else if (!$enforce_deepest) {
+  else if (!$config['enforce_deepest']) {
     // Prepend special options to every level.
     for ($depth = 0; $depth <= $max_depth; $depth++) {
       // A "<create new item>" option, if the editable setting is enabled.
-      $hierarchy->levels[$depth] = array('create_new_item_'. $depth => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
-      // Level label.
-      $hierarchy->levels[$depth] = array('label_'. $depth => $level_labels[$depth]) + $hierarchy->levels[$depth];
+      if ($config['editability']['status'] && $depth > 0) { // The root level already has this.
+        $hierarchy->levels[$depth] = array('create_new_item_'. $depth => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
+      }
+      // Level label: set an empty level label if they've been disabled.
+      $label = ($config['level_labels']['status']) ? $config['level_labels']['labels'][$depth] : '';
+      $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth];
     }
 
     // Add one more level if appropriate.
     $parent = $hierarchy->lineage[$max_depth];
-    if (module_invoke($module, 'hierarchical_select_valid_item', $parent, $params)) {
-      $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
+    if (module_invoke($config['module'], 'hierarchical_select_valid_item', $parent, $config['params'])) {
+      $children = module_invoke($config['module'], 'hierarchical_select_children', $parent, $config['params']);
       if (count($children)) {
         // We're good, let's add one level!
-        $max_depth++;
-        $first_child = reset(array_keys($children));
-        $hierarchy->lineage[$max_depth] = 'label_'. $max_depth;
-        $hierarchy->levels[$max_depth] = array('label_'. $max_depth => $level_labels[$max_depth]) + $children;
+        $depth = $max_depth + 1;        
+
+        // A "<create new item>" option, if the editable setting is enabled.
+        $hierarchy->levels[$depth] = (!$config['editability']['status']) ? array() : array('create_new_item_'. $depth => '<'. t('new !item', array('!item' => $config['editability']['item_types'][$depth])) .'>');
+
+        // Level label: set an empty level label if they've been disabled.
+        $hierarchy->lineage[$depth] = 'label_'. $depth;
+        $label = ($config['level_labels']['status']) ? $config['level_labels']['labels'][$depth] : '';
+        $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth] + $children;
       }
     }
   }
@@ -1297,9 +1287,9 @@ function _hierarchical_select_hierarchy_generate($module, $selection, $save_line
   // If the editable setting and allow_new_levels settings are enabled: add a
   // "<create new level>" option to each level, as long as it is a level below
   // the max_levels setting.
-  if ($editable && $editable_settings['allow_new_levels']) {
+  if ($config['editability']['status'] && $config['editability']['allow_new_levels']) {
     foreach ($hierarchy->levels as $depth => $level) {
-      if ($last < $editable_settings['max_levels'] - 1) {
+      if ($last < $config['editability']['max_levels'] - 1) {
         foreach (array_keys($hierarchy->levels[$depth]) as $id => $value) {
           if ($value == 'create_new_item') {
             $offset = $id;
@@ -1398,52 +1388,48 @@ function _hierarchical_select_hierarchy_enforce_deepest($lineage, $root_level, $
 /**
  * Generate the dropbox object.
  *
- * @param $module
- *   The module that should be used for HS hooks.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - save_lineage
+ *   - params
+ *   - dropbox
+ *     - title
  * @param $selection
  *   The selection based on which a dropbox should be generated.
- * @param $save_lineage
- *   Whether the "save lineage" setting is enabled or not.
- * @param $level_labels
- *   Optional. An array of labels, one per level.
- * @param $params
- *   Optional. An array of parameters, which may be necessary for some
- *   implementations.
- * @param $title
- *   Optional. A title that should be displayed above the dropbox.
  * @return
  *   A dropbox object.
  */
-function _hierarchical_select_dropbox_generate($module, $selection, $save_lineage, $level_labels = array(), $params = array(), $title = '') {
+function _hierarchical_select_dropbox_generate($config, $selection) {
   $dropbox = new stdClass();
 
-  $dropbox->title = (!empty($title)) ? $title : t('All selections');
+  $dropbox->title = (!empty($config['title'])) ? $config['title'] : t('All selections');
   $dropbox->lineages = array();
   $dropbox->lineages_selections = array();
   
   // Clean selection.
   foreach ($selection as $key => $item) {
-    if (!module_invoke($module, 'hierarchical_select_valid_item', $item, $params)) {
+    if (!module_invoke($config['module'], 'hierarchical_select_valid_item', $item, $config['params'])) {
       unset($selection[$key]);
     }
   }
 
   if (!empty($selection)) {
     // Store the "save lineage" setting, needed in the rendering layer.
-    $dropbox->save_lineage = $save_lineage;
-    if ($save_lineage) {
-      $dropbox->lineages = _hierarchical_select_dropbox_reconstruct_lineages_save_lineage_enabled($module, $selection, $params);
+    $dropbox->save_lineage = $config['save_lineage'];
+    if ($config['save_lineage']) {
+      $dropbox->lineages = _hierarchical_select_dropbox_reconstruct_lineages_save_lineage_enabled($config['module'], $selection, $config['params']);
     }
     else {
       // Retrieve the lineage of each item.
       foreach ($selection as $item) {
-        $dropbox->lineages[] = module_invoke($module, 'hierarchical_select_lineage', $item, $params);
+        $dropbox->lineages[] = module_invoke($config['module'], 'hierarchical_select_lineage', $item, $config['params']);
       }
 
       // We will also need the labels of each item in the rendering layer.
       foreach ($dropbox->lineages as $id => $lineage) {
         foreach ($lineage as $level => $item) {
-          $dropbox->lineages[$id][$level] = array('value' => $item, 'label' => module_invoke($module, 'hierarchical_select_item_get_label', $item, $params));
+          $dropbox->lineages[$id][$level] = array('value' => $item, 'label' => module_invoke($config['module'], 'hierarchical_select_item_get_label', $item, $config['params']));
         }
       }
     }
@@ -1454,7 +1440,7 @@ function _hierarchical_select_dropbox_generate($module, $selection, $save_lineag
     // to enable the remove button to let the server know which selected items
     // should be removed.
     foreach ($dropbox->lineages as $id => $lineage) {
-      if ($save_lineage) {
+      if ($config['save_lineage']) {
         // Store the entire lineage.
         $dropbox->lineages_selections[$id] = array_map('_hierarchical_select_dropbox_lineage_item_get_value', $lineage);
       }
