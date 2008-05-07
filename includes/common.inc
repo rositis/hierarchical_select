@@ -69,7 +69,7 @@ function hierarchical_select_common_config_set($config_id, $config) {
  */
 function hierarchical_select_common_config_apply(&$form_item, $config_id) {
   $config = variable_get('hierarchical_select_config_'. $config_id, array());
-  $form_item['#config'] += $config;
+  $form_item['#config'] = array_merge((is_array($form_item['#config'])) ? $form_item['#config'] : array(), $config);
 }
 
 
