@@ -28,6 +28,8 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     );
 
     // Add the Hierarchical Select config form.
+    $module = 'taxonomy';
+    $params = array('vid' => $vid);
     $config_id = "taxonomy-$vid";
     $vocabulary = taxonomy_get_vocabulary($vid);
     $defaults = array(
@@ -46,7 +48,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       'item_type'   => t('term type'),
     );
     $max_hierarchy_depth = _taxonomy_hierarchical_select_get_depth($vid);
-    $form['hierarchical_select'] = hierarchical_select_common_config_form($config_id, $defaults, $strings, $max_hierarchy_depth);
+    $form['hierarchical_select'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth);
 
     // Add the the submit handler for the Hierarchical Select config form.
     $parents = array('hierarchical_select');

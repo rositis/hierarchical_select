@@ -66,9 +66,12 @@ function hierarchical_select_common_config_set($config_id, $config) {
  *   The form item that will be updated.
  * @param $config_id
  *   A config id.
+ * @param $defaults_override
+ *   Optionally override the defaults.
+ *   @see hierarchical_select_common_config_get()
  */
-function hierarchical_select_common_config_apply(&$form_item, $config_id) {
-  $config = variable_get('hierarchical_select_config_'. $config_id, array());
+function hierarchical_select_common_config_apply(&$form_item, $config_id, $defaults_override) {
+  $config = hierarchical_select_common_config_get($config_id, $defaults_override);
   $form_item['#config'] = array_merge((is_array($form_item['#config'])) ? $form_item['#config'] : array(), $config);
 }
 
@@ -79,11 +82,12 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id) {
 /**
  * Form definition of the hierarchical_select_common_config_form form.
  */
-function hierarchical_select_common_config_form($config_id, $defaults, $strings, $max_hierarchy_depth)  {
+function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth)  {
   static $js_added;
   
   if (!isset($js_added)) {
     $js_added = TRUE;
+    drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/includes/common_config_form.css', 'module');
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/common_config_form.js', 'module', 'header');
     drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), 'setting');
   }
@@ -101,6 +105,25 @@ function hierarchical_select_common_config_form($config_id, $defaults, $strings,
   );
 
   $form['config_id'] = array('#type' => 'value', '#value' => $config_id);
+
+  // TODO: really make this a *live* preview, i.e. refresh the preview on each
+  // change in the form. This cannot be done easily in Drupal 5, so let's do
+  // so in Drupal 6. See cfg.livePreview in common_config_form.js.
+  $form['live_preview'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Preview'),
+    '#description' => t('This is what the Hierarchical Select will look like with your current configuration.'),
+    '#collapsible' => FALSE,
+    '#attributes' => array('class' => 'live-preview'),
+  );
+  $form['live_preview']['example'] = array(
+    '#type' => 'hierarchical_select',
+    '#title' => t('Preview'),
+    '#description' => t('The description.'),
+    // Skip all validation.
+    '#validated' => TRUE,
+  );
+  hierarchical_select_common_config_apply($form['live_preview']['example'], $config_id, array('module' => $module, 'params' => $params));
 
   $form['save_lineage'] = array(
     '#type' => 'radios',
@@ -267,5 +290,9 @@ function hierarchical_select_common_config_form($config_id, $defaults, $strings,
  */
 function hierarchical_select_common_config_form_submit($form_id, $form_values, $parents) {
   $config = _hierarchical_select_get_form_element($form_values, $parents);
+
+  // Don't include the value of the live preview in the config.
+  unset($config['live_preview']);
+
   hierarchical_select_common_config_set($config['config_id'], $config);
 }

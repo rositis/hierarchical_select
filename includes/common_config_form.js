@@ -105,6 +105,15 @@ cfg.editability = function(configId) {
   showHide(0);
 };
 
+cfg.livePreview = function(configId) {
+  // React on changes to any input, except the ones in the live preview.
+  $updateLivePreview = $('input', cfg.context(configId))
+  .filter(':not(.create-new-item-input):not(.create-new-item-create):not(.create-new-item-cancel)')
+  .change(function() {
+    // TODO: Do an AJAX submit of the entire form.
+  });  
+};
+
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
     for (var id in Drupal.settings.HierarchicalSelect.configForm) {
@@ -113,6 +122,7 @@ if (Drupal.jsEnabled) {
       cfg.levelLabels(configId);
       cfg.dropbox(configId);
       cfg.editability(configId);
+      //cfg.livePreview(configId);
     }
   });
 }
