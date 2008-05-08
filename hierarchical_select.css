@@ -78,7 +78,7 @@ p.hierarchical-select-dropbox-limit-warning {
 
 
 /* The dropbox table. */
-.dropbox-title {
+.hierarchical-select-wrapper .dropbox-title {
   font-size: 115%;
   color: #898989;
   margin-bottom: 0.2em;
