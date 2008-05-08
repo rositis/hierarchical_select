@@ -69,7 +69,12 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   var cancelNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-cancel', Drupal.HierarchicalSelect.context).val();
 
   $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
-  // "hierarchical select" event
+  // "enforced update" event
+  .unbind().bind('enforce update', function(_hsid, config) {
+      return function() { Drupal.HierarchicalSelect.update(_hsid, 'enforced update', {}); };
+  }(hsid))
+
+  // "update hierarchical select" event
   .find('.hierarchical-select > select').unbind().change(function(_hsid) {
     return function() { Drupal.HierarchicalSelect.update(_hsid, 'update hierarchical select', { select_id : $(this).attr('id') }); };
   }(hsid)).end()

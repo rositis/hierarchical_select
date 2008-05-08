@@ -182,6 +182,7 @@ The following events are triggered:
   - cancel new level
   - add to dropbox
   - remove from dropbox
+  - enforced update
 All events are triggered *after* the animations have completed.
 
 An example of binding a function to the 'create new item' event of the second
@@ -191,3 +192,15 @@ An example of binding a function to the 'create new item' event of the second
   .bind('create new item', function() {
     // …
   });
+
+And finally, you can trigger a special event to enforce an update (this can be
+useful when you have changed a hierarchy through another form item, or for
+live previews, or …).
+Suppose you'd like to enforce an update of the first (hsid == 0)
+hierarchical_select form item on the page:
+
+  $('#hierarchical-select-0-wrapper')
+  .trigger('enforce update');
+
+The 'enforced update' (notice the past tense!) event is triggered upon
+completion.
