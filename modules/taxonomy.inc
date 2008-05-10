@@ -64,7 +64,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
   // Change the exposed filters of Views. Only affects hierarchical vocabulary
   // filters.
-  if ($form_id == 'views_filters') {
+  if (in_array($form_id, array('views_filters', 'views_filterblock'))) {
     // Views will remove the form_id in views_filters_process(), but we need
     // it for Hierarchical Select to work, so put it back.
     $form['copy_of_form_id'] = $form['form_id'] + array('#parents' => array('form_id')); // TODO: only if at least one HS filter exists.
