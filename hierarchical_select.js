@@ -70,7 +70,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
 
   $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
   // "enforced update" event
-  .unbind().bind('enforce update', function(_hsid, config) {
+  .unbind().bind('enforce update', function(_hsid) {
       return function() { Drupal.HierarchicalSelect.update(_hsid, 'enforced update', {}); };
   }(hsid))
 
