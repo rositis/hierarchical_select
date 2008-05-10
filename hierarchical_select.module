@@ -680,7 +680,7 @@ function _hierarchical_select_process_calculate_selections($element) {
       else {
         $parent = (count($selects) > 0) ? end($selects) : 0; // New item.
       }
-      $value = module_invoke($config['module'], 'hierarchical_select_create_item', check_plain($label), $config['parent'], $config['params']);
+      $value = module_invoke($config['module'], 'hierarchical_select_create_item', check_plain($label), $parent, $config['params']);
 
       // Ensure the newly created item or level will be selected after
       // rendering.
