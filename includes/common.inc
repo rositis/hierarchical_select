@@ -70,7 +70,7 @@ function hierarchical_select_common_config_set($config_id, $config) {
  *   Optionally override the defaults.
  *   @see hierarchical_select_common_config_get()
  */
-function hierarchical_select_common_config_apply(&$form_item, $config_id, $defaults_override) {
+function hierarchical_select_common_config_apply(&$form_item, $config_id, $defaults_override = array()) {
   $config = hierarchical_select_common_config_get($config_id, $defaults_override);
   $form_item['#config'] = array_merge((is_array($form_item['#config'])) ? $form_item['#config'] : array(), $config);
 }
