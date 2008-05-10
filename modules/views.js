@@ -28,5 +28,15 @@ if (Drupal.jsEnabled) {
       // Reduce the number of headers to the number of columns we have left.
       $("form#views-filters div table thead tr th").gt(cols - 1).remove();
     });
+
+    $('form#views-filters').submit(function() {
+      // Prepare the hierarchical select form elements that are used as
+      // exposed filters for a GET submit.
+      $('form#views-filters .hierarchical-select-wrapper').trigger('prepare GET submit');
+
+      // Remove the Hierarchical Select form build id and the form id, to
+      // prevent them from ending up in the GET URL.
+      $('#edit-hs-form-build-id, #edit-views-filters').remove();
+    });
 	});
 }

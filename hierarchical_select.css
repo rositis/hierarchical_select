@@ -16,6 +16,11 @@
 }
 
 
+/* The flat select (only used in GET forms). */
+.hierarchical-select-wrapper .flat-select {
+  display: none;
+}
+
 /* The pseudo-modal window for creating a new item or new level. */
 .hierarchical-select-wrapper .hierarchical-select .create-new-item,
 .hierarchical-select-wrapper .hierarchical-select .create-new-level {

@@ -84,22 +84,26 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
           if ($vocabulary->hierarchy > 0) {
             // Make it use a hierarchical select.
             $form["filter$id"]['#type'] = 'hierarchical_select';
-            $form["filter$id"]['#hierarchical_select_settings'] = array(
+            $form["filter$id"]['#config'] = array(
               'module' => 'taxonomy',
               'params' => array(
                 'vid' => $vid,
               ),
             );
-            taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid, FALSE);
+            taxonomy_hierarchical_select_update_form_item($form["filter$id"], $vid);
             
-            // Inherit #multiple from the exposed filter settings.
-            $form["filter$id"]['#multiple'] = !((bool) $view->exposed_filter[$id]['single']);
+            // Inherit #config['dropbox']['status'] from the exposed filter
+            // settings.
+            $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
             
             // Inherit #required from the exposed filter settings.
             $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
           
             // Remove the dropbox limit.
-            unset($form["filter$id"]['#hierarchical_select_settings']['dropbox_limit']);
+            unset($form["filter$id"]['#config']['dropbox']['limit']);
+
+            // This is a GET form, so we also want to render the flat select.
+            $form["filter$id"]['#config']['render_flat_select'] = 1;
 
             // Put the altered exposed filters in a separate table row.
             _hierarchical_select_views_exposed_filters_reposition();

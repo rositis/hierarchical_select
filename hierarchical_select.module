@@ -87,7 +87,8 @@ function hierarchical_select_elements() {
         'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
-      'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
+      'animation_delay'    => variable_get('hierarchical_select_animation_delay', 400),
+      'render_flat_select' => 0,
     ),
     '#default_value' => -1,
   );
@@ -208,6 +209,11 @@ function hierarchical_select_process($element) {
 
   // Ensure that #tree is enabled!
   $element['#tree'] = TRUE;
+
+  // If render_flat_select is enabled, render a flat select.
+  if ($config['render_flat_select']) {
+    $element['flat_select'] = _hierarchical_select_process_render_flat_select($hs_selection, $db_selection, $config);
+  }
 
   // Render the hierarchical select.
   $element['hierarchical_select'] = array(
@@ -834,6 +840,49 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
   }
   
   return $element;
+}
+
+/**
+ * Render a flat select version of a hierarchical_select form element. This is
+ * necessary for backwards compatibility (together with some Javascript code)
+ * in case of GET forms. 
+ *
+ * @param $hs_selection
+ *   A flat list of selected ids in the hierarchical select.
+ * @param $db_selection
+ *   A flat list of selected ids in the dropbox.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - params
+ *   - dropbox
+ *     - status
+ * @return
+ *   A structured array for use in the Forms API.
+ */
+function _hierarchical_select_process_render_flat_select($hs_selection, $db_selection, $config) {
+  $selection = ($config['dropbox']['status']) ? $db_selection : $hs_selection;
+
+   $options = array();
+   foreach ($selection as $value) {
+     $is_valid = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
+     if ($is_valid) {
+       $options[$value] = $value;
+     }
+   }
+
+   $element = array(
+     '#type' => 'select',
+     '#multiple' => TRUE,
+     '#options' => $options,
+     '#default_value' => array_keys($options),
+     // Use a #theme callback to prevent the select from being wrapped in a
+     // div. This simplifies the CSS and JS code.
+     '#theme' => 'hierarchical_select_select',     
+     '#attributes' => array('class' => 'flat-select'),
+   );  
+
+   return $element;
 }
 
 /**

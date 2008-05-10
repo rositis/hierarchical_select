@@ -63,6 +63,20 @@ Drupal.HierarchicalSelect.enableForm = function(hsid) {
   $('body').css('cursor', 'auto');
 };
 
+Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
+  // Remove the name attributes of all form elements that end up in GET,
+  // except for the "flat select" form element.
+  $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+  .find('input, select')
+  .not('.flat-select')
+  .removeAttr('name');
+
+  // Update the name attribute of the "flat select" form element
+  var $flatSelect = $('#hierarchical-select-'+ hsid +'-wrapper .flat-select', Drupal.HierarchicalSelect.context);
+  var newName = $flatSelect.attr('name').replace(/(.*)(\[flat_select\]\[\])$/, "$1[]");
+  $flatSelect.attr('name', newName);
+};
+
 Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   var addOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select input', Drupal.HierarchicalSelect.context).val();
   var createNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-create', Drupal.HierarchicalSelect.context).val();
@@ -71,7 +85,12 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
   // "enforced update" event
   .unbind().bind('enforce update', function(_hsid) {
-      return function() { Drupal.HierarchicalSelect.update(_hsid, 'enforced update', {}); };
+    return function() { Drupal.HierarchicalSelect.update(_hsid, 'enforced update', {}); };
+  }(hsid))
+
+  // "prepare GET submit" event
+  .unbind().bind('prepare GET submit', function(_hsid) {
+    return function() { Drupal.HierarchicalSelect.prepareGETSubmit(_hsid); };
   }(hsid))
 
   // "update hierarchical select" event
