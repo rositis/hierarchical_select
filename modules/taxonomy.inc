@@ -228,6 +228,13 @@ function taxonomy_hierarchical_select_create_item($label, $parent, $params) {
   }
 }
 
+/**
+ * Implementation of hook_hierarchical_select_node_count().
+ */
+function taxonomy_hierarchical_select_node_count($item, $params) {
+  return taxonomy_term_count_nodes($item);
+}
+
 
 //----------------------------------------------------------------------------
 // FAPI callbacks.

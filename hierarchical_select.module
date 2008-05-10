@@ -69,8 +69,9 @@ function hierarchical_select_elements() {
     '#config' => array(
       'module' => 'some_module',
       'params' => array(),
-      'save_lineage' => FALSE,
-      'enforce_deepest' => FALSE,
+      'save_lineage'    => 0,
+      'enforce_deepest' => 0,
+      'node_count'      => 0,
       'level_labels' => array(
         'status' => 0,
         'labels' => array()
@@ -83,7 +84,7 @@ function hierarchical_select_elements() {
       'editability' => array(
         'status'           => 0,
         'item_types'       => array(),
-        'allow_new_levels' => FALSE,
+        'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
       'animation_delay' => variable_get('hierarchical_select_animation_delay', 400),
@@ -1299,6 +1300,19 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         $first_slice  = array_slice($hierarchy->levels[$depth], 0, $offset + 1, TRUE);
         $second_slice = array_slice($hierarchy->levels[$depth], $offset + 1, count($hierarchy->levels[$depth]) - ($offset + 1), TRUE);
         $hierarchy->levels[$depth] = $first_slice + array('create_new_level' => '<'. t('create new level') .'>') + $second_slice;
+      }
+    }
+  }
+
+  // If the node_count setting is enabled, add node counts.
+  if ($config['node_count']) {
+    foreach (array_keys($hierarchy->levels) as $depth) {
+      foreach ($hierarchy->levels[$depth] as $value => $label) {
+        $is_valid_item = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
+        if ($is_valid_item) {
+          $node_count = module_invoke($config['module'], 'hierarchical_select_node_count', $value, $config['params']);
+          $hierarchy->levels[$depth][$value] = "$label ($node_count)";
+        }
       }
     }
   }

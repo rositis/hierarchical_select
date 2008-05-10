@@ -24,6 +24,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
     'config_id' => $config_id,
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
+    'node_count'      => 0,
     'level_labels' => array(
       'status' => 0,
     ),
@@ -155,6 +156,20 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     ),
     '#attributes' => array('class' => 'enforce-deepest'),
   );
+  
+  if (function_exists($module .'_hierarchical_select_node_count')) {
+    $form['node_count'] = array(
+      '#type' => 'radios',
+      '#title' => t('Display the node count'),
+      '#description' => t('When you enable this, the user will see the number of nodes that match the current !item listed between brackets.', array('!item' => $strings['item'])),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => $config['node_count'],
+      '#attributes' => array('class' => 'node-counts'),
+    );
+  }
 
   $form['level_labels'] = array(
     '#tree' => TRUE,
@@ -227,60 +242,62 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'dropbox-limit'),
   );
 
-  $form['editability'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Editability settings'),
-    '#description' => t(
-      'You can allow the user to <strong>add new !items to this
-      !hierarchy</strong> <em>through</em> Hierarchical Select.',
-      array('!hierarchy' => $strings['hierarchy'], '!items' => $strings['items'])
-    ),
-    '#collapsible' => TRUE,
-  );    
-  $form['editability']['status'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Allow creation of new !items', array('!items' => $strings['items'])),
-    '#options' => array(
-      0 => t('Disabled'),
-      1 => t('Enabled'),
-    ),
-    '#default_value' => $config['editability']['status'],
-    '#attributes' => array('class' => 'editability-status'),
-  );
-  for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
-    $form['editability']['item_types'][$depth] = array(
+  if (function_exists($module .'_hierarchical_select_create_item')) {
+    $form['editability'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Editability settings'),
+      '#description' => t(
+        'You can allow the user to <strong>add new !items to this
+        !hierarchy</strong> <em>through</em> Hierarchical Select.',
+        array('!hierarchy' => $strings['hierarchy'], '!items' => $strings['items'])
+      ),
+      '#collapsible' => TRUE,
+    );    
+    $form['editability']['status'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow creation of new !items', array('!items' => $strings['items'])),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => $config['editability']['status'],
+      '#attributes' => array('class' => 'editability-status'),
+    );
+    for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
+      $form['editability']['item_types'][$depth] = array(
+        '#type' => 'textfield',
+        '#title' => t(($depth == 0) ? 'The !item_type for the root level' : 'The !item_type for sublevel !depth', array('!item_type' => $strings['item_type'], '!depth' => $depth)),
+        '#size' => 20,
+        '#maxlength' => 255,
+        '#default_value' => $config['editability']['item_types'][$depth],
+        '#attributes' => array('class' => 'editability-item-type'),
+      );
+    }
+    $form['editability']['allow_new_levels'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow creation of new levels'),
+      '#default_value' => $config['editability']['allow_new_levels'],
+      '#description' => t(
+        'Allow the user to create child !items for !items that do not yet have
+        children.',
+        array('!items' => $strings['items'])
+      ),
+      '#attributes' => array('class' => 'editability-allow-new-levels'),
+    );
+    $form['editability']['max_levels'] = array(
       '#type' => 'textfield',
-      '#title' => t(($depth == 0) ? 'The !item_type for the root level' : 'The !item_type for sublevel !depth', array('!item_type' => $strings['item_type'], '!depth' => $depth)),
-      '#size' => 20,
+      '#title' => t('Maximum number of levels allowed'),
+      '#size' => 3  ,
       '#maxlength' => 255,
-      '#default_value' => $config['editability']['item_types'][$depth],
-      '#attributes' => array('class' => 'editability-item-type'),
+      '#default_value' => $config['editability']['max_levels'],
+      '#description' => t(
+        'When the user is allowed to create new levels, this option prevents
+        the user from creating extremely deep !hierarchies.',
+        array('!hierarchies' => $strings['hierarchies'])
+      ),
+      '#attributes' => array('class' => 'editability-max-levels'),
     );
   }
-  $form['editability']['allow_new_levels'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Allow creation of new levels'),
-    '#default_value' => $config['editability']['allow_new_levels'],
-    '#description' => t(
-      'Allow the user to create child !items for !items that do not yet have
-      children.',
-      array('!items' => $strings['items'])
-    ),
-    '#attributes' => array('class' => 'editability-allow-new-levels'),
-  );
-  $form['editability']['max_levels'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum number of levels allowed'),
-    '#size' => 3  ,
-    '#maxlength' => 255,
-    '#default_value' => $config['editability']['max_levels'],
-    '#description' => t(
-      'When the user is allowed to create new levels, this option prevents
-      the user from creating extremely deep !hierarchies.',
-      array('!hierarchies' => $strings['hierarchies'])
-    ),
-    '#attributes' => array('class' => 'editability-max-levels'),
-  );
 
   return $form;
 }

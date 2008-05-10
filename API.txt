@@ -153,6 +153,9 @@ Hooks
    Given a parent item and the label of a new item, create a new item as a
    child of the parent item.
 
+9) hook_hierarchical_select_node_count($item, $params);
+   Given a item, get the number of nodes that are related to the given item.
+
 
 JavaScript events
 -----------------
