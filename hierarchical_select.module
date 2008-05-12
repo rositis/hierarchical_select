@@ -1076,8 +1076,8 @@ function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
 
   // The options that will be used in the unordered list.
   $items = array(
-    t('<u>enable Javascript</u> in your browser and then refresh this page, for a much enhanced experience.'),
-    t('<u>click the <em>Update</em> button</u> every time you want to update the selection'),
+    t('<span class="highlight">enable Javascript</span> in your browser and then refresh this page, for a much enhanced experience.'),
+    t('<span class="highlight">click the <em>Update</em> button</span> every time you want to update the selection'),
   );
   $items[1] .= (!$dropbox_is_enabled) ? '.' : t(", or when you've checked some checkboxes for entries in the dropbox you'd like to remove.");
 

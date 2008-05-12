@@ -21,6 +21,7 @@
   display: none;
 }
 
+
 /* The pseudo-modal window for creating a new item or new level. */
 .hierarchical-select-wrapper .hierarchical-select .create-new-item,
 .hierarchical-select-wrapper .hierarchical-select .create-new-level {
@@ -166,6 +167,10 @@ tr.dropbox-is-empty {
   min-width: 30em;
   max-width: 45em;
   padding: .8em;
+}
+
+.hierarchical-select-wrapper .nojs .help-text .highlight {
+  text-decoration: underline;
 }
 
 .hierarchical-select-wrapper .nojs .help-text .warning {
