@@ -83,7 +83,7 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
 /**
  * Form definition of the hierarchical_select_common_config_form form.
  */
-function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth)  {
+function hierarchical_select_common_config_form($module, $params, $config_id, $config, $defaults_override, $strings, $max_hierarchy_depth)  {
   static $js_added;
   
   if (!isset($js_added)) {
@@ -92,8 +92,6 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/common_config_form.js', 'module', 'header');
     drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), 'setting');
   }
-  
-  $config = hierarchical_select_common_config_get($config_id);
   
   $form = array(
     '#tree' => TRUE,
