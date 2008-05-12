@@ -34,7 +34,9 @@ element type:
         'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
-      'animation_delay' => 400,
+      'animation_delay'    => 400,
+      'exclusive_lineages' => array(),
+      'render_flat_select' => 0,
     ),
     '#default_value' => '83',
   ); 
@@ -106,6 +108,18 @@ array. These are the items it can contain:
  - animation_delay (optional, defaults to 400)
    The delay of each animation (the drop in left and right animations), in ms.
 
+ - exclusive_lineages (optional, defaults to the empty array)
+   Sometimes, it's desirable to have exclusive lineages. When one of these
+   lineages is selected, the user should not be able to select anything else.
+   E.g. the **ALL** option in Views exposed filters.
+
+ - render_flat_select (optional, defaults to 0)
+   Because the hierarchical_select form element consists of multiple form
+   items, it doesn't work well in GET forms. By enabling this setting, a flat
+   select will also be rendered, that contains only the selected lineages.
+   Combine that with Drupal.HierarchicalSelect.prepareGETSubmit in the JS code
+   and you have a work-around for that (which, admittedly, only works when JS
+   is enabled).
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 
@@ -128,7 +142,7 @@ Hooks
 1) hook_hierarchial_select_form_alter($form_id, &$form);
    This hook is absolutely optional! The sole reason for its existence, is to
    allow easy altering of forms of modules that don't support Hierarchical
-   Select natively, to use the hierarchical_select form item.
+   Select natively, to use the hierarchical_select form element.
 
 2) hook_hierarchical_select_params();
    Returns the names of all parameters that should be present.
@@ -207,3 +221,7 @@ hierarchical_select form item on the page:
 
 The 'enforced update' (notice the past tense!) event is triggered upon
 completion.
+An even more rarely used special event can be triggered to prepare the
+hierarchical_select form element for a get submit: the 'prepare GET submit'
+event. To use this event, the 'render_flat_select' setting should be enabled
+in the config.

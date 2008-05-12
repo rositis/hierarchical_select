@@ -313,3 +313,15 @@ function hierarchical_select_common_config_form_submit($form_id, $form_values, $
 
   hierarchical_select_common_config_set($config['config_id'], $config);
 }
+
+/**
+ * Helper function that adds the JS to reposition the exposed filters of a
+ * View just once.
+ */
+function hierarchical_select_common_views_exposed_filters_reposition() {
+  static $js_added;
+  
+  if (!isset($js_added)) {
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/views.js', 'module');
+  }
+}

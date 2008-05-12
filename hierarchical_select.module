@@ -16,7 +16,6 @@ foreach ($modules as $module) {
   }
 }
 
-
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 
@@ -88,6 +87,7 @@ function hierarchical_select_elements() {
         'max_levels'       => 3,
       ),
       'animation_delay'    => variable_get('hierarchical_select_animation_delay', 400),
+      'exclusive_lineages'    => array(),
       'render_flat_select' => 0,
     ),
     '#default_value' => -1,
@@ -197,6 +197,19 @@ function hierarchical_select_process($element) {
   // we need these before we can render anything.
   list($hs_selection, $db_selection) = _hierarchical_select_process_calculate_selections($element);
 
+  // If the current selection of the hierarchical select matches one of the
+  // configured exclusive items, then disable the dropbox (to ensure an
+  // exclusive selection).
+  if (in_array($hs_selection, $config['exclusive_lineages']) // A lineage.
+      || (count($hs_selection) == 1 && in_array($hs_selection[0], $config['exclusive_lineages']))) { // An item at the root level.
+    // By also updating the configuration stored in $element, we ensure that
+    // the validation step, which extracts the configuration again, also gets
+    // the updated config.
+    $element['#config']['dropbox']['status'] = 0;
+
+    $config = $element['#config'];
+  }
+  
   // Generate the $hierarchy and $dropbox objects using the selections that
   // were just calculated.
   $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
@@ -280,7 +293,7 @@ function hierarchical_select_process($element) {
   }
 
 
-  if ($element['#config']['dropbox']['status']) {
+  if ($config['dropbox']['status']) {
     // Append an "Add" button to the selects.    
     $element['hierarchical_select']['dropbox-add'] = array(
       '#type'       => 'button', 
@@ -542,16 +555,15 @@ function hierarchical_select_admin_settings() {
  */
 function _hierarchical_select_process_get_hs_selection($element) {
   $hs_selection = array();
+  $config = $element['#config'];
 
   if (count($element['#value']['hierarchical_select']['selects'])) {
-    if ($element['#config']['save_lineage']) {
+    if ($config['save_lineage']) {
       foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
     }
     else {
-      $config = $element['#config'];
-
       foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
@@ -1010,18 +1022,6 @@ function _hierarchical_select_json_convert_hierarchy_to_cache($hierarchy) {
   );
 
   return $cache;
-}
-
-/**
- * Helper function that adds the JS to reposition the exposed filters of a
- * View just once.
- */
-function _hierarchical_select_views_exposed_filters_reposition() {
-  static $js_added;
-  
-  if (!isset($js_added)) {
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/modules/views.js', 'module');
-  }
 }
 
 /**
@@ -1750,7 +1750,7 @@ function theme_hierarchical_select_dropbox_table($element) {
   $output .= '<tbody>';
 
   if (!$is_empty) {
-    // Each lineage in the dropbox coresponds to an entry in the dropbox table.
+    // Each lineage in the dropbox corresponds to an entry in the dropbox table.
     $lineage_count = count(element_children($element['lineages']));
     for ($x = 0; $x < $lineage_count; $x++) {
       $db_entry = $element['lineages'][$x];
