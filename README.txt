@@ -37,7 +37,7 @@ Integrates with
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy)
 * Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
-* Views (http://drupal.org/project/views)
+* Views 5.x-1.x-dev tarball of May 11 or later (http://drupal.org/project/views)
 
 
 Installation
