@@ -12,18 +12,16 @@ function hs_views_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
   // Change the exposed filters of Views. Only affects hierarchical vocabulary
   // filters.
   if (in_array($form_id, array('views_filters', 'views_filterblock'))) {
-    // Views will remove the form_id in views_filters_process(), but we need
-    // it for Hierarchical Select to work, so put it back.
-    $form['copy_of_form_id'] = $form['form_id'] + array('#parents' => array('form_id')); // TODO: only if at least one HS filter exists.
+    $hs_exposed_filters_found = 0;
 
     // Find the ids and vocabulary ids of the exposed filters.
-    $filters = array();
     foreach ($form['view']['#value']->exposed_filter as $id => $filter) {
       if (preg_match("/term_node_(\d+)\.tid/", $filter['field'], $matches)) {
         $vid = $matches[1];
         
         // Only apply Hierarchical Select if it's enabled for this vocabulary.
         if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
+          $hs_exposed_filters_found++;
           $vocabulary = taxonomy_get_vocabulary($vid);
           $view = $form['view']['#value'];
 
@@ -59,6 +57,12 @@ function hs_views_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
           }
         }
       }
+    }
+
+    if ($hs_exposed_filters_found > 0) {
+      // Views will remove the form_id in views_filters_process(), but we need
+      // it for Hierarchical Select to work, so put it back.
+      $form['copy_of_form_id'] = $form['form_id'] + array('#parents' => array('form_id'));
     }
   }
 }
