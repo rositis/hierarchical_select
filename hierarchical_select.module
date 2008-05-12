@@ -1270,7 +1270,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // If enforce_deepest is enabled, ensure that the lineage goes as deep as
   // possible: append values of items that will be selected by default.
   if ($config['enforce_deepest'] && !in_array($hierarchy->lineage[0], array('none', 'label_0'))) {
-    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $module, $config['params']);
+    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $config['module'], $config['params']);
   }
 
   //
