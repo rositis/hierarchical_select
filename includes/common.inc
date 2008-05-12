@@ -18,7 +18,7 @@
  */
 function hierarchical_select_common_config_get($config_id, $defaults_override = array()) {
   $config = variable_get('hierarchical_select_config_'. $config_id, array());
-  
+
   // Set defaults for unconfigured settings.
   $defaults = array(
     'config_id' => $config_id,
@@ -40,7 +40,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
   );
 
   // Allow new defaults to be set.
-  $defaults = array_merge_recursive($defaults, $defaults_override);
+  $defaults = array_smart_merge($defaults, $defaults_override);
 
   // Set defaults for settings not yet set in the configuration.
   $config += $defaults;
@@ -83,7 +83,7 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
 /**
  * Form definition of the hierarchical_select_common_config_form form.
  */
-function hierarchical_select_common_config_form($module, $params, $config_id, $config, $defaults_override, $strings, $max_hierarchy_depth)  {
+function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth)  {
   static $js_added;
   
   if (!isset($js_added)) {
@@ -92,7 +92,9 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $c
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/common_config_form.js', 'module', 'header');
     drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), 'setting');
   }
-  
+
+  $config = hierarchical_select_common_config_get($config_id, $defaults_override);
+
   $form = array(
     '#tree' => TRUE,
     '#type' => 'fieldset',
@@ -322,4 +324,24 @@ function hierarchical_select_common_views_exposed_filters_reposition() {
   if (!isset($js_added)) {
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/views.js', 'module');
   }
+}
+
+
+/**
+ * Smarter version of array_merge_recursive: overwrites scalar values.
+ *
+ * From: http://www.php.net/manual/en/function.array-merge-recursive.php#82976.
+ */
+function array_smart_merge($array, $override) {
+  if (is_array($array) && is_array($override)) {
+    foreach ($override as $k => $v) {
+      if (isset($array[$k]) && is_array($v) && is_array($array[$k])) {
+        $array[$k] = array_smart_merge($array[$k], $v);
+      }
+      else {
+        $array[$k] = $v;
+      }
+    }
+  }
+  return $array;
 }
