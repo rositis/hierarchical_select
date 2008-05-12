@@ -166,9 +166,13 @@ Hooks
 8) hook_hierarchical_select_create_item($label, $parent, $params);
    Given a parent item and the label of a new item, create a new item as a
    child of the parent item.
+   Optional hook. When this hook is not implemented, this functionality will
+   never be used, even when you configure it that way.
 
 9) hook_hierarchical_select_node_count($item, $params);
    Given a item, get the number of nodes that are related to the given item.
+   Optional hook. When this hook is not implemented, this functionality will
+   never be used, even when you configure it that way.
 
 
 JavaScript events
