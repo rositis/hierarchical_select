@@ -59,6 +59,9 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     $form['#validate']['hierarchical_select_taxonomy_form_vocabulary_validate'] = array();
     $form['#submit']['hierarchical_select_taxonomy_form_vocabulary_submit'] = array();
 
+    // The original #submit callback has to be executed afterwards.
+    $form['#submit']['taxonomy_form_vocabulary_submit'] = array();
+
     $form += $second_part;
   }
 
