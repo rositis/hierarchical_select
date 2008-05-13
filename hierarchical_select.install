@@ -100,3 +100,23 @@ function hierarchical_select_update_3() {
   
   return $ret;
 }
+
+// Shorter prefix for storing the config variables.
+function hierarchical_select_update_4() {
+  $ret = array();
+
+  // Single query that could do the same, if it weren't for "Currently, you
+  // cannot update a table and select from the same table in a subquery."
+  //   source: http://dev.mysql.com/doc/refman/5.0/en/update.html
+  // UPDATE `variable` SET name = CONCAT('hs_config_', SUBSTRING(name, 28)) WHERE name IN (SELECT name FROM `variable` WHERE name LIKE 'hierarchical_select_config_%')
+
+  $result = db_query("SELECT SUBSTRING(name, 28) AS config_id FROM {variable} WHERE name LIKE 'hierarchical_select_config_%'");
+  while ($row = db_fetch_object($result)) {
+    $config_id = $row->config_id;
+    $value = variable_get("hierarchical_select_config_$config_id", serialize(array()));
+    variable_set("hs_config_$config_id", $value);
+    variable_del("hierarchical_select_config_$config_id");
+  }
+  
+  return $ret;
+}

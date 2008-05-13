@@ -1,0 +1,5 @@
+; $Id$
+name = Hierarchical Select Content Taxonomy
+description = Use Hierarchical Select as the widget for Content Taxonomy CCK fields.
+dependencies = hierarchical_select content_taxonomy
+package = Form Elements

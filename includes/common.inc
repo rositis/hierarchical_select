@@ -17,7 +17,7 @@
  *   Optionally override the defaults.
  */
 function hierarchical_select_common_config_get($config_id, $defaults_override = array()) {
-  $config = variable_get('hierarchical_select_config_'. $config_id, array());
+  $config = variable_get('hs_config_'. $config_id, array());
 
   // Set defaults for unconfigured settings.
   $defaults = array(
@@ -57,7 +57,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
  *   The config to store.
  */
 function hierarchical_select_common_config_set($config_id, $config) {
-  variable_set('hierarchical_select_config_'. $config['config_id'], $config);
+  variable_set('hs_config_'. $config['config_id'], $config);
 }
 
 /**
