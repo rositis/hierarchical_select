@@ -274,76 +274,25 @@ function _taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -1, 
 /**
  * Drupal core's taxonomy_term_count_nodes() is buggy. See
  * http://drupal.org/node/144969#comment-843000.
- *
- * This function, together with
- * hs_taxonomy_term_count_nodes_exclude_ancestors(), provides the expected
- * behavior.
  */
 function hs_taxonomy_term_count_nodes($tid, $type = 0) {
   static $count;
 
-  if (!isset($count[$type])) {
-    // $type == 0 always evaluates TRUE if $type is a string
-    if (is_numeric($type)) {
-      $result = db_query(db_rewrite_sql('SELECT t.tid, COUNT(n.nid) AS c FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 GROUP BY t.tid'));
-    }
-    else {
-      $result = db_query(db_rewrite_sql("SELECT t.tid, COUNT(n.nid) AS c FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND n.type = '%s' GROUP BY t.tid"), $type);
-    }
-    while ($term = db_fetch_object($result)) {
-      $count[$type][$term->tid] = $term->c;
-    }
-  }
-  $children_count = 0;
-  foreach (_taxonomy_term_children($tid) as $c) {
-    $children_count += hs_taxonomy_term_count_nodes_exclude_ancestors($c, $type);
-  }
-  return $children_count + (isset($count[$type][$tid]) ? $count[$type][$tid] : 0);
-}
-
-function hs_taxonomy_term_count_nodes_exclude_ancestors($tid, $type = 0) {
-  static $count;
-
-  // Get the tids of all ancestors.
-  $ancestors = taxonomy_get_parents_all($tid);
-  $exclude_tids = array();
-  for ($i = 1; $i < count($ancestors); $i++) {
-    $exclude_tids[] = $ancestors[$i]->tid;
+  $term = taxonomy_get_term($tid);
+  $tree = taxonomy_get_tree($term->vid, $tid);
+  $tids = array($tid);
+  foreach ($tree as $descendant) {
+    $tids[] = $descendant->tid;
   }
 
   if (!isset($count[$type][$tid])) {
-    $sql = "SELECT t.tid, COUNT(n.nid) AS c FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE t.tid = %d AND n.status = 1";
-
-    // Add a check for node type, if set.
-    if (!is_numeric($type)) {
-      $sql .= " AND n.type = '%s'";
-    }
-    // If this term has parents, exclude them.
-    if (count($exclude_tids)) {
-      $sql .= " AND n.nid NOT IN (SELECT sn.nid FROM {node} sn LEFT JOIN {term_node} st ON sn.nid = st.nid WHERE sn.status = 1 AND st.tid IN (%s))";
-    }
-    // Finish the query.
-    $sql .= " GROUP BY t.tid";
-
-    if (!is_numeric($type) && count($exclude_tids)) {
-      $result = db_query(db_rewrite_sql($sql), $tid, $type, implode(',', $exclude_tids));
-    }
-    elseif (!is_numeric($type) && !count($exclude_tids)) {
-      $result = db_query(db_rewrite_sql($sql), $tid, $type);
+    if (is_numeric($type)) {
+      $count[$type][$tid] = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) AS count FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND t.tid IN (%s)"), implode(',', $tids)));
     }
     else {
-      $result = db_query(db_rewrite_sql($sql), $tid, implode(',', $exclude_tids));
-    }
-
-    if ($term = db_fetch_object($result)) {
-      $count[$type][$term->tid] = $term->c;
+      $count[$type][$tid] = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) AS count FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND n.type = '%s' AND t.tid IN (%s)"), $type, implode(',', $tids)));
     }
   }
-
-  foreach (_taxonomy_term_children($tid) as $child_tid) {
-    $count[$type][$tid] += hs_taxonomy_term_count_nodes_exclude_ancestors($child_tid, $type);
-  }
-  
   return $count[$type][$tid];
 }
 
