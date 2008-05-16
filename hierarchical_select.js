@@ -184,10 +184,19 @@ Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastU
 Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
   switch (updateType) {
     case 'update hierarchical select':
-      // Give focus to the input field of the "create new item/level" section,
-      //  if it exists, and also select the existing text.
-      var $createNewItemInput = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-input', Drupal.HierarchicalSelect.context).focus();
-      if ($createNewItemInput.size() > 0) {
+      var $createNewItemInput = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-input', Drupal.HierarchicalSelect.context);
+      
+      if ($createNewItemInput.size() == 0) {
+        // Give focus to the level below the one that has changed, if it
+        // exists.
+        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+        .eq(parseInt(lastUnchanged) + 1)
+        .focus();
+      }
+      else {
+        // Give focus to the input field of the "create new item/level"
+        // section, if it exists, and also select the existing text.
+        $createNewItemInput.focus();
         $createNewItemInput[0].select();
       }
       // Hide the loaded selects after the one that was just changed, then
@@ -209,6 +218,22 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
         callback();
       }
       break;
+
+    case 'create new item':
+    case 'cancel new item':
+    case 'create new level':
+    case 'cancel new level':
+      // After an item/level has been created/cancelled, reset focus to the
+      // beginning of the hierarchical select.
+      $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+      .eq(0)
+      .focus();
+
+      if (callback) {
+        callback();
+      }
+      break;
+
     default:
       if (callback) {
         callback();
