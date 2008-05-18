@@ -71,8 +71,6 @@ function hierarchical_select_admin_settings() {
  * Menu callback; a table that lists all Hierarchical Select configs.
  */
 function hierarchical_select_admin_configs() {
-  $output = '';
-
   $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Entity'), t('Actions'));
 
   // Retrieve all information items
@@ -99,7 +97,37 @@ function hierarchical_select_admin_configs() {
     );
   }
 
-  drupal_set_title(t('Hierarchical Select configurations'));
+  return theme('table', $header, $rows);
+}
+
+/**
+ * Menu callback; a table that lists all Hierarchical Select implementations
+ * and the features they support.
+ */
+function hierarchical_select_admin_implementations() {
+  $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Create new items'), t('Node count'));
+
+  // Retrieve all information items
+  $rows = array();
+  foreach (module_implements('hierarchical_select_root_level') as $module) {
+    $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
+    $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+    // Try to extract the hierarchy type from hook_hierarchical_select_config_info().
+    $hierarchy_type = t('N/A');
+    if (module_hook($module, 'hierarchical_select_config_info')) {
+      $config_info = module_invoke($module, 'hierarchical_select_config_info');
+      $config = reset($config_info);
+      $hierarchy_type = $config['hierarchy type'];
+    }
+
+    $rows[] = array(
+      $module_info['name'],
+      $hierarchy_type,
+      (module_hook($module, 'hierarchical_select_create_item')) ? t('Yes') : t('No'),
+      (module_hook($module, 'hierarchical_select_node_count'))  ? t('Yes') : t('No'),
+    );
+  }
+
   return theme('table', $header, $rows);
 }
 

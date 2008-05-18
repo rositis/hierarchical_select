@@ -52,7 +52,14 @@ function hierarchical_select_menu($may_cache) {
       'description'        => t('All available Hierarchical Select configurations.'),
       'callback'           => 'hierarchical_select_admin_configs',
       'type'               => MENU_LOCAL_TASK,
-    );    
+    );
+    $items[] = array(
+      'path'               => 'admin/settings/hierarchical_select/implementations',
+      'title'              => t('Implementations'),
+      'description'        => t('Features of each Hierarchical Select implementation.'),
+      'callback'           => 'hierarchical_select_admin_implementations',
+      'type'               => MENU_LOCAL_TASK,
+    );
   }
   else {
     if (arg(0) == 'admin' && arg(1) == 'settings' && arg(2) == 'hierarchical_select') {
