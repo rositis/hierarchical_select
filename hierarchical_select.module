@@ -131,6 +131,39 @@ function hierarchical_select_elements() {
   return $type;
 }
 
+/**
+ * Implementation of hook_requirements().
+ */
+function hierarchical_select_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    // Check if all hook_update_n() hooks have been executed.
+    require_once('includes/install.inc');
+    drupal_load_updates();
+    $updates = drupal_get_schema_versions('hierarchical_select');
+    $current = drupal_get_installed_schema_version('hierarchical_select');
+
+    $ok = (end($updates) == $current);
+
+    $requirements['hierarchical_select'] = array(
+      'title' => t('Hierarchical Select'),
+      'value' => ($ok) ? t('All updates installed.') : t('Not all updates installed!'),
+      'description' => ($ok) ? '' : t('Please run update.php to install the
+        latest updates! You have installed update !installed_update, but the
+        latest update is !latest_update!',
+        array(
+          '!installed_update' => $current,
+          '!latest_update' => end($updates),
+        )
+      ),
+      'severity' => ($ok) ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements;
+}
+
 
 //----------------------------------------------------------------------------
 // Menu callbacks.
