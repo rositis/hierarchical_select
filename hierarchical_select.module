@@ -151,20 +151,40 @@ function hierarchical_select_requirements($phase) {
     $updates = drupal_get_schema_versions('hierarchical_select');
     $current = drupal_get_installed_schema_version('hierarchical_select');
 
-    $ok = (end($updates) == $current);
+    $up_to_date = (end($updates) == $current);
+    $jquery_update_v1 = (!file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js')); // This file is specific to jQuery Update 2.x.
 
-    $requirements['hierarchical_select'] = array(
-      'title' => t('Hierarchical Select'),
-      'value' => ($ok) ? t('All updates installed.') : t('Not all updates installed!'),
-      'description' => ($ok) ? '' : t('Please run update.php to install the
-        latest updates! You have installed update !installed_update, but the
-        latest update is !latest_update!',
+    if ($up_to_date && $jquery_update_v1) {
+      $value = t('All updates installed. jQuery Update 1.x installed.');
+      $description = '';
+      $severity = REQUIREMENT_OK;
+    }
+    elseif (!$up_to_date) {
+      $value = t('Not all updates installed!');
+      $description = t('Please run update.php to install the latest updates!
+        You have installed update !installed_update, but the latest update is
+        !latest_update!',
         array(
           '!installed_update' => $current,
           '!latest_update' => end($updates),
         )
-      ),
-      'severity' => ($ok) ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+      );
+      $severity = REQUIREMENT_ERROR;
+    }
+    elseif (!$jquery_update_v1) {
+      $value = t('jQuery Update 2.x installed!');
+      $description = t('Please downgrade to jQuery Update 1.x! jQuery Update
+        2.x contains jQuery 1.2.x, which is incompatible with the Javascript
+        code of Hierarchical Select!'
+      );
+      $severity = REQUIREMENT_ERROR;
+    }
+
+    $requirements['hierarchical_select'] = array(
+      'title' => t('Hierarchical Select'),
+      'value' => $value,
+      'description' => $description,
+      'severity' => $severity,
     );
   }
 
