@@ -137,6 +137,22 @@ Special values
   the empty selection.
 
 
+Configuration management
+------------------------
+It's now possible to export Hierarchical Select configurations, and there is a
+function to set the configuration of a certain Hierarchical Select. Combine
+the two and you can manage your Hierarchical Select configurations in code!
+An example:
+
+  // The exported configuration.
+  $config = array( … );
+  $config_id = $config['config_id];
+
+  // Apply the configuration.
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  hierarchical_select_common_config_set($config_id, $config_id);
+
+
 Hooks
 -----
 1) hook_hierarchial_select_form_alter($form_id, &$form);
