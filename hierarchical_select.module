@@ -1322,7 +1322,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // Prepend a "<create new item>" option to the root level when the editable
   // setting is enabled.
   // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['editability']['status'] && function_exists($config['module'] .'_hierarchical_select_create_item')) {
+  if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
     $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[0];
   }
 
@@ -1351,7 +1351,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // If the editable setting is enabled, create "<create new item>" options
     // in all levels below the root level.
     // NOTE: this is an optional hook, so we also check if it's implemented.
-    if ($config['editability']['status'] && function_exists($config['module'] .'_hierarchical_select_create_item')) {
+    if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
       }
@@ -1367,7 +1367,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     for ($depth = 0; $depth <= $max_depth; $depth++) {
       // A "<create new item>" option, if the editable setting is enabled.
       // NOTE: this is an optional hook, so we also check if it's implemented.
-      if ($config['editability']['status'] && function_exists($config['module'] .'_hierarchical_select_create_item') && $depth > 0) { // The root level already has this.
+      if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item') && $depth > 0) { // The root level already has this.
         $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new item') .'>') + $hierarchy->levels[$depth];
       }
       // Level label: set an empty level label if they've been disabled.
@@ -1385,7 +1385,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
 
         // A "<create new item>" option, if the editable setting is enabled.
         // NOTE: this is an optional hook, so we also check if it's implemented.
-        $hierarchy->levels[$depth] = ($config['editability']['status'] && function_exists($config['module'] .'_hierarchical_select_create_item')) ? array() : array('create_new_item' => '<'. t('new !item', array('!item' => $config['editability']['item_types'][$depth])) .'>');
+        $hierarchy->levels[$depth] = ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) ? array() : array('create_new_item' => '<'. t('new !item', array('!item' => $config['editability']['item_types'][$depth])) .'>');
 
         // Level label: set an empty level label if they've been disabled.
         $hierarchy->lineage[$depth] = 'label_'. $depth;
@@ -1399,7 +1399,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // "<create new level>" option to each level, as long as it is a level below
   // the max_levels setting.
   // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['editability']['status'] && $config['editability']['allow_new_levels'] && function_exists($config['module'] .'_hierarchical_select_create_item')) {
+  if ($config['editability']['status'] && $config['editability']['allow_new_levels'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
     foreach ($hierarchy->levels as $depth => $level) {
       if ($last < $config['editability']['max_levels'] - 1) {
         foreach (array_keys($hierarchy->levels[$depth]) as $id => $value) {
@@ -1417,7 +1417,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
 
   // If the node_count setting is enabled, add node counts.
   // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['node_count'] && function_exists($config['module'] .'_hierarchical_select_node_count')) {
+  if ($config['node_count'] && module_hook($config['module'], 'hierarchical_select_node_count')) {
     foreach (array_keys($hierarchy->levels) as $depth) {
       foreach ($hierarchy->levels[$depth] as $value => $label) {
         $is_valid_item = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
