@@ -30,6 +30,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
     ),
     'dropbox' => array(
       'status' => 0,
+      'limit'  => 0,
     ),
     'editability' => array(
       'status'           => 0,
