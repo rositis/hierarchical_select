@@ -62,7 +62,7 @@ function hierarchical_select_admin_settings() {
     ),
     '#default_value' => variable_get('hierarchical_select_js_cache_system', 0),
   );
-  
+
 
   return system_settings_form($form);
 }
@@ -90,8 +90,8 @@ function hierarchical_select_admin_configs() {
       $item['entity type'],
       $item['entity'],
       theme('links', array(
-        array('title' => t('Edit'),   'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"), 
-        array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"), 
+        array('title' => t('Edit'),   'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"),
+        array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"),
         array('title' => t('Import'), 'href' => "admin/settings/hierarchical_select/import/$config_id"),
       )),
     );
@@ -137,7 +137,7 @@ function hierarchical_select_admin_implementations() {
 function hierarchical_select_admin_export($config_id) {
   $config = hierarchical_select_common_config_get($config_id);
   $code = _hierarchical_select_create_export_code($config);
-  
+
   drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
   drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
 
@@ -172,15 +172,11 @@ function hierarchical_select_admin_import($config_id) {
     ),
     '#attributes' => array('class' => 'hierarchical-select-config-code'),
   );
-  
   $form['interpreted_config'] = array('#type' => 'value', '#value' => NULL);
-  
-
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t("Submit"),
   );
-
   $form['#redirect'] = NULL;
   return $form;
 }
@@ -192,16 +188,16 @@ function hierarchical_select_admin_import_validate($form_id, $form_values, $form
   ob_start();
   eval($form_values['config']);
   ob_end_clean();
-  
+
   form_set_value($form['interpreted_config'], serialize($config));
-  
+
   if (empty($form_values['config'])) {
     form_error($form['config'], t('You did not enter anything.'));
   }
   elseif ($config == NULL) {
     form_error($form['config'], t('There is a syntax error in the Hierarchical Select configuration you entered.'));
   }
-  elseif (!isset($config['config_id']) || empty($config['config_id'])) {    
+  elseif (!isset($config['config_id']) || empty($config['config_id'])) {
     form_error($form['config'], t('Unable to import this configuration, because no Hierarchical Select <em>config id</em> is set.'));
   }
 }
@@ -259,7 +255,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
   $output .= "    'max_levels'       => ". $config['editability']['max_levels'] .",\n";
   $output .= "  ),\n";
-  $output .= ");\n";  
+  $output .= ");\n";
 
   return $output;
 }
