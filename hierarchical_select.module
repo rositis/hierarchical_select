@@ -903,26 +903,26 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
 function _hierarchical_select_process_render_flat_select($hs_selection, $db_selection, $config) {
   $selection = ($config['dropbox']['status']) ? $db_selection : $hs_selection;
 
-   $options = array();
-   foreach ($selection as $value) {
-     $is_valid = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
-     if ($is_valid) {
-       $options[$value] = $value;
-     }
-   }
+  $options = array();
+  foreach ($selection as $value) {
+    $is_valid = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
+    if ($is_valid) {
+      $options[$value] = $value;
+    }
+  }
 
-   $element = array(
-     '#type' => 'select',
-     '#multiple' => TRUE,
-     '#options' => $options,
-     '#default_value' => array_keys($options),
-     // Use a #theme callback to prevent the select from being wrapped in a
-     // div. This simplifies the CSS and JS code.
-     '#theme' => 'hierarchical_select_select',     
-     '#attributes' => array('class' => 'flat-select'),
-   );  
+  $element = array(
+    '#type' => 'select',
+    '#multiple' => TRUE,
+    '#options' => $options,
+    '#default_value' => array_keys($options),
+    // Use a #theme callback to prevent the select from being wrapped in a
+    // div. This simplifies the CSS and JS code.
+    '#theme' => 'hierarchical_select_select',     
+    '#attributes' => array('class' => 'flat-select'),
+  );  
 
-   return $element;
+  return $element;
 }
 
 /**
@@ -1681,31 +1681,31 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
  *   A themed HTML string representing the form element.
  */
 function theme_hierarchical_select($element) {
- $output = '';
+  $output = '';
 
- // Update $element['#attributes']['class'].
- $hsid = $element['hsid']['#value'];
- $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
- $classes = array(
+  // Update $element['#attributes']['class'].
+  $hsid = $element['hsid']['#value'];
+  $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
+  $classes = array(
    'hierarchical-select-wrapper',
    "hierarchical-select-level-labels-style-$level_labels_style",
- );
- $element['#attributes']['class'] .= ' '. implode(' ', $classes);
- $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
- 
- $output .= theme(
-   'form_element',
-   array(
-     '#title' => $element['#title'], 
-     '#description' => $element['#description'], 
-     '#id' => $element['#id'], 
-     '#required' => $element['#required'], 
-     '#error' => $element['#error'],
-   ),
-   '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
- );
+  );
+  $element['#attributes']['class'] .= ' '. implode(' ', $classes);
+  $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
 
- return $output;
+  $output .= theme(
+    'form_element',
+    array(
+      '#title' => $element['#title'], 
+      '#description' => $element['#description'], 
+      '#id' => $element['#id'], 
+      '#required' => $element['#required'], 
+      '#error' => $element['#error'],
+    ),
+    '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
+  );
+
+  return $output;
 }
 
 /**
@@ -1719,7 +1719,7 @@ function theme_hierarchical_select($element) {
  */
 function theme_hierarchical_select_select($element) {
   $select = '';
-  $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
+  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
   _form_set_class($element, array('form-select'));
   $multiple = isset($element['#multiple']) && $element['#multiple'];
   return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. form_select_options($element) .'</select>';
@@ -1735,7 +1735,7 @@ function theme_hierarchical_select_select($element) {
  *   A themed HTML string representing the form element.
  */
 function theme_hierarchical_select_textfield($element) {
-  $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
+  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
   $class = array('form-text');
   $extra = '';
   $output = '';
