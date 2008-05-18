@@ -3,6 +3,52 @@
 
 
 //----------------------------------------------------------------------------
+// Core hooks.
+
+/**
+ * Implementation of hook_requirements().
+ */
+function hs_views_taxonomy_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $pattern = <<<EOT
+function _views_build_filters_form(\$view) {
+  // When the form is retrieved through an AJAX callback, the cache hasn't
+  // been loaded yet. The cache is necesssary for _views_get_filters().
+  views_load_cache();
+EOT;
+    $views_with_patch_257004 = preg_match('#'. preg_quote($pattern) .'#m', file_get_contents(drupal_get_path('module', 'views') .'/views.module'));
+
+    if ($views_with_patch_257004) {
+      $value = t('The Views module is new enough.');
+      $description = '';
+      $severity = REQUIREMENT_OK;
+    }
+    else {
+      $value = t('The Views module is outdated.');
+      $description = t("The version of Views that you have installed is either
+        older than May 11, 2008, or doesn't have the obligatory patch applied.
+        Please apply the <a href=\"!patch_url\">patch</a> or update to a newer
+        version of the Views module!",
+        array('!patch_url' => 'http://drupal.org/files/issues/hs_compatibility.patch')
+      );
+      $severity = REQUIREMENT_ERROR;      
+    }
+
+    $requirements['hs_views_taxonomy'] = array(
+      'title'       => t('Hierarchical Select Views Taxonomy'),
+      'value'       => $value,
+      'description' => $description,
+      'severity'    => $severity,
+    );
+  }
+
+  return $requirements;
+}
+
+
+//----------------------------------------------------------------------------
 // Hierarchical Select hooks.
 
 /**

@@ -25,6 +25,7 @@ Integrates with
 * Content Taxonomy (http://drupal.org/project/content_taxonomy)
 * Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
 * Views 5.x-1.x-dev tarball of May 11 or later (http://drupal.org/project/views)
+  or apply this patch: http://drupal.org/files/issues/hs_compatibility.patch
 
 
 Installation
@@ -47,10 +48,11 @@ Troubleshooting
 ---------------
 If you ever have problems, make sure to go through these steps:
 
-1) Go to admin/logs/status (i.e. the Status Report). Ensure that jQuery Update
-   (version 1.x must be used, which uses jQuery 1.1.x not version 2.x, which
-   uses jQuery 1.2.x) is installed properly and Hierarchical
-   Select is updated properly.
+1) Go to admin/logs/status (i.e. the Status Report). Ensure that the status
+   of the following modules is ok:
+   - jQuery Update
+   - Hierarchical Select
+   - Hierarchical Select Taxonomy Views (if installed)
 
 2) Ensure that the page isn't being served from your browser's cache. Use
    CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the
@@ -60,8 +62,8 @@ If you ever have problems, make sure to go through these steps:
    *must* enable the setting "Save only the deepest item".
    See http://drupal.org/node/241766#comment-808464.
 
-4) When using a content_taxonomy CCK field, you must configure the
-   "Save options" setting to either "Save as tag" or "Both".
+4) When using the Hierarchical Select Content Taxonomy module, you must
+   configure the "Save options" setting to either "Save as tag" or "Both".
    See http://drupal.org/node/207252#comment-685906.
 
 In case of problems, don't forget to try a hard refresh in your browser!
