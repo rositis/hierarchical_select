@@ -6,7 +6,7 @@ Drupal.HierarchicalSelectConfigForm = {};
 
 cfg.context = function(configId) {
   if (configId === undefined) {
-    return $('form .hierarchical-select-config-form');
+    return $('.hierarchical-select-config-form');
   }
   else {
     return $('#hierarchical-select-config-form-'+ configId);
@@ -117,7 +117,7 @@ cfg.livePreview = function(configId) {
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
     for (var id in Drupal.settings.HierarchicalSelect.configForm) {
-      var configId = Drupal.settings.HierarchicalSelect.configForm[id];
+      var configId = Drupal.settings.HierarchicalSelect.configForm.id;
 
       cfg.levelLabels(configId);
       cfg.dropbox(configId);
