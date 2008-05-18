@@ -57,7 +57,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
  *   The config to store.
  */
 function hierarchical_select_common_config_set($config_id, $config) {
-  variable_set('hs_config_'. $config['config_id'], $config);
+  variable_set('hs_config_'. $config_id, $config);
 }
 
 /**
