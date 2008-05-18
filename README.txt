@@ -3,33 +3,20 @@ $Id$
 Description
 -----------
 This module defines the "hierarchical_select" form element, which is a much
-enhanced way for letting the user select an option in a hierarchy. Out of the
-box, this module implements the hierarchical_select hooks for the taxonomy
-(which automatically includes support for the forum module), content_taxonomy
-and subscriptions_taxonomy modules. It also converts hierarchical vocabularies
-that are used as exposed filters in any View to a hierarchical select.
-
-Any module that uses a select form element, of which the options are ordered
-hierarchically, can take advantage of this new form element. Especially when
-there's a deep hierarchy, or when there are a lot of options in each sublevel,
-this form element greatly simplifies the user's search for the right option.
+enhanced way for letting the user select an option in a hierarchy.
 
 Hierarchical Select has the ability to save the entire lineage of a selection
 or only the "deepest" selection. You can configure it to force the user to
 make a selection as deep as possible in the tree, or allow the user to select
 an item anywhere in the tree. Levels can be labeled, you can configure limit
 the number of items that can be selected, configure a title for the dropbox,
-choose a site-wide animation delay, and so on.
-
-The Taxonomy implementation of Hierarchical Select can be configured per
-vocabulary: it can be turned on/off and you can take advantage of all features
-mentioned above.
+choose a site-wide animation delay, and so on. You can even create new items
+and levels through Hierarchical Select.
 
 
 Dependencies
 ------------
-* jQuery Update (http://drupal.org/project/jquery_update)
-
+* jQuery Update 1.x (http://drupal.org/project/jquery_update)
 
 
 Integrates with
@@ -55,16 +42,27 @@ admin/content/taxonomy and click the "edit" link for a vocabulary. Now scroll
 down and you'll find a whole range of Hierarchical Select settings. All
 settings are explained there as well.
 
-NOTE: When using a content_taxonomy CCK field, you must configure it to use
-      either "Save as tag" or "Both" as "Save options". If you don't, you'll
-      get a bunch of PHP errors.
-      See http://drupal.org/node/207252#comment-685906.
-NOTE: When using a "multiple values" content_taxonomy CCK field, you must also
-      set your vocabulary to be "multiple select"!
-      See http://drupal.org/node/212398.
-NOTE: When using Hierarchical Select for forum selection (with forum.module),
-      you *must* enable the setting "Save only the deepest item".
-      See http://drupal.org/node/241766#comment-808464.
+
+Troubleshooting
+---------------
+If you ever have problems, make sure to go through these steps:
+
+1) Go to admin/logs/status (i.e. the Status Report). Ensure that jQuery Update
+   (version 1.x must be used, which uses jQuery 1.1.x not version 2.x, which
+   uses jQuery 1.2.x) is installed properly and Hierarchical
+   Select is updated properly.
+
+2) Ensure that the page isn't being served from your browser's cache. Use
+   CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the
+   browser to reload everything, preventing it from using its cache.
+
+3) When using Hierarchical Select for forum selection (with forum.module), you
+   *must* enable the setting "Save only the deepest item".
+   See http://drupal.org/node/241766#comment-808464.
+
+4) When using a content_taxonomy CCK field, you must configure the
+   "Save options" setting to either "Save as tag" or "Both".
+   See http://drupal.org/node/207252#comment-685906.
 
 In case of problems, don't forget to try a hard refresh in your browser!
 
@@ -72,11 +70,11 @@ In case of problems, don't forget to try a hard refresh in your browser!
 Sponsors
 --------
 * Initial development:
-    Paul Ektov of http://autobin.ru.
+   Paul Ektov of http://autobin.ru.
 * Abstraction, to let other modules than taxonomy hook in:
-    Etienne Leers of http://creditcalc.biz.
+   Etienne Leers of http://creditcalc.biz.
 * Support for saving the term lineage:
-    Paul Ektov of http://autobin.ru.
+   Paul Ektov of http://autobin.ru.
 * Multiple select support:
    Marmaladesoul, http://marmaladesoul.com.
 * Taxonomy Subscriptions support:
