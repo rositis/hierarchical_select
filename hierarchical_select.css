@@ -97,7 +97,7 @@ p.hierarchical-select-dropbox-limit-warning {
   min-width: 20em;
   margin-bottom: 1em;
   padding: 0px;
-  color: grey;
+  color: gray;
   font-size: 90%;
   padding: 1em;
   margin-left: 1px;
@@ -106,7 +106,7 @@ p.hierarchical-select-dropbox-limit-warning {
 .hierarchical-select-wrapper table.dropbox tbody {
   margin: 0;
   padding: 0;
-  border: 1px solid grey;
+  border: 1px solid gray;
 }
 
 tr.dropbox-entry {
@@ -125,11 +125,11 @@ tr.dropbox-entry.odd {
 }
 
 tr.dropbox-entry.first {
-  border-top: 1px solid grey;
+  border-top: 1px solid gray;
 }
 
 tr.dropbox-entry.last {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid gray;
 }
 
 .dropbox-selected-item {
@@ -161,7 +161,7 @@ tr.dropbox-is-empty {
 
 .hierarchical-select-wrapper .nojs .help-text {
   font-size: 90%;
-  color: grey;
+  color: gray;
   display: block;
   border: 1px dotted black;
   min-width: 30em;
