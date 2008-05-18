@@ -40,6 +40,42 @@ function hierarchical_select_menu($may_cache) {
       'callback arguments' => array('hierarchical_select_admin_settings'),
       'type'               => MENU_NORMAL_ITEM,
     );
+    $items[] = array(
+      'path'               => 'admin/settings/hierarchical_select/settings',
+      'title'              => t('Site-wide settings'),
+      'weight'             => -10,
+      'type'               => MENU_DEFAULT_LOCAL_TASK,
+    );
+    $items[] = array(
+      'path'               => 'admin/settings/hierarchical_select/configs',
+      'title'              => t('Configurations'),
+      'description'        => t('All available Hierarchical Select configurations.'),
+      'callback'           => 'hierarchical_select_admin_configs',
+      'type'               => MENU_LOCAL_TASK,
+    );    
+  }
+  else {
+    if (arg(0) == 'admin' && arg(1) == 'settings' && arg(2) == 'hierarchical_select') {
+      require_once(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.admin.inc');
+
+      if (in_array(arg(3), array('export', 'import'))) {
+        require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+        $items[] = array(
+          'path'               => 'admin/settings/hierarchical_select/export/'. arg(4),
+          'title'              => t('Export'),
+          'callback'           => 'drupal_get_form',
+          'callback arguments' => array('hierarchical_select_admin_export', arg(4)),
+          'type'               => MENU_LOCAL_TASK,
+        );
+        $items[] = array(
+          'path'               => 'admin/settings/hierarchical_select/import/'. arg(4),
+          'title'              => t('Import'),
+          'callback'           => 'drupal_get_form',
+          'callback arguments' => array('hierarchical_select_admin_import', arg(4)),
+          'type'               => MENU_LOCAL_TASK,
+        );
+      }
+    }
   }
   return $items;
 }
@@ -493,65 +529,6 @@ function _hierarchical_select_validate(&$element) {
 function _hierarchical_select_submit($form_id, $form_values, $hs_form_build_id) {
   // Remove the 
   cache_clear_all($hs_form_build_id, 'cache');
-}
-
-/**
- * Form definition; admin settings.
- */
-function hierarchical_select_admin_settings() {
-  $form['description'] = array(
-    '#value' => t('All settings below will be used as site-wide defaults.'),
-    '#prefix' => '<div>',
-    '#suffix' => '</div>',
-  );
-  $form['hierarchical_select_animation_delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Animation delay'),
-    '#description' => t(
-      'The delay that will be used for the "drop in/out" effect when a
-      hierarchical select is being updated (in milliseconds).'
-    ),
-    '#size' => 5,
-    '#maxlength' => 5,
-    '#default_value' => variable_get('hierarchical_select_animation_delay', 400),
-  );
-  $form['hierarchical_select_level_labels_style'] = array(
-    '#type' => 'select',
-    '#title' => t('Level labels style'),
-    '#description' => t(
-      'The style that will be used for level labels. This is not supported by
-      all browsers! If you want a consistent interface, choose to use no
-      style.'
-    ),
-    '#options' => array(
-      'none' => t('No style'),
-      'bold' => t('Bold'),
-      'inversed' => t('Inversed'),
-      'underlined' => t('Underlined'),
-    ),
-    '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
-  );
-  $form['hierarchical_select_js_cache_system'] = array(
-    '#type' => 'radios',
-    '#title' => t('Cache in a HTML 5 client-side database'),
-    '#description' => t(
-      'This feature only works in browsers that support the
-      <a href="!spec-url">HTML 5 client-side database storage specification
-      </a> will be able to take advantage of this feature.</br>
-      After enabling this, you will notice (in supporting browsers) that
-      refreshing the hierarchical select will not require a request to the
-      server when a part is being requested that has been requested before.',
-      array('!spec-url' => url('http://www.whatwg.org/specs/web-apps/current-work/multipage/section-sql.html'))
-    ),
-    '#options' => array(
-      0 => t('Disabled'),
-      1 => t('Enabled'),
-    ),
-    '#default_value' => variable_get('hierarchical_select_js_cache_system', 0),
-  );
-  
-
-  return system_settings_form($form);
 }
 
 

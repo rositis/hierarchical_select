@@ -191,6 +191,43 @@ function taxonomy_hierarchical_select_node_count($item, $params) {
   return hs_taxonomy_term_count_nodes($item);
 }
 
+/**
+ * Implementation of hook_hierarchical_select_config_info().
+ */
+function taxonomy_hierarchical_select_config_info() {
+  static $config_info;
+
+  if (!isset($config_info)) {
+    $config_info = array();
+
+    $content_types = node_get_types();
+    $vocabularies = taxonomy_get_vocabularies();
+
+    foreach ($vocabularies as $vid => $vocabulary) {
+      if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
+        // Collect the human-readable names of each content type for which this
+        // vocabulary is used.
+        $entities = array();
+        foreach ($vocabulary->nodes as $content_type) {
+          $entities[] = $content_types[$content_type]->name;
+        }
+
+        $config_id = "taxonomy-$vid";
+        $config_info[$config_id] = array(
+          'config_id'      => $config_id,
+          'hierarchy type' => t('Taxonomy'),
+          'hierarchy'      => t($vocabulary->name),
+          'entity type'    => t('node'),
+          'entity'         => implode(', ', array_map('t', $entities)),
+          'edit link'      => "admin/content/taxonomy/edit/vocabulary/$vid",
+        );
+      }
+    }
+  }
+
+  return  $config_info;
+}
+
 
 //----------------------------------------------------------------------------
 // FAPI callbacks.

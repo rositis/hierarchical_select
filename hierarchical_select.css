@@ -191,3 +191,9 @@ tr.dropbox-is-empty {
   zoom: 1;
   filter: alpha(opacity=50);
 }
+
+
+/* Use a monospace font for the import/export config code text areas. */
+.hierarchical-select-config-code {
+  font-family: 'Monaco', 'Lucida Console', 'Consolas', monospace;
+}

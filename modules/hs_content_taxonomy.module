@@ -374,6 +374,42 @@ function hs_content_taxonomy_hierarchical_select_node_count($item, $params) {
   return taxonomy_hierarchical_select_node_count($item, $params);
 }
 
+/**
+ * Implementation of hook_hierarchical_select_config_info().
+ */
+function hs_content_taxonomy_hierarchical_select_config_info() {
+  static $config_info;
+
+  if (!isset($config_info)) {
+    $config_info = array();
+
+    $content_types = content_types();
+    $fields = content_fields();
+
+    foreach ($fields as $field_name => $field) {
+      if ($field['type'] == 'content_taxonomy') {
+        foreach ($content_types as $content_type_name => $content_type) {
+          if (isset($content_type['fields'][$field_name]) && $content_type['fields'][$field_name]['widget']['type'] == 'content_taxonomy_hs') {
+            $vocabulary = taxonomy_get_vocabulary($field['vid']);
+
+            $config_id = "content-taxonomy-$field_name";
+            $config_info["$config_id|$content_type_name"] = array(
+              'config_id'      => $config_id,
+              'hierarchy type' => t('Content Taxonomy'),
+              'hierarchy'      => t($vocabulary->name) ." ($field_name)",
+              'entity type'    => t('node'),
+              'entity'         => t($content_type['name']),
+              'edit link'      => "admin/content/types/$content_type_name/fields/$field_name/hs_config",
+            );
+          }
+        }
+      }
+    }
+  }
+
+  return  $config_info;
+}
+
 
 //----------------------------------------------------------------------------
 // Private functions.

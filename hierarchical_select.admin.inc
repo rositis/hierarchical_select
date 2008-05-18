@@ -1,0 +1,237 @@
+<?php
+// $Id$
+
+
+/**
+ * @file
+ * Module settings and configuration administration UI.
+ */
+
+
+/**
+ * Form definition; admin settings.
+ */
+function hierarchical_select_admin_settings() {
+  $form['description'] = array(
+    '#value' => t('All settings below will be used as site-wide defaults.'),
+    '#prefix' => '<div>',
+    '#suffix' => '</div>',
+  );
+  $form['hierarchical_select_animation_delay'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Animation delay'),
+    '#description' => t(
+      'The delay that will be used for the "drop in/out" effect when a
+      hierarchical select is being updated (in milliseconds).'
+    ),
+    '#size' => 5,
+    '#maxlength' => 5,
+    '#default_value' => variable_get('hierarchical_select_animation_delay', 400),
+  );
+  $form['hierarchical_select_level_labels_style'] = array(
+    '#type' => 'select',
+    '#title' => t('Level labels style'),
+    '#description' => t(
+      'The style that will be used for level labels. This is not supported by
+      all browsers! If you want a consistent interface, choose to use no
+      style.'
+    ),
+    '#options' => array(
+      'none' => t('No style'),
+      'bold' => t('Bold'),
+      'inversed' => t('Inversed'),
+      'underlined' => t('Underlined'),
+    ),
+    '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
+  );
+  $form['hierarchical_select_js_cache_system'] = array(
+    '#type' => 'radios',
+    '#title' => t('Cache in a HTML 5 client-side database'),
+    '#description' => t(
+      'This feature only works in browsers that support the
+      <a href="!spec-url">HTML 5 client-side database storage specification
+      </a> will be able to take advantage of this feature.</br>
+      After enabling this, you will notice (in supporting browsers) that
+      refreshing the hierarchical select will not require a request to the
+      server when a part is being requested that has been requested before.',
+      array('!spec-url' => url('http://www.whatwg.org/specs/web-apps/current-work/multipage/section-sql.html'))
+    ),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled'),
+    ),
+    '#default_value' => variable_get('hierarchical_select_js_cache_system', 0),
+  );
+  
+
+  return system_settings_form($form);
+}
+
+/**
+ * Menu callback; a table that lists all Hierarchical Select configs.
+ */
+function hierarchical_select_admin_configs() {
+  $output = '';
+
+  $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Entity'), t('Actions'));
+
+  // Retrieve all information items
+  $info_items = array();
+  foreach (module_implements('hierarchical_select_config_info') as $module) {
+    $info_items = array_merge_recursive($info_items, module_invoke($module, 'hierarchical_select_config_info'));
+  }
+
+  // Process the retrieved information into rows.
+  $rows = array();
+  foreach ($info_items as $id => $item) {
+    $config_id = $item['config_id'];
+
+    $rows[$id] = array(
+      $item['hierarchy type'],
+      $item['hierarchy'],
+      $item['entity type'],
+      $item['entity'],
+      theme('links', array(
+        array('title' => t('Edit'),   'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"), 
+        array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"), 
+        array('title' => t('Import'), 'href' => "admin/settings/hierarchical_select/import/$config_id"),
+      )),
+    );
+  }
+
+  drupal_set_title(t('Hierarchical Select configurations'));
+  return theme('table', $header, $rows);
+}
+
+/**
+ * Form definition; config export form.
+ */
+function hierarchical_select_admin_export($config_id) {
+  $config = hierarchical_select_common_config_get($config_id);
+  $code = _hierarchical_select_create_export_code($config);
+  
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
+
+  $lines = substr_count($code, "\n") + 1;
+  $form['config'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Hierarchical Select configuration %config_id', array('%config_id' => $config_id)),
+    '#default_value' => $code,
+    '#rows' => $lines,
+    '#attributes' => array('class' => 'hierarchical-select-config-code'),
+  );
+
+  return $form;
+}
+
+/**
+ * Form definition; config import form.
+ */
+function hierarchical_select_admin_import($config_id) {
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
+
+  $form['config'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Import Hierarchical Select configuration code'),
+    '#cols' => 60,
+    '#rows' => 15,
+    '#description' => t('Copy and paste the results of an exported
+      Hierarchical Select configuration here.<br />This will override the
+      current Hierarchical Select configuration for %config_id',
+      array('%config_id' => $config_id)
+    ),
+    '#attributes' => array('class' => 'hierarchical-select-config-code'),
+  );
+  
+  $form['interpreted_config'] = array('#type' => 'value', '#value' => NULL);
+  
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t("Submit"),
+  );
+
+  $form['#redirect'] = NULL;
+  return $form;
+}
+
+/**
+ * Validate callback; config import form.
+ */
+function hierarchical_select_admin_import_validate($form_id, $form_values, $form) {
+  ob_start();
+  eval($form_values['config']);
+  ob_end_clean();
+  
+  form_set_value($form['interpreted_config'], serialize($config));
+  
+  if (empty($form_values['config'])) {
+    form_error($form['config'], t('You did not enter anything.'));
+  }
+  elseif ($config == NULL) {
+    form_error($form['config'], t('There is a syntax error in the Hierarchical Select configuration you entered.'));
+  }
+  elseif (!isset($config['config_id']) || empty($config['config_id'])) {    
+    form_error($form['config'], t('Unable to import this configuration, because no Hierarchical Select <em>config id</em> is set.'));
+  }
+}
+
+/**
+ * Submit callback; config import form.
+ */
+function hierarchical_select_admin_import_submit($form_id, $form_values) {
+  $config = unserialize($form_values['interpreted_config']);
+  $config_id = $config['config_id'];
+  hierarchical_select_common_config_set($config_id, $config);
+  drupal_set_message(t('Hierarchical Select configuration for %config_id imported!', array('%config_id' => $config_id)));
+}
+
+
+//----------------------------------------------------------------------------
+// Private functions.
+
+/**
+ * Given a config array, create the export code for it.
+ *
+ * @param $config
+ *   A Hierarchical Select config array, as described in API.txt
+ * @return
+ *   The code as it would appear in an editor.
+ */
+function _hierarchical_select_create_export_code($config) {
+  $output = '';
+
+  $output .= "\$config = array(\n";
+  $output .= "  'config_id'       => '". $config['config_id'] ."',\n";
+  $output .= "  'save_lineage'    => ". $config['save_lineage'] .",\n";
+  $output .= "  'enforce_deepest' => ". $config['enforce_deepest'] .",\n";
+  $output .= "  'node_count'      => ". $config['node_count'] .",\n";
+  $output .= "  'level_labels' => array(\n";
+  $output .= "    'status' => ". $config['level_labels']['status'] .",\n";
+  $output .= "    'labels' => array(\n";
+  foreach ($config['level_labels']['labels'] as $depth => $label) {
+  $output .= "      $depth => '$label',\n";
+  }
+  $output .= "    ),\n";
+  $output .= "  ),\n";
+  $output .= "  'dropbox' => array(\n";
+  $output .= "    'status' => ". $config['dropbox']['status'] .",\n";
+  $output .= "    'title'  => '". $config['dropbox']['title'] ."',\n";
+  $output .= "    'limit'  => ". $config['dropbox']['limit'] .",\n";
+  $output .= "  ),\n";
+  $output .= "  'editability' => array(\n";
+  $output .= "    'status' => ". $config['editability']['status'] .",\n";
+  $output .= "    'item_types' => array(\n";
+  foreach ($config['editability']['item_types'] as $depth => $item_type) {
+  $output .= "      $depth => '$item_type',\n";
+  }
+  $output .= "    ),\n";
+  $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
+  $output .= "    'max_levels'       => ". $config['editability']['max_levels'] .",\n";
+  $output .= "  ),\n";
+  $output .= ");\n";  
+
+  return $output;
+}
