@@ -1401,7 +1401,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // NOTE: this is an optional hook, so we also check if it's implemented.
   if ($config['editability']['status'] && $config['editability']['allow_new_levels'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
     foreach ($hierarchy->levels as $depth => $level) {
-      if ($last < $config['editability']['max_levels'] - 1) {
+      if ($depth < $config['editability']['max_levels'] - 1) {
         foreach (array_keys($hierarchy->levels[$depth]) as $id => $value) {
           if ($value == 'create_new_item') {
             $offset = $id;
