@@ -1240,9 +1240,6 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // Build the lineage.
   //
 
-  // Validate and clean up the selection.
-  $selection = _hierarchical_select_hierarchy_validate($selection, $config['module'], $config['params']);
-
   // If save_linage is enabled, reconstruct the lineage. This is necessary
   // because e.g. the taxonomy module stores the terms by order of weight and
   // lexicography, rather than by hierarchy.
@@ -1270,6 +1267,9 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       }
     }
   }
+
+  // Validate the hierarchy.
+  $selection = _hierarchical_select_hierarchy_validate($selection, $config['module'], $config['params']);
 
   // When nothing is currently selected, set the root level to:
   // - "<none>" when:
