@@ -119,9 +119,9 @@ function hierarchical_select_elements() {
         'labels' => array()
       ),
       'dropbox' => array(
-        'status'        => 0,
-        'dropbox_title' => t('All selections'),
-        'dropbox_limit' => 0,
+        'status' => 0,
+        'title'  => t('All selections'),
+        'limit'  => 0,
       ),
       'editability' => array(
         'status'           => 0,
@@ -1537,7 +1537,7 @@ function _hierarchical_select_hierarchy_enforce_deepest($lineage, $root_level, $
 function _hierarchical_select_dropbox_generate($config, $selection) {
   $dropbox = new stdClass();
 
-  $dropbox->title = (!empty($config['title'])) ? $config['title'] : t('All selections');
+  $dropbox->title = (!empty($config['dropbox']['title'])) ? $config['dropbox']['title'] : t('All selections');
   $dropbox->lineages = array();
   $dropbox->lineages_selections = array();
   
