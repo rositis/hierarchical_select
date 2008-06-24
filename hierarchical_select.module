@@ -1412,11 +1412,14 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     }
   }
 
-  // If the editable setting and allow_new_levels settings are enabled: add a
-  // "<create new level>" option to each level, as long as it is a level below
-  // the max_levels setting.
+  // If:
+  // - the root level is not empty
+  // - the editable setting is enabled
+  // -  the allow_new_levels setting is enabled
+  // add a "<create new level>" option to each level, as long as it is a level
+  // below the max_levels setting.
   // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['editability']['status'] && $config['editability']['allow_new_levels'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
+  if (count(module_invoke($config['module'], 'hierarchical_select_root_level', $config['params'])) > 0 && $config['editability']['status'] && $config['editability']['allow_new_levels'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
     foreach ($hierarchy->levels as $depth => $level) {
       if ($depth < $config['editability']['max_levels'] - 1) {
         foreach (array_keys($hierarchy->levels[$depth]) as $id => $value) {
