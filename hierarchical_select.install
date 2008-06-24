@@ -87,6 +87,7 @@ function hierarchical_select_update_3() {
       $config['dropbox'][$setting] = variable_get($var, 0);
       variable_del($var);
     }
+    $config['dropbox']['reset_hs'] = 1;
     variable_set('hierarchical_select_config_'. $config['config_id'], $config);
 
     // Rename the variable that indicates if a vocabulary is using

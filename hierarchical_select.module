@@ -733,9 +733,13 @@ function _hierarchical_select_process_calculate_selections($element) {
       $db_selection = _hierarchical_select_process_get_db_selection($element);
 
       // Add $hs_selection to $db_selection (automatically filters to keep
-      // only the unique ones), and reset $hs_selection.
+      // only the unique ones).
       $db_selection = array_merge($db_selection, $hs_selection);
-      $hs_selection = array();
+      
+      // Only reset $hs_selection if the user has configured it that way.
+      if ($config['dropbox']['reset_hs']) {
+        $hs_selection = array();
+      }
     }
     else if ($op == t('Create')) {
       // This code handles both the creation of a new item in an existing

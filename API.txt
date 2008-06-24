@@ -24,9 +24,10 @@ element type:
         ),
       ),
       'dropbox' => array(
-        'status' => 0,
-        'title'  => t('All selections'),
-        'limit'  => 0,
+        'status'   => 0,
+        'title'    => t('All selections'),
+        'limit'    => 0,
+        'reset_hs' => 1,
       ),
       'editability' => array(
         'status'           => 0,

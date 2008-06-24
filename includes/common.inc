@@ -29,8 +29,9 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
       'status' => 0,
     ),
     'dropbox' => array(
-      'status' => 0,
-      'limit'  => 0,
+      'status'   => 0,
+      'limit'    => 0,
+      'reset_hs' => 1,
     ),
     'editability' => array(
       'status'           => 0,
@@ -44,7 +45,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
   $defaults = array_smart_merge($defaults, $defaults_override);
 
   // Set defaults for settings not yet set in the configuration.
-  $config += $defaults;
+  $config = array_smart_merge($defaults, $config);
 
   return $config;
 }
@@ -241,6 +242,20 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#maxlength' => 5,
     '#default_value' => $config['dropbox']['limit'],
     '#attributes' => array('class' => 'dropbox-limit'),
+  );
+  $form['dropbox']['reset_hs'] = array(
+    '#type' => 'radios',
+    '#title' => t('Reset selection of hierarchical select'),
+    '#description' => t(
+      'This setting determines what will happen to the hierarchical select
+      when the user has added a selection to the dropbox.'
+    ),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled'),
+    ),
+    '#default_value' => $config['dropbox']['reset_hs'],
+    '#attributes' => array('class' => 'dropbox-reset-hs'),
   );
 
   if (function_exists($module .'_hierarchical_select_create_item')) {
