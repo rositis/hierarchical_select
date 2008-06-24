@@ -60,7 +60,8 @@ function hs_views_taxonomy_form_alter($form_id, &$form) {
             $defaults_override = array(
               'module' => 'hs_views_taxonomy',
               'params' => array(
-                'vid' => $vid,
+                'optional' => (bool) $view->exposed_filter[$id]['optional'],
+                'vid'      => $vid,
               ),
               // When the **ALL** option is selected, nothing else should be.
               'exclusive_lineages' => array('**ALL**'),
@@ -229,14 +230,16 @@ function hs_views_taxonomy_config_form($view_name, $vid) {
  * Implementation of hook_hierarchical_select_params().
  */
 function hs_views_taxonomy_hierarchical_select_params() {
-  return taxonomy_hierarchical_select_params();
+  return array('optional') + taxonomy_hierarchical_select_params();
 }
 
 /**
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_views_taxonomy_hierarchical_select_root_level($params) {
-  return array('**ALL**' => '<'. t('all') .'>') + taxonomy_hierarchical_select_root_level($params);
+  $root_level =  ($params['optional']) ? array('**ALL**' => '<'. t('all') .'>') : array();
+  $root_level += taxonomy_hierarchical_select_root_level($params);
+  return $root_level;
 }
 
 /**
