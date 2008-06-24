@@ -193,6 +193,7 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
       case 'form':
         $form[$field_name]['#tree'] = TRUE;
         $form[$field_name]['tids'] = array(
+          '#title' => $field['widget']['label'],
           '#type' => 'hierarchical_select',
           '#config' => array(
             'module' => 'hs_content_taxonomy',
