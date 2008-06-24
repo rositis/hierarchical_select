@@ -50,7 +50,7 @@ cfg.dropbox = function(configId) {
       speed = 200;
     }
 
-    var $affected = $('.dropbox-title, .dropbox-limit', cfg.context(configId)).parent();
+    var $affected = $('.dropbox-title, .dropbox-limit, .dropbox-reset-hs', cfg.context(configId)).parent();
     if ($status.is(':checked')) {
       $affected.show(speed);
     }
