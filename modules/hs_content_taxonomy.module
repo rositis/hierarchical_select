@@ -60,8 +60,8 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
   $field = $content_type['fields'][$field_name];
 
   // Extract the necessary context from the $field array.
-  $vid = $field['vid'];
-  $depth = $field['depth'];
+  $vid = $field['vid'];  
+  $depth = (empty($field['depth'])) ? 0 : $field['depth'];
   $dropbox_status = $field['multiple'];
 
   // Add the Hierarchical Select config form.
@@ -187,7 +187,7 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
     $field_name = $field['field_name'];
     $vid        = $field['vid'];
     $tid        = $field['tid'];
-    $depth      = $field['depth'];
+    $depth      = (empty($field['depth'])) ? 0 : $field['depth'];
 
     switch ($op) {
       case 'form':
@@ -254,14 +254,14 @@ function hs_content_taxonomy_hierarchical_select_root_level($params) {
  */
 function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
   static $tree;
-  
+
   // Keep a static cache of the entire tree, this allows us to quickly look up
   // if a term is not to deep – because if it's too deep, we don't want to
   // return any children.
   if (!isset($tree)) {
     $tree = taxonomy_get_tree($params['vid'], 0);
   }
-  $terms = ($tree[$parent]->depth >= $params['depth']) ? array() : taxonomy_get_tree($params['vid'], $parent, -1, 1);
+  $terms = ($params['depth'] > 0 && $tree[$parent]->depth + 1 >= $params['depth']) ? array() : taxonomy_get_tree($params['vid'], $parent, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -280,7 +280,8 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  return ($term->vid == $params['vid'] && $term->depth < $params['depth']);
+  $terms = taxonomy_get_tree($params['vid']);
+  return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['depth']));
 }
 
 /**
@@ -368,4 +369,27 @@ function _hs_content_taxonomy_parse_context_from_url() {
   }
 
   return FALSE;
+}
+
+function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_depth) {
+//  dsm('allowed depth: '. $allowed_depth);
+  // If the allowed depth is zero, then every term is allowed!
+  if ($allowed_depth == 0) {
+    return TRUE;
+  }
+
+  // Otherwise, only allow terms that are within the allowed depth.
+  static $valid_tids;
+  if (!isset($valid_tids[$vid][$allowed_depth])) {
+    $valid_tids[$vid][$allowed_depth] = array();
+    $tree = taxonomy_get_tree($vid);
+    foreach ($tree as $term) {
+      if ($term->depth < $allowed_depth) {
+  //      dsm($term->name . 'valid tid: ' . $term->tid . ', depth: ' . $term->depth);
+        $valid_tids[$vid][$allowed_depth][] = $term->tid;
+      }
+    }
+//    dpm($valid_tids[$vid][$allowed_depth]);
+  }
+  return in_array($tid, $valid_tids[$vid][$allowed_depth]);
 }
