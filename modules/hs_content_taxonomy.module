@@ -256,14 +256,20 @@ function hs_content_taxonomy_hierarchical_select_root_level($params) {
  */
 function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
   static $tree;
+  
+  $vid = $params['vid'];
+  $depth = $params['depth'];
 
   // Keep a static cache of the entire tree, this allows us to quickly look up
   // if a term is not to deep – because if it's too deep, we don't want to
   // return any children.
-  if (!isset($tree)) {
-    $tree = taxonomy_get_tree($params['vid'], 0);
+  if (!isset($tree[$vid])) {
+    $raw_tree = taxonomy_get_tree($vid, 0);
+    foreach ($raw_tree as $term) {
+      $tree[$vid][$term->tid] = $term->depth;
+    }
   }
-  $terms = ($params['depth'] > 0 && $tree[$parent]->depth + 1 >= $params['depth']) ? array() : taxonomy_get_tree($params['vid'], $parent, -1, 1);
+  $terms = ($depth > 0 && $tree[$vid][$parent] + 1 >= $depth) ? array() : taxonomy_get_tree($vid, $parent, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
