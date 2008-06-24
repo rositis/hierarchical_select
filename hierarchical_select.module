@@ -984,6 +984,11 @@ function _hierarchical_select_process_calculate_return_value($hierarchy, $dropbo
     if (!$save_lineage) {
       $return_value = (is_array($return_value)) ? end($return_value) : NULL;
     }
+    
+    // Prevent a return value of -1. -1 is used for HS' internal system and
+    // means "nothing selected", but to Drupal it *will* seam like a valid
+    // value. Therefore, we set it to NULL.
+    $return_value = (!is_array($return_value) && $return_value != -1) ? $return_value : NULL;
   }
   else {
     $return_value = array();
