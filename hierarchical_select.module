@@ -329,7 +329,7 @@ function hierarchical_select_process($element) {
   // were just calculated.
   $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
   $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
-
+dpm($hierarchy);
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.
   $element['hierarchy'] = array('#type' => 'value', '#value' => $hierarchy);
@@ -1278,19 +1278,24 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   }
 
   // Validate the hierarchy.
-  $selection = _hierarchical_select_hierarchy_validate($selection, $config['module'], $config['params']);
+  $selection = _hierarchical_select_hierarchy_validate($selection, $config['module'], $config['params']);  
 
   // When nothing is currently selected, set the root level to:
   // - "<none>" when:
-  //    - enforce_deepest is enabled *and* level labels are enabled *and
+  //    - enforce_deepest is enabled *and* level labels are enabled *and*
   //      no root level label is set, or
   //    - the dropbox is enabled *and* at least one selection has been added
   //      to the dropbox
+  // - the first item in the root level when the form item is required *and*
+  //   enforce_deepest is enabled *and* the root level is not empty
   // - "label_0" (the root level label) in all other cases.
   if ($selection == -1) {
+    $root_level = module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']);
+
     $first_case  = $config['enforce_deepest'] && $config['level_labels']['status'] && !isset($config['level_labels']['labels'][0]);
     $second_case = $dropbox && count($dropbox->lineages) > 0;
-    $hierarchy->lineage[0] = ($first_case || $second_case) ? 'none' : 'label_0';
+    $third_case  = $required && $config['enforce_deepest'] && count($root_level);
+    $hierarchy->lineage[0] = ($first_case || $second_case) ? 'none' : ($third_case) ? reset(array_keys($root_level)) : 'label_0';
   }
   else {
     // If save_lineage setting is enabled, then the selection *is* a lineage.
@@ -1339,7 +1344,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
 
   // Prepend a "<none>" option to the root level when:
   // - the form element is optional, or
-  // - enforce_deepest is enabled *and* level labels are enabled *and no root
+  // - enforce_deepest is enabled *and* level labels are enabled *and* no root
   //   level label is set, or
   // - the dropbox is enabled *and* at least one selection has been added to
   //   the dropbox
@@ -1371,7 +1376,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     }
 
     // If level labels are enabled and the root label is set, prepend it.
-    if ($config['level_labels']['status'] && isset($config['level_labels'][0])) {
+    if ($config['level_labels']['status'] && isset($config['level_labels']['labels'][0])) {
       $hierarchy->levels[0] = array('label_0' => $config['level_labels']['labels'][0]) + $hierarchy->levels[0];  
     }
   }
