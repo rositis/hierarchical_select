@@ -154,7 +154,7 @@ An example:
 
   // I'm not configuring all parameters here. For an example of that, see one
   // of the included modules.
-  $form['foobar_hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth);
+  $form['foobar_hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
   
   // Add the the submit handler for the Hierarchical Select config form.
   $parents = array('foobar_hierarchical_select_config');

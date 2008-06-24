@@ -85,7 +85,7 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
 /**
  * Form definition of the hierarchical_select_common_config_form form.
  */
-function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth)  {
+function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth, $preview_is_required)  {
   static $js_added;
   
   if (!isset($js_added)) {
@@ -121,6 +121,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
   );
   $form['live_preview']['example'] = array(
     '#type' => 'hierarchical_select',
+    '#required' => $preview_is_required,
     '#title' => t('Preview'),
     '#description' => t('The description.'),
     // Skip all validation.

@@ -88,7 +88,8 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
     'item_type'   => t('term type'),
   );
   $max_hierarchy_depth = min($depth, _taxonomy_hierarchical_select_get_depth($vid));
-  $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth);
+  $preview_is_required = $field['required'];
+  $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
     '#value' => l('Back to the field configuration', 'admin/content/types/'. $content_type['url_str'] .'/fields/'. $field_name),
