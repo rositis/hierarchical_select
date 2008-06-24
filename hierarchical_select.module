@@ -329,7 +329,7 @@ function hierarchical_select_process($element) {
   // were just calculated.
   $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
   $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
-dpm($hierarchy);
+
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.
   $element['hierarchy'] = array('#type' => 'value', '#value' => $hierarchy);
