@@ -40,7 +40,6 @@ element type:
       'render_flat_select' => 0,
     ),
     '#default_value' => '83',
-    '#real_parents' => array(), // Should only be used when #tree is set to FALSE in one of the form item's parents.
   ); 
 
 Now, let's explain what we see here:

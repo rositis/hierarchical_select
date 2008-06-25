@@ -134,7 +134,6 @@ function hierarchical_select_elements() {
       'render_flat_select' => 0,
     ),
     '#default_value' => -1,
-    '#real_parents' => array(), // Should only be used when #tree is set to FALSE in one of the form item's parents.
   );
   return $type;
 }
@@ -216,10 +215,10 @@ function hierarchical_select_json() {
   drupal_prepare_form($form_id, $form);
 
   // Render only the relevant part of the form (i.e. the hierarchical_select
-  // element).
+  // form item that has triggered this AJAX callback).
   $hsid = $_POST['hsid'];
-  $parents = $storage['parents_per_hierarchical_select'][$hsid];
-  $part_of_form = _hierarchical_select_get_form_element($form, $parents);
+  $name = $storage['#names'][$hsid];
+  $part_of_form = _hierarchical_select_get_form_item($form, $name);
   $output = drupal_render($part_of_form);
 
   // If the user's browser supports the active cache system, then send the
@@ -268,9 +267,9 @@ function hierarchical_select_process($element) {
     $element['#value'] = array($element['#value']);
   }
 
-  // Collect the parents of each hierarchical_select form element, this is
-  // necessary for the dynamic updates.
-  _hierarchical_select_collect_form_parents($element, $hsid);
+  // Store the #name property of each hierarchical_select form item, this is
+  // necessary to find this form item back in an AJAX callback.
+  _hierarchical_select_store_name($element, $hsid);
 
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
@@ -490,18 +489,18 @@ function hierarchical_select_process($element) {
  * Hierarchical select form element type #after_build callback.
  */
 function hierarchical_select_after_build($form, $form_values) {
-  $parents_per_hierarchical_select = _hierarchical_select_collect_form_parents(NULL, NULL, TRUE);
+  $names = _hierarchical_select_store_name(NULL, NULL, TRUE);
 
-  if (!isset($_POST['hs_form_build_id']) && count($parents_per_hierarchical_select)) {
+  if (!isset($_POST['hs_form_build_id']) && count($names)) {
     $parameters = (isset($form['#parameters'])) ? $form['#parameters'] : array();
 
     // Collect information in this array, which will be used in dynamic form
     // updates, to …
     $storage = array(
       // … retrieve $form.
-      'parameters'                      => $parameters,
+      'parameters' => $parameters,
       // … determine which part of $form should be rendered.
-      'parents_per_hierarchical_select' => $parents_per_hierarchical_select,
+      '#names'     => $names,
     );
     
     // Store the information needed for dynamic form updates in the cache, so
@@ -1138,52 +1137,61 @@ function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
 }
 
 /**
- * Get the form element of a form that has a certain lineage of parents.
+ * Get the form item that has the the given #name property.
  *
  * @param $form
  *   A structured array for use in the Forms API.
- * @param $parents
- *   An array of parent form element names.
+ * @param $name
+ *   A #name value.
  * @return
- *  The form element that has the specified lineage of parents.
+ *   A form item.
  */
-function _hierarchical_select_get_form_element($form, $parents) {
-  if (count($parents)) {
-    $parent = array_shift($parents);
-    return _hierarchical_select_get_form_element($form[$parent], $parents);
-  }
-  else {
+function _hierarchical_select_get_form_item($form, $name) {
+  if (isset($form['#name']) && $form['#name'] == $name) {
     return $form;
   }
+
+  // The current form item apparently is not the one we're looking for, so try
+  // to find it in the child form items.
+  foreach (element_children($form) as $child) {
+    $form_item = _hierarchical_select_get_form_item($form[$child], $name);
+    if ($form_item !== FALSE) {
+      return $form_item;
+    }
+  }
+
+  // No match in the children either, so return FALSE.
+  return FALSE;
 }
 
 /**
- * Collect the parents of the given form element
+ * Store the #name property of the given form item, so we can retrieve a list
+ * of #name properties of hierarchical_select form items present in this form
+ * later.
  *
- * @param $element
- *   Optional. A hierarchical_select form element.
+ * @param $form_item
+ *   Optional. A hierarchical_select form item.
  * @param $hsid
  *   Optional. A hierarchical select ID.
  * @param $reset
- *   Optional. Flag that marks if the collected parents should be reset.
+ *   Optional. Flag that marks if the stored #name properties should be reset.
  * @return
- *   The collected parents per hierarchical_select form element.
+ *   The stored #name properties per hierarchical_select form item.
  */
-function _hierarchical_select_collect_form_parents($element = NULL, $hsid = NULL, $reset = FALSE) {
-  static $parents_per_hierarchical_select;
+function _hierarchical_select_store_name($form_item = NULL, $hsid = NULL, $reset = FALSE) {
+  static $names;
   
   if ($reset) {
-    $ret = $parents_per_hierarchical_select;
-    $parents_per_hierarchical_select = array();
+    $ret = $names;
+    $names = array();
     return $ret;
   }
   
-  if (isset($element) && isset($hsid)) {
-    // Allow the developer to override #parents by setting #real_parents.
-    $parents_per_hierarchical_select[$hsid] = (is_array($element['#real_parents']) && count($element['#real_parents'])) ? $element['#real_parents'] : $element['#parents'];
+  if (isset($form_item) && isset($hsid)) {
+    $names[$hsid] = $form_item['#name'];
   }
 
-  return $parents_per_hierarchical_select;
+  return $names;
 }
 
 /**
