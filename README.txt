@@ -91,6 +91,8 @@ Sponsors
    Marmaladesoul, http://marmaladesoul.com.
 * Taxonomy Subscriptions support:
    Mr Bidster Inc.
+* Ability to create new items/levels:
+   The Worx Company, http://www.worxco.com.
 
 
 Author
