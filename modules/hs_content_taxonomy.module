@@ -142,16 +142,15 @@ function hs_content_taxonomy_widget_settings($op, $widget) {
     
       $items[] = t(
         "Due to limitations of CCK's widget settings system, there is a
-        <a href=\"!url\">separate form to configure this widget'ssettings.</a>",
+        <a href=\"!url\">separate form to configure this widget's settings.</a>",
         array('!url' => url($url))
       );
       $items[] = t(
-        'You have to configure the %save_options to either %save_as_tag or
-        %both, to allow Hierarchical Select to work.',
+        'You have to configure the %save_options to %save_as_tag to allow
+        Hierarchical Select to work.',
         array(
           '%save_options' => t('Save options'),
           '%save_as_tag'  => t('Save as tag'),
-          '%both'         => t('Both'),
         )
       );
       $items[] = t(
@@ -159,7 +158,16 @@ function hs_content_taxonomy_widget_settings($op, $widget) {
         the %enable_the_dropbox setting on the separate form match!',
         array(
           '%multiple_values'    => t('Multiple values'),
-          '%enable_the_dropbox' => t('Enable the dropbox'))
+          '%enable_the_dropbox' => t('Enable the dropbox'),
+        )
+      );
+      $items[] = t(
+        'If you have the %save_term_lineage setting enabled on the separate
+        form, you must enable the %multiple_values setting on this page!',
+        array(
+          '%save_term_lineage' => t('Save term lineage'),
+          '%multiple_values'   => t('Multiple values'),
+        )
       );
 
       $form['hs_config'] = array(
