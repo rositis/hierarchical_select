@@ -121,3 +121,15 @@ function hierarchical_select_update_4() {
   
   return $ret;
 }
+
+// Increase the length of the "name" field in the "variable" table to 128. The
+// Hierarchical Select module needs this for some of its variables. This does
+// NOT break updates to Drupal 6!
+// See http://drupal.org/node/259962.
+function hierarchical_select_update_5() {
+  $ret = array();
+
+  $ret[] = update_sql("ALTER TABLE {variable} MODIFY name varchar(128) NOT NULL default ''");
+
+  return $ret;
+}
