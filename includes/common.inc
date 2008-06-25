@@ -323,7 +323,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
  * Submit callback for the hierarchical_select_common_config_form form.
  */
 function hierarchical_select_common_config_form_submit($form_id, $form_values, $parents) {
-  $config = _hierarchical_select_get_form_element($form_values, $parents);
+  $config = _hierarchical_select_get_form_item_by_parents($form_values, $parents);
 
   // Don't include the value of the live preview in the config.
   unset($config['live_preview']);
@@ -343,6 +343,25 @@ function hierarchical_select_common_views_exposed_filters_reposition() {
   }
 }
 
+/**
+ * Get the form element of a form that has a certain lineage of parents.
+ *
+ * @param $form
+ *   A structured array for use in the Forms API.
+ * @param $parents
+ *   An array of parent form element names.
+ * @return
+ *  The form element that has the specified lineage of parents.
+ */
+function _hierarchical_select_get_form_item_by_parents($form, $parents) {
+  if (count($parents)) {
+    $parent = array_shift($parents);
+    return _hierarchical_select_get_form_item_by_parents($form[$parent], $parents);
+  }
+  else {
+    return $form;
+  }
+}
 
 /**
  * Smarter version of array_merge_recursive: overwrites scalar values.
