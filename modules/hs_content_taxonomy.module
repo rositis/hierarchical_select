@@ -380,7 +380,6 @@ function _hs_content_taxonomy_parse_context_from_url() {
 }
 
 function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_depth) {
-//  dsm('allowed depth: '. $allowed_depth);
   // If the allowed depth is zero, then every term is allowed!
   if ($allowed_depth == 0) {
     return TRUE;
@@ -393,11 +392,9 @@ function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_dep
     $tree = taxonomy_get_tree($vid);
     foreach ($tree as $term) {
       if ($term->depth < $allowed_depth) {
-  //      dsm($term->name . 'valid tid: ' . $term->tid . ', depth: ' . $term->depth);
         $valid_tids[$vid][$allowed_depth][] = $term->tid;
       }
     }
-//    dpm($valid_tids[$vid][$allowed_depth]);
   }
   return in_array($tid, $valid_tids[$vid][$allowed_depth]);
 }
