@@ -264,12 +264,12 @@ function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
   // if a term is not to deep – because if it's too deep, we don't want to
   // return any children.
   if (!isset($tree[$vid])) {
-    $raw_tree = taxonomy_get_tree($vid, 0);
+    $raw_tree = _taxonomy_hierarchical_select_get_tree($vid, 0);
     foreach ($raw_tree as $term) {
       $tree[$vid][$term->tid] = $term->depth;
     }
   }
-  $terms = ($depth > 0 && $tree[$vid][$parent] + 1 >= $depth) ? array() : taxonomy_get_tree($vid, $parent, -1, 1);
+  $terms = ($depth > 0 && $tree[$vid][$parent] + 1 >= $depth) ? array() : _taxonomy_hierarchical_select_get_tree($vid, $parent, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -288,7 +288,7 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  $terms = taxonomy_get_tree($params['vid']);
+  $terms = _taxonomy_hierarchical_select_get_tree($params['vid']);
   return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['depth']));
 }
 
@@ -389,7 +389,7 @@ function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_dep
   static $valid_tids;
   if (!isset($valid_tids[$vid][$allowed_depth])) {
     $valid_tids[$vid][$allowed_depth] = array();
-    $tree = taxonomy_get_tree($vid);
+    $tree = _taxonomy_hierarchical_select_get_tree($vid);
     foreach ($tree as $term) {
       if ($term->depth < $allowed_depth) {
         $valid_tids[$vid][$allowed_depth][] = $term->tid;

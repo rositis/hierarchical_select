@@ -317,7 +317,7 @@ function hs_taxonomy_term_count_nodes($tid, $type = 0) {
   static $count;
 
   $term = taxonomy_get_term($tid);
-  $tree = taxonomy_get_tree($term->vid, $tid);
+  $tree = _taxonomy_hierarchical_select_get_tree($term->vid, $tid);
   $tids = array($tid);
   foreach ($tree as $descendant) {
     $tids[] = $descendant->tid;
