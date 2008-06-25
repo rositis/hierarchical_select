@@ -216,11 +216,6 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
           '#default_value' => (is_array($node->taxonomy)) ? array_keys($node->taxonomy) : array(),
         );
         hierarchical_select_common_config_apply($form[$field_name]['tids'], "content-taxonomy-$field_name");
-
-        // Enforce the dropbox when this content_taxonomy field is configured
-        // to use multiple values.
-        $form[$field_name]['tids']['#config']['dropbox']['status'] = $field['multiple'];
-
         return $form;
 
       case 'submit':
