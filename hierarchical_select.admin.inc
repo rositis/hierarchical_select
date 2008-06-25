@@ -105,7 +105,7 @@ function hierarchical_select_admin_configs() {
  * and the features they support.
  */
 function hierarchical_select_admin_implementations() {
-  $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Create new items'), t('Node count'));
+  $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Entity type'), t('Create new items'), t('Node count'));
 
   // Retrieve all information items
   $rows = array();
@@ -118,11 +118,13 @@ function hierarchical_select_admin_implementations() {
       $config_info = module_invoke($module, 'hierarchical_select_config_info');
       $config = reset($config_info);
       $hierarchy_type = $config['hierarchy type'];
+      $entity_type    = $config['entity type'];
     }
 
     $rows[] = array(
       $module_info['name'],
       $hierarchy_type,
+      $entity_type,
       (module_hook($module, 'hierarchical_select_create_item')) ? t('Yes') : t('No'),
       (module_hook($module, 'hierarchical_select_node_count'))  ? t('Yes') : t('No'),
     );
