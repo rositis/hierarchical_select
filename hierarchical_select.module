@@ -987,7 +987,7 @@ function _hierarchical_select_process_calculate_return_value($hierarchy, $dropbo
     // Prevent a return value of -1. -1 is used for HS' internal system and
     // means "nothing selected", but to Drupal it *will* seam like a valid
     // value. Therefore, we set it to NULL.
-    $return_value = (!is_array($return_value) && $return_value != -1) ? $return_value : NULL;
+    $return_value = ($return_value != -1) ? $return_value : NULL;
   }
   else {
     $return_value = array();
@@ -1361,7 +1361,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   $third_case  = $dropbox && count($dropbox->lineages) > 0;
   if ($first_case || $second_case || $third_case) {
     $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
-  } 
+  }
 
   // Calculate the lineage's depth (starting from 0).
   $max_depth = count($hierarchy->lineage) - 1;
