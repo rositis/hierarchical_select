@@ -243,9 +243,10 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    ),\n";
   $output .= "  ),\n";
   $output .= "  'dropbox' => array(\n";
-  $output .= "    'status' => ". $config['dropbox']['status'] .",\n";
-  $output .= "    'title'  => '". $config['dropbox']['title'] ."',\n";
-  $output .= "    'limit'  => ". $config['dropbox']['limit'] .",\n";
+  $output .= "    'status'    => ". $config['dropbox']['status'] .",\n";
+  $output .= "    'title'     => '". $config['dropbox']['title'] ."',\n";
+  $output .= "    'limit'     => ". $config['dropbox']['limit'] .",\n";
+  $output .= "    'reset_hs'  => ". $config['dropbox']['reset_hs'] .",\n";
   $output .= "  ),\n";
   $output .= "  'editability' => array(\n";
   $output .= "    'status' => ". $config['editability']['status'] .",\n";
