@@ -6,27 +6,70 @@
   margin-bottom: 1em;
 }
 
-.hierarchical-select-wrapper .hierarchical-select * {
+.hierarchical-select-wrapper .hierarchical-select select,
+.hierarchical-select-wrapper .hierarchical-select .add-to-dropbox,
+.hierarchical-select-wrapper .hierarchical-select .create-new-item,
+.hierarchical-select-wrapper .hierarchical-select .create-new-level {
   margin: 0;
-}
-
-.hierarchical-select-wrapper .hierarchical-select > * {
   margin-left: .5em; /* margin-right: .5em; */
   float: right; /* float: left; */
 }
 
 
+/* The flat select (only used in GET forms). */
+.hierarchical-select-wrapper .flat-select {
+  display: none;
+}
+
+
+/* The pseudo-modal window for creating a new item or new level. */
+.hierarchical-select-wrapper .hierarchical-select .create-new-item,
+.hierarchical-select-wrapper .hierarchical-select .create-new-level {
+  padding: .7em;
+  border: 2px outset gray;
+}
+
+.hierarchical-select-wrapper .hierarchical-select .create-new-item {
+  width: 11em;
+}
+.hierarchical-select-wrapper .hierarchical-select .create-new-level {
+  width: 21em;
+}
+
+.hierarchical-select-wrapper .hierarchical-select .create-new-level-parent {
+  margin: 0;
+  margin-right: 2em;
+  float: right; /* float: left; */
+}
+
+.hierarchical-select-wrapper .hierarchical-select .create-new-item-create,
+.hierarchical-select-wrapper .hierarchical-select .create-new-item-cancel {
+  float: left; /* float: right; */
+  margin: 0;
+  margin-left: .4em;
+  clear: right; /* clear: left; */
+}
+
+.hierarchical-select-wrapper .hierarchical-select .create-new-item-input {
+  width: 10.5em;
+  margin: 0;
+  margin-bottom: 1em;
+  float: right; /* float: left; */
+  float: left; /* clear: right; */
+}
+
+
 /* Level labels styles. */
-.hierarchical-select-level-labels-style-bold .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-bold .hierarchical-select select option.level-label {
   font-weight: bold;
 }
 
-.hierarchical-select-level-labels-style-inversed .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-inversed .hierarchical-select select option.level-label {
   background-color: #000000;
   color: #FFFFFF;
 }
 
-.hierarchical-select-level-labels-style-underlined .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-underlined .hierarchical-select select option.level-label {
   text-decoration: underline;
 }
 
@@ -41,7 +84,7 @@ p.hierarchical-select-dropbox-limit-warning {
 
 
 /* The dropbox table. */
-.dropbox-title {
+.hierarchical-select-wrapper .dropbox-title {
   font-size: 115%;
   color: #898989;
   margin-bottom: 0.2em;
@@ -54,16 +97,16 @@ p.hierarchical-select-dropbox-limit-warning {
   min-width: 20em;
   margin-bottom: 1em;
   padding: 0px;
-  color: grey;
+  color: gray;
   font-size: 90%;
   padding: 1em;
-  margin-right: 1px; /* margin-left: 1px; */
+  margin-left: 1px;
 }
 
 .hierarchical-select-wrapper table.dropbox tbody {
   margin: 0;
   padding: 0;
-  border: 1px solid grey;
+  border: 1px solid gray;
 }
 
 tr.dropbox-entry {
@@ -82,11 +125,11 @@ tr.dropbox-entry.odd {
 }
 
 tr.dropbox-entry.first {
-  border-top: 1px solid grey;
+  border-top: 1px solid gray;
 }
 
 tr.dropbox-entry.last {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid gray;
 }
 
 .dropbox-selected-item {
@@ -118,12 +161,16 @@ tr.dropbox-is-empty {
 
 .hierarchical-select-wrapper .nojs .help-text {
   font-size: 90%;
-  color: grey;
+  color: gray;
   display: block;
   border: 1px dotted black;
   min-width: 30em;
   max-width: 45em;
   padding: .8em;
+}
+
+.hierarchical-select-wrapper .nojs .help-text .highlight {
+  text-decoration: underline;
 }
 
 .hierarchical-select-wrapper .nojs .help-text .warning {
@@ -143,4 +190,10 @@ tr.dropbox-is-empty {
   /* IE doesn't support CSS 2 properly. */
   zoom: 1;
   filter: alpha(opacity=50);
+}
+
+
+/* Use a monospace font for the import/export config code text areas. */
+.hierarchical-select-config-code {
+  font-family: 'Monaco', 'Lucida Console', 'Consolas', monospace;
 }
