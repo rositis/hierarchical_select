@@ -1725,6 +1725,34 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
   return $item['value'];
 }
 
+/**
+ * This is an altered clone of form_select_options(). The reason: I need to be
+ * able to set a class on an option element if it contains a level label, to
+ * allow for level label styles.
+ */
+function _hierarchical_select_options($element) {
+  if (!isset($choices)) {
+    $choices = $element['#options'];
+  }
+  // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
+  // isset() fails in this situation.
+  $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
+  $value_is_array = is_array($element['#value']);
+  $options = '';
+  foreach ($choices as $key => $choice) {
+    $key = (string)$key;
+    if ($value_valid && (!$value_is_array && (string)$element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+      $selected = ' selected="selected"';
+    }
+    else {
+      $selected = '';
+    }
+    $class = (preg_match('/label_\d+/', $key)) ? ' class="level-label"' : '';
+    $options .= '<option value="'. check_plain($key) .'"'. $class . $selected .'>'. check_plain($choice) .'</option>';
+  }
+  return $options;
+}
+
 
 //----------------------------------------------------------------------------
 // Theming callbacks.
@@ -1784,7 +1812,7 @@ function theme_hierarchical_select_select($element) {
   $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
   _form_set_class($element, array('form-select'));
   $multiple = isset($element['#multiple']) && $element['#multiple'];
-  return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. form_select_options($element) .'</select>';
+  return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. _hierarchical_select_options($element) .'</select>';  
 }
 
 /**

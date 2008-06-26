@@ -60,16 +60,16 @@
 
 
 /* Level labels styles. */
-.hierarchical-select-level-labels-style-bold .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-bold .hierarchical-select select option.level-label {
   font-weight: bold;
 }
 
-.hierarchical-select-level-labels-style-inversed .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-inversed .hierarchical-select select option.level-label {
   background-color: #000000;
   color: #FFFFFF;
 }
 
-.hierarchical-select-level-labels-style-underlined .hierarchical-select select option:first-child {
+.hierarchical-select-level-labels-style-underlined .hierarchical-select select option.level-label {
   text-decoration: underline;
 }
 
