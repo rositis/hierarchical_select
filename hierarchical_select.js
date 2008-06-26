@@ -244,7 +244,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
 
 Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType) {
   $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
-  .trigger(updateType);
+  .trigger(updateType, [ hsid ]);
 };
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
@@ -299,7 +299,10 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     type:       'POST',
     dataType:   'json',
     data:       post,
-    beforeSend: function() { Drupal.HierarchicalSelect.disableForm(hsid); },
+    beforeSend: function() {
+      Drupal.HierarchicalSelect.triggerEvents(hsid, 'before ' + updateType);
+      Drupal.HierarchicalSelect.disableForm(hsid); 
+    },
     success:    function(response) {
       // Replace the old HTML with the (relevant part of) retrieved HTML.
       $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)

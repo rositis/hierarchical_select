@@ -259,6 +259,21 @@ The following events are triggered:
   - enforced update
 All events are triggered *after* the animations have completed.
 
+However, it's often useful to do something *before* an event (especially
+because all of the above events perform an AJAX request to the server). So,
+the equivalent "before" events exist as well:
+  - before update hierarchical select
+  - before create new item
+  - before cancel new item
+  - before create new level
+  - before cancel new level
+  - before add to dropbox
+  - before remove from dropbox
+  - before enforced update
+There is one exception: when the cache is enabled, the "before update
+hierarchical select" event will not be triggered. This makes sense, because
+updates from the cache are instantaneous.
+
 An example of binding a function to the 'create new item' event of the second
 (hsid == 1) hierarchical_select form item on the page:
 
