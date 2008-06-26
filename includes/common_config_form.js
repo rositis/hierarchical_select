@@ -6,10 +6,10 @@ Drupal.HierarchicalSelectConfigForm = {};
 
 cfg.context = function(configId) {
   if (configId === undefined) {
-    return $('.hierarchical-select-config-form');
+    return $('.hierarchical-select-config-form > *').not('.live-preview');
   }
   else {
-    return $('#hierarchical-select-config-form-'+ configId);
+    return $('#hierarchical-select-config-form-'+ configId + ' > *').not('.live-preview');
   }
 };
 
