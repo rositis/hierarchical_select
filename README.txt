@@ -16,7 +16,7 @@ and levels through Hierarchical Select!
 
 Dependencies
 ------------
-* jQuery Update 1.x, NOT 2.x! (http://drupal.org/project/jquery_update)
+* jQuery Update 2.x, NOT 1.x! (http://drupal.org/project/jquery_update)
 
 
 Integrates with

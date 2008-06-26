@@ -1040,11 +1040,12 @@ function _hierarchical_select_setup_js() {
     else {
       jquery_form_add();
     }
-    if (!module_exists('jquery_interface')) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_effects.js');
+    if (!module_exists('jquery_ui')) {
+      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/js/jquery.ui/effects.core.js');
+      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/js/jquery.ui/effects.drop.js');
     }
     else {
-      jquery_interface_add();
+      jquery_ui_add(array('effects.core', 'effects.drop'));
     }
     drupal_add_js(array('HierarchicalSelect' => array('url' => $url)), 'setting');
   }

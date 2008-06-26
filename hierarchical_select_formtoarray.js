@@ -3,11 +3,22 @@
 /**
  * @file
  * Contains the formToArray method and the method it depends on. Taken from
- * jQuery Form Plugin 2.07. (http://www.malsup.com/jquery/form/)
+ * jQuery Form Plugin 2.12. (http://www.malsup.com/jquery/form/)
  */
 
 (function ($) {
 
+/**
+ * formToArray() gathers form element data into an array of objects that can
+ * be passed to any of the following ajax functions: $.get, $.post, or load.
+ * Each object in the array has both a 'name' and 'value' property.  An example of
+ * an array for a simple login form might be:
+ *
+ * [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ]
+ *
+ * It is this array that is passed to pre-submit callback functions provided to the
+ * ajaxSubmit() and ajaxForm() methods.
+ */
 $.fn.formToArray = function(semantic) {
     var a = [];
     if (this.length == 0) return a;
@@ -49,6 +60,9 @@ $.fn.formToArray = function(semantic) {
     return a;
 };
 
+/**
+ * Returns the value of the field element.
+ */
 $.fieldValue = function(el, successful) {
     var n = el.name, t = el.type, tag = el.tagName.toLowerCase();
     if (typeof successful == 'undefined') successful = true;
