@@ -160,7 +160,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'enforce-deepest'),
   );
   
-  if (module_hook($module .'_hierarchical_select_node_count')) {
+  if (module_hook($module, 'hierarchical_select_node_count')) {
     $form['node_count'] = array(
       '#type' => 'radios',
       '#title' => t('Display the node count'),
@@ -180,8 +180,8 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#title' => t('Level labels'),
     '#description' => t(
       'When the user is allowed to choose a !item from any level in the
-      <em>Level choice</em> setting, you can enter a level label for
-      <em>each</em> level.<br />
+      <em>Level choice</em> setting, you can enter a label for <em>each</em>
+      level.<br />
       However, when the user is only allowed to choose a !item from the
       deepest level, then you can only enter a label for the <em>root</em>
       level.',
@@ -259,7 +259,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'dropbox-reset-hs'),
   );
 
-  if (module_hook($module .'_hierarchical_select_create_item')) {
+  if (module_hook($module, 'hierarchical_select_create_item')) {
     $form['editability'] = array(
       '#type' => 'fieldset',
       '#title' => t('Editability settings'),
@@ -279,7 +279,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       ),
       '#default_value' => $config['editability']['status'],
       '#attributes' => array('class' => 'editability-status'),
-    );
+    );    
     for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
       $form['editability']['item_types'][$depth] = array(
         '#type' => 'textfield',
@@ -287,6 +287,15 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         '#size' => 20,
         '#maxlength' => 255,
         '#default_value' => $config['editability']['item_types'][$depth],
+        '#description' => ($depth > 0) ? '' : t(
+          'The %item_type you enter for each level is what will be used in
+          each level to replace a "&lt;create new item&gt;" option with a
+          "&lt;create new %item_type&gt;" option, which is often more
+          intuitive.',
+          array(
+            '%item_type' => $strings['item_type'],
+          )
+        ),
         '#attributes' => array('class' => 'editability-item-type'),
       );
     }
