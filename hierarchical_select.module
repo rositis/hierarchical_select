@@ -349,6 +349,11 @@ function hierarchical_select_process($element) {
   );
   $element['hierarchical_select']['selects'] = _hierarchical_select_process_render_hs_selects($hsid, $hierarchy);
 
+  // The selects in the hierarchical select should inherit the #size property.
+  foreach (element_children($element['hierarchical_select']['selects']) as $depth) {
+    $element['hierarchical_select']['selects'][$depth]['#size'] = $element['#size'];
+  }
+
   // Check if a new item is being created.
   if (isset($element['#value']['hierarchical_select']['selects'])) {
     foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {

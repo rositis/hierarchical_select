@@ -8,6 +8,7 @@ element type:
   $form['select_some_term'] = array(
     '#type' => 'hierarchical_select',
     '#title' => t('Select the tag you wish to use.'),
+    '#size' => 1,
     '#config' => array(
       'module' => 'taxonomy',
       'params' => array(
@@ -44,7 +45,8 @@ element type:
 
 Now, let's explain what we see here:
 1) We've set the #type property to "hierarchical_select" instead of "select".
-2) There's a new property: #config. This must be an
+2) The #size property is inherited by the selects of the hierarchical select.
+3) There's a new property: #config. This must be an
 array. These are the items it can contain:
  - module (obligated)
    This will be passed through in the AHAH requests, to let the HS module know
