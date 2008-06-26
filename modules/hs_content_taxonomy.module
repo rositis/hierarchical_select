@@ -41,6 +41,23 @@ function hs_content_taxonomy_menu($may_cache) {
 }
 
 
+/**
+ * Implementation of hook_form_alter().
+ */
+function hs_content_taxonomy_form_alter($form_id, &$form) {
+  if ($form_id == '_content_admin_field') {
+    $form['field']['multiple'] = array(
+      '#type'  => 'hidden',
+      '#value' => $form['field']['multiple']['#default_value'],
+    );
+    $form['field']['save'] = array(
+      '#type'  => 'hidden',
+      '#value' => 'tag',
+    );
+  }
+}
+
+
 //----------------------------------------------------------------------------
 // Forms API callbacks.
 
@@ -62,7 +79,6 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
   // Extract the necessary context from the $field array.
   $vid = $field['vid'];  
   $depth = (empty($field['depth'])) ? 0 : $field['depth'];
-  $dropbox_status = $field['multiple'];
 
   // Add the Hierarchical Select config form.
   $module = 'hs_content_taxonomy';
@@ -73,13 +89,16 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
     // Enable the save_lineage setting by default if the multiple parents
     // vocabulary option is enabled.
     'save_lineage' => (int) ($vocabulary->hierarchy == 2),
-    'dropbox' => array(
-      'status' => $dropbox_status,
-    ),
     'editability' => array(
       'max_levels' => min($depth, _taxonomy_hierarchical_select_get_depth($vid)),
     ),
   );
+  // If this config is being created (not edited), then enable the dropbox if
+  // this is a "multiple values" field. This allows for an intuitive
+  // transition to a Hierarchical Select widget.
+  if (variable_get('hs_config_'. $config_id, FALSE) === FALSE) {
+    $defaults['dropbox']['status'] = $field['multiple'];
+  }
   $strings = array(
     'hierarchy'   => t('vocabulary'),
     'hierarchies' => t('vocabularies'),
@@ -107,7 +126,42 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
   $parents = array('hierarchical_select_config');
   $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
   
+  $form['#submit']['hs_content_taxonomy_common_config_form_submit'] = array($content_type_name, $field_name);
+  
   return $form;
+}
+
+/**
+ * Additional submit callback to update the multiple values field setting.
+ */
+function hs_content_taxonomy_common_config_form_submit($form_id, $form_values, $content_type_name, $field_name) {
+  $config = $form_values['hierarchical_select_config'];
+  $multiple_values = ($config['save_lineage'] | $config['dropbox']['status']);
+
+  $content_type = content_types($content_type_name);
+  $field = $content_type['fields'][$field_name];
+  
+  $form_values = array(
+    'widget_type' => 'content_taxonomy_hs',
+    'label'       => $field['widget']['label'],
+    'weight'      => $field['widget']['weight'],
+    'description' => $field['widget']['description'],
+    'required'    => $field['required'],
+    'multiple'    => $multiple_values,
+    'save'        => 'tag',
+    'vid'         => $field['vid'],
+    'tid'         => $field['tid'],
+    'depth'       => $field['depth'],
+    'op'          => t('Save field settings'),
+    'submit'      => t('Save field settings'),
+    'type_name'   => $field['type_name'],
+    'field_name'  => $field_name,
+    'field_type'  => 'content_taxonomy',
+    'module'      => 'content_taxonomy, hs_content_taxonomy',
+    'form_id'     => '_content_admin_field',
+  );
+
+  drupal_execute('_content_admin_field', $form_values, $field['type_name'], $field_name);
 }
 
 
@@ -141,32 +195,27 @@ function hs_content_taxonomy_widget_settings($op, $widget) {
       $url = 'admin/content/types/'. $content_type['url_str'] .'/fields/'. $field_name .'/hs_config';
     
       $items[] = t(
-        "Due to limitations of CCK's widget settings system, there is a
-        <a href=\"!url\">separate form to configure this widget's settings.</a>",
+        "Due to limitations of CCK, there is a separate form to
+        <a href=\"!url\"> configure this Hierarchical Select widget's
+        settings.</a>",
         array('!url' => url($url))
       );
       $items[] = t(
-        'You have to configure the %save_options to %save_as_tag to allow
-        Hierarchical Select to work.',
+        'The %save_options field setting has been changed to %save_as_tag to
+        allow Hierarchical Select to work.',
         array(
           '%save_options' => t('Save options'),
           '%save_as_tag'  => t('Save as tag'),
         )
       );
       $items[] = t(
-        'Please make sure that the %multiple_values setting on this page and
-        the %enable_the_dropbox setting on the separate form match!',
+        'The %multiple_values field setting is now managed by the Hierarchical
+        Select module: it will be enabled when either the %enable_the_dropbox
+        or %save_term_lineage settings (or both) are enabled.',
         array(
           '%multiple_values'    => t('Multiple values'),
           '%enable_the_dropbox' => t('Enable the dropbox'),
-        )
-      );
-      $items[] = t(
-        'If you have the %save_term_lineage setting enabled on the separate
-        form, you must enable the %multiple_values setting on this page!',
-        array(
-          '%save_term_lineage' => t('Save term lineage'),
-          '%multiple_values'   => t('Multiple values'),
+          '%save_term_lineage'  => t('Save term lineage'),  
         )
       );
 

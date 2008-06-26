@@ -62,20 +62,6 @@ If you ever have problems, make sure to go through these steps:
    *must* enable the setting "Save only the deepest item".
    See http://drupal.org/node/241766#comment-808464.
 
-4) When using the Hierarchical Select Content Taxonomy module, you must
-   configure the "Save options" setting to "Save as tag".
-   See http://drupal.org/node/207252#comment-685906
-   and http://drupal.org/node/261341#comment-874417.
-
-5) When using the Hierarchical Select Content Taxonomy module, you must
-   make sure that the "Multiple values" setting of the field matches the
-   "Enable the dropbox" setting of that field's Hierarchical Select config!
-
-6) When using the Hierarchical Select Content Taxonomy module, if you have the
-   "Save term lineage" setting enabled of that field's Hierarchical Select
-   config, you must also enable the "Multiple values" setting of that field!
-   See http://drupal.org/node/261341#comment-866601.
-
 In case of problems, don't forget to try a hard refresh in your browser!
 
 
