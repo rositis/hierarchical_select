@@ -3,7 +3,7 @@
 
 /**
  * @file
- * This module defines the "hierarchical_select" form element type, which is a
+ * This module defines the "hierarchical_select" form element, which is a
  * greatly enhanced way for letting the user select items in a hierarchy.
  */
 

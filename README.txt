@@ -2,8 +2,8 @@ $Id$
 
 Description
 -----------
-This module defines the "hierarchical_select" form element, which is a much
-enhanced way for letting the user select an option in a hierarchy.
+This module defines the "hierarchical_select" form element, which is a greatly
+enhanced way for letting the user select items in a hierarchy.
 
 Hierarchical Select has the ability to save the entire lineage of a selection
 or only the "deepest" selection. You can configure it to force the user to
@@ -11,7 +11,7 @@ make a selection as deep as possible in the tree, or allow the user to select
 an item anywhere in the tree. Levels can be labeled, you can configure limit
 the number of items that can be selected, configure a title for the dropbox,
 choose a site-wide animation delay, and so on. You can even create new items
-and levels through Hierarchical Select.
+and levels through Hierarchical Select!
 
 
 Dependencies
