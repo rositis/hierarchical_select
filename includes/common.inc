@@ -160,7 +160,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'enforce-deepest'),
   );
   
-  if (function_exists($module .'_hierarchical_select_node_count')) {
+  if (module_hook($module .'_hierarchical_select_node_count')) {
     $form['node_count'] = array(
       '#type' => 'radios',
       '#title' => t('Display the node count'),
@@ -259,7 +259,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'dropbox-reset-hs'),
   );
 
-  if (function_exists($module .'_hierarchical_select_create_item')) {
+  if (module_hook($module .'_hierarchical_select_create_item')) {
     $form['editability'] = array(
       '#type' => 'fieldset',
       '#title' => t('Editability settings'),
