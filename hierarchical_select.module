@@ -152,10 +152,10 @@ function hierarchical_select_requirements($phase) {
     $current = drupal_get_installed_schema_version('hierarchical_select');
 
     $up_to_date = (end($updates) == $current);
-    $jquery_update_v1 = (!file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js')); // This file is specific to jQuery Update 2.x.
+    $jquery_update_v2 = (file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js'));
 
-    if ($up_to_date && $jquery_update_v1) {
-      $value = t('All updates installed. jQuery Update 1.x installed.');
+    if ($up_to_date && $jquery_update_v2) {
+      $value = t('All updates installed. jQuery Update 2.x installed.');
       $description = '';
       $severity = REQUIREMENT_OK;
     }
@@ -171,10 +171,10 @@ function hierarchical_select_requirements($phase) {
       );
       $severity = REQUIREMENT_ERROR;
     }
-    elseif (!$jquery_update_v1) {
-      $value = t('jQuery Update 2.x installed!');
-      $description = t('Please downgrade to jQuery Update 1.x! jQuery Update
-        2.x contains jQuery 1.2.x, which is incompatible with the Javascript
+    elseif (!$jquery_update_v2) {
+      $value = t('jQuery Update 1.x installed!');
+      $description = t('Please upgrade to jQuery Update 2.x! jQuery Update
+        1.x contains jQuery 1.1.x, which is incompatible with the Javascript
         code of Hierarchical Select!'
       );
       $severity = REQUIREMENT_ERROR;
