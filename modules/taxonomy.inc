@@ -77,6 +77,10 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
         // Hierarchical Select only makes sense if there's a hierarchy.
         if ($vocabulary->hierarchy > 0) {
+          // #size is set as soon as save_lineage or the dropbox is enabled,
+          // because then "multiple select" is enabled. Unset #size.
+          unset($form['taxonomy'][$vid]['#size']);
+
           $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
           $form['taxonomy'][$vid]['#config'] = array(
             'module' => 'taxonomy',
