@@ -10,23 +10,25 @@ if (Drupal.jsEnabled) {
 	$(document).ready(function(){
 		var td;
 		var cols;
-	  $("form#views-filters table td[.hierarchical-select-original-select]").each(function() {
+		var i = 0;;
+	  $("form#views-filters table td:has(.hierarchical-select-wrapper)").each(function() {
+	    i++;
       td = $(this);
       cols = td.siblings().length;
 
       // Add another row to the table.
-  		$("form#views-filters div table tbody")
-      .append('<tr class="odd"></tr>');
+  		$("form#views-filters > div > table > tbody")
+      .append('<tr class="odd" id="hs-new-row-' + i + '"></tr>');
     
-      // Update colspan of the td in which our modified exposed filter sists.
+      // Update colspan of the td in which our modified exposed filter exists.
       td.attr("colspan", cols);
-                  
+
       // Move all filters except our modified one to the newly added row.
       td.siblings()
-      .appendTo("form#views-filters div table tbody tr.odd:last-child");
+      .appendTo("#hs-new-row-"+ i);
 
       // Reduce the number of headers to the number of columns we have left.
-      $("form#views-filters div table thead tr th").gt(cols - 1).remove();
+      $("form#views-filters div table thead tr th").slice(cols).remove();
     });
 
     $('form#views-filters').submit(function() {
