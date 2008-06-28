@@ -271,7 +271,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   switch (updateType) {
     case 'update hierarchical select':
       var value = $('#'+ settings.select_id).val();
-      var lastUnchanged = settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1") + 1;
+      var lastUnchanged = parseInt(settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1")) + 1;
 
       // Don't do anything if it's one of the "no action values".
       if (value == 'none' || value.match(/^label_\d+$/)) {
