@@ -1,0 +1,145 @@
+<?php
+// $Id$
+
+//----------------------------------------------------------------------------
+// Drupal core hooks.
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function hs_menu_form_alter($form_id, &$form) {
+  if ($form_id == 'menu_edit_item_form') {
+    unset($form['pid']['#options']);
+    $form['pid']['#type'] = 'hierarchical_select';
+    $form['pid']['#config'] = array(
+      'module' => 'hs_menu',
+      'params' => array(
+        'mid' => $form['mid']['#value'],
+      ),
+      'save_lineage'    => 0,
+      'enforce_deepest' => 0,
+      'level_labels' => array(
+        'status' => 0,
+      ),
+      'dropbox' => array(
+        'status'   => 0,
+      ),
+      'editability' => array(
+        'status'           => 0,
+      ),
+    );
+  }
+}
+
+
+//----------------------------------------------------------------------------
+// Hierarchical Select hooks.
+
+/**
+ * Implementation of hook_hierarchical_select_params().
+ */
+function hs_menu_hierarchical_select_params() {
+  $params = array(
+    'mid', // The mid of the given item. This item and its children will be excluded from the hierarchy.
+  );
+  return $params;
+}
+
+/**
+ * Implementation of hook_hierarchical_select_root_level().
+ */
+function hs_menu_hierarchical_select_root_level($params) {
+  return hs_menu_hierarchical_select_children(0, $params);
+}
+
+/**
+ * Implementation of hook_hierarchical_select_children().
+ */
+function hs_menu_hierarchical_select_children($parent, $params) {
+  $children = array();
+  $mid = $params['mid'];
+  $pid = $parent;
+
+  if (!($parent_item = menu_get_item($pid))) {
+    return $children;
+  }
+  // Stop processing if there aren't any children.
+  else if (!isset($parent_item['children'])) {
+    return $children;
+  }
+
+  foreach ($parent_item['children'] as $child_mid) {
+    // Don't include the given item in the hierarchy!
+    if ($child_mid == $params['mid']) {
+      continue;
+    }
+
+    $child = menu_get_item($child_mid);
+    if ($child['type'] & (MENU_MODIFIABLE_BY_ADMIN | MENU_IS_ROOT)) {
+      $title = $child['title'];
+      if (!($child['type'] & MENU_VISIBLE_IN_TREE)) {
+        $title .= ' ('. t('disabled') .')';
+      }
+      $children[$child_mid] = $title;
+    }
+  }
+
+  return $children;
+}
+
+/**
+ * Implementation of hook_hierarchical_select_lineage().
+ */
+function hs_menu_hierarchical_select_lineage($item, $params) {
+  $lineage = array($item);
+
+  while (TRUE) {
+    $pid = db_result(db_query("SELECT pid FROM {menu} WHERE mid = %d", $item));
+
+    // 0 is the root menu item, so if $pid == 0, the lineage is complete!
+    if ($pid == 0)
+      break;
+
+    array_unshift($lineage, $pid);
+    $item = $pid;
+  }
+
+  return $lineage;
+}
+
+/**
+ * Implementation of hook_hierarchical_select_valid_item().
+ */
+function hs_menu_hierarchical_select_valid_item($item, $params) {
+  if (!is_numeric($item) || $item < 1) {
+    return FALSE;
+  }
+
+  $type = db_result(db_query("SELECT type FROM {menu} WHERE mid = %d", $item));  
+
+  // mid 1 corresponds to the hardcoded "Navigation" menu.
+  return (($item == 1) || ($type & (MENU_MODIFIABLE_BY_ADMIN | MENU_IS_ROOT)));
+}
+
+/**
+ * Implementation of hook_hierarchical_select_item_get_label().
+ */
+function hs_menu_hierarchical_select_item_get_label($item, $params) {
+  static $labels = array();
+
+  if (!isset($labels[$item])) {
+    $labels[$item] = t(db_result(db_query("SELECT title FROM {menu} WHERE mid = %d", $item)));
+  }
+
+  return $labels[$item];
+}
+
+/**
+ * Implementation of hook_hierarchical_select_implementation_info().
+ */
+function hs_menu_hierarchical_select_implementation_info() {
+  return array(
+    'hierarchy type' => t('Menu'),
+    'entity type'    => t('N/A'),
+  );
+}
