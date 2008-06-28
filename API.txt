@@ -125,8 +125,9 @@ array. These are the items it can contain:
    items, it doesn't work well in GET forms. By enabling this setting, a flat
    select will also be rendered, that contains only the selected lineages.
    Combine that with Drupal.HierarchicalSelect.prepareGETSubmit in the JS code
-   and you have a work-around for that (which, admittedly, only works when JS
-   is enabled).
+   (or, alternatively, the 'prepare-GET-submit' event  that can be triggered,
+   see the JavaScript events section for details) and you have a work-around
+   (which, admittedly, only works when JS is enabled).
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 
@@ -264,36 +265,37 @@ Retrieving all hsids in the current document can be done like this:
   }
 
 The following events are triggered:
-  - update hierarchical select
-  - create new item
-  - cancel new item
-  - create new level
-  - cancel new level
-  - add to dropbox
-  - remove from dropbox
-  - enforced update
+  - update-hierarchical-select
+  - create-new-item
+  - cancel-new-item
+  - create-new-level
+  - cancel-new-level
+  - add-to-dropbox
+  - remove-from-dropbox
+  - enforced-update
+  - prepared-GET-submit
 All events are triggered *after* the animations have completed.
 
 However, it's often useful to do something *before* an event (especially
 because all of the above events perform an AJAX request to the server). So,
 the equivalent "before" events exist as well:
-  - before update hierarchical select
-  - before create new item
-  - before cancel new item
-  - before create new level
-  - before cancel new level
-  - before add to dropbox
-  - before remove from dropbox
-  - before enforced update
+  - before-update-hierarchical-select
+  - before-create-new-item
+  - before-cancel-new-item
+  - before-create-new-level
+  - before-cancel-new-level
+  - before-add-to-dropbox
+  - before-remove-from-dropbox
+  - before-enforced-update
 There is one exception: when the cache is enabled, the "before update
 hierarchical select" event will not be triggered. This makes sense, because
 updates from the cache are instantaneous.
 
-An example of binding a function to the 'create new item' event of the second
+An example of binding a function to the 'create-new-item' event of the second
 (hsid == 1) hierarchical_select form item on the page:
 
   $('#hierarchical-select-1-wrapper')
-  .bind('create new item', function() {
+  .bind('create-new-item', function() {
     // …
   });
 
@@ -304,9 +306,9 @@ Suppose you'd like to enforce an update of the first (hsid == 0)
 hierarchical_select form item on the page:
 
   $('#hierarchical-select-0-wrapper')
-  .trigger('enforce update');
+  .trigger('enforce-update');
 
-The 'enforced update' (notice the past tense!) event is triggered upon
+The 'enforced-update' (notice the past tense!) event is triggered upon
 completion.
 An even more rarely used special event can be triggered to prepare the
 hierarchical_select form element for a get submit: the 'prepare GET submit'
