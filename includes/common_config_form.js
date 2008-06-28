@@ -18,10 +18,6 @@ cfg.levelLabels = function(configId) {
   var $enforceDeepest = $('.enforce-deepest input', cfg.context(configId));
 
   var showHide = function(speed) {
-    if (speed === undefined) {
-      speed = 200;
-    }
-
     $affected = $('.level-label', cfg.context(configId)); 
     if (!$status.is(':checked')) {
       $affected.parent().hide(speed);
@@ -37,8 +33,8 @@ cfg.levelLabels = function(configId) {
     }
   };
 
-  $status.click(showHide);
-  $enforceDeepest.click(showHide);
+  $status.click(function() { showHide(200); });
+  $enforceDeepest.click(function() { showHide(200); });
   showHide(0);
 };
 
@@ -46,10 +42,6 @@ cfg.dropbox = function(configId) {
   var $status = $('.dropbox-status', cfg.context(configId));
 
   var showHide = function(speed) {
-    if (speed === undefined) {
-      speed = 200;
-    }
-
     var $affected = $('.dropbox-title, .dropbox-limit, .dropbox-reset-hs', cfg.context(configId)).parent();
     if ($status.is(':checked')) {
       $affected.show(speed);
@@ -59,7 +51,7 @@ cfg.dropbox = function(configId) {
     }
   };
 
-  $status.click(showHide);
+  $status.click(function() { showHide(200); });
   showHide(0);
 };
 
@@ -68,11 +60,7 @@ cfg.editability = function(configId) {
   var $allowNewLevels = $('.editability-allow-new-levels', cfg.context(configId)); 
 
   var showHide = function(speed) {
-    if (speed === undefined) {
-      speed = 200;
-    }
-
-    var $affected = $('.editability-item-type, label[.editability-allow-new-levels]', cfg.context(configId)).parent();
+    var $affected = $('.editability-item-type, label:has(.editability-allow-new-levels)', cfg.context(configId)).parent();
     var $maxLevels = $('.editability-max-levels', cfg.context(configId)).parent();
     if ($status.is(':checked')) {
       if ($allowNewLevels.is(':checked')) {
@@ -86,10 +74,6 @@ cfg.editability = function(configId) {
   };
 
   var showHideMaxLevels = function(speed) {
-    if (speed === undefined) {
-      speed = 200;
-    }
-
     $affected = $('.editability-max-levels', cfg.context(configId)).parent();
     if ($allowNewLevels.is(':checked')) {
       $affected.show(speed);
@@ -99,8 +83,8 @@ cfg.editability = function(configId) {
     }
   };
 
-  $status.click(showHide);
-  $allowNewLevels.click(showHideMaxLevels);
+  $status.click(function() { showHide(200); });
+  $allowNewLevels.click(function() { showHideMaxLevels(200); });
   showHideMaxLevels(0);
   showHide(0);
 };
