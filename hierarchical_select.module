@@ -1285,7 +1285,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $first_case  = $config['enforce_deepest'] && $config['level_labels']['status'] && !isset($config['level_labels']['labels'][0]);
     $second_case = $dropbox && count($dropbox->lineages) > 0;
     $third_case  = $required && $config['enforce_deepest'] && count($root_level);
-    $hierarchy->lineage[0] = ($first_case || $second_case) ? 'none' : ($third_case) ? reset(array_keys($root_level)) : 'label_0';
+    $hierarchy->lineage[0] = ($first_case || $second_case) ? 'none' : (($third_case) ? reset(array_keys($root_level)) : 'label_0');
   }
   else {
     // If save_lineage setting is enabled, then the selection *is* a lineage.
