@@ -47,14 +47,18 @@ function hs_content_taxonomy_menu($may_cache) {
 function hs_content_taxonomy_form_alter($form_id, &$form) {
   if ($form_id == '_content_admin_field') {
     if (variable_get('hs_config_content-taxonomy-'. $form['field_name']['#value'], FALSE) !== FALSE) {
-      $form['field']['multiple'] = array(
-        '#type'  => 'hidden',
-        '#value' => $form['field']['multiple']['#default_value'],
+      $description = t(
+        'This setting is now managed by the Hierarchical Select widget
+        configuration!'
       );
-      $form['field']['save'] = array(
-        '#type'  => 'hidden',
-        '#value' => 'tag',
-      );
+
+      $form['field']['multiple']['#value'] = $form['field']['multiple']['#default_value'];
+      $form['field']['multiple']['#attributes'] = array('disabled' => 'disabled');
+      $form['field']['multiple']['#description'] = $description;
+
+      $form['field']['save']['#value'] = 'tag';
+      $form['field']['save']['#attributes'] = array('disabled' => 'disabled');
+      $form['field']['save']['#description'] = $description;
     }
   }
 }
@@ -73,6 +77,8 @@ function hs_content_taxonomy_form_alter($form_id, &$form) {
  *   Name of a field. Provides necessary context.
  */
 function hs_content_taxonomy_config_form($content_type_name, $field_name) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
   drupal_add_css(drupal_get_path('module', 'hs_content_taxonomy') .'/hs_content_taxonomy.css');
 
   $content_type = content_types($content_type_name);
