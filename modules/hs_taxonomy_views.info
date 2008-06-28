@@ -1,5 +1,5 @@
 ; $Id$
-name = Hierarchical Select Views Taxonomy
+name = Hierarchical Select Taxonomy Views
 description = Use Hierarchical Select for Taxonomy exposed filters in Views.
-dependencies = hierarchical_select views taxonomy
+dependencies = hierarchical_select taxonomy views
 package = Form Elements

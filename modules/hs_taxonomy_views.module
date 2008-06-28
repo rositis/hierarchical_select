@@ -9,7 +9,7 @@
 /**
  * Implementation of hook_menu().
  */
-function hs_views_taxonomy_menu($may_cache) {
+function hs_taxonomy_views_menu($may_cache) {
   $items = array();
 
   if (!$may_cache && arg(0) == 'admin' && arg(1) == 'build' && arg(2) == 'views' && is_string(arg(3)) && arg(4) == 'hs_config' && is_numeric(arg(5))) {
@@ -20,7 +20,7 @@ function hs_views_taxonomy_menu($may_cache) {
       'path' => "admin/build/views/$view_name/hs_config/$vid",
       'title' => t('Hierarchical Select configuration for !view', array('!view' => $view_name)),
       'callback' => 'drupal_get_form',
-      'callback arguments' => array('hs_views_taxonomy_config_form', $view_name, $vid),
+      'callback arguments' => array('hs_taxonomy_views_config_form', $view_name, $vid),
       'access' => user_access('administer views'),
       'type' => MENU_NORMAL_ITEM,
     );
@@ -31,7 +31,7 @@ function hs_views_taxonomy_menu($may_cache) {
 /**
  * Implementation of hook_form_alter().
  */
-function hs_views_taxonomy_form_alter($form_id, &$form) {
+function hs_taxonomy_views_form_alter($form_id, &$form) {
   // Change the exposed filters of Views. Only affects hierarchical vocabulary
   // filters.
   if (in_array($form_id, array('views_filters', 'views_filterblock'))) {
@@ -58,7 +58,7 @@ function hs_views_taxonomy_form_alter($form_id, &$form) {
 
             $form["filter$id"]['#type'] = 'hierarchical_select';
             $defaults_override = array(
-              'module' => 'hs_views_taxonomy',
+              'module' => 'hs_taxonomy_views',
               'params' => array(
                 'optional' => (bool) $view->exposed_filter[$id]['optional'],
                 'vid'      => $vid,
@@ -114,7 +114,7 @@ function hs_views_taxonomy_form_alter($form_id, &$form) {
 /**
  * Implementation of hook_requirements().
  */
-function hs_views_taxonomy_requirements($phase) {
+function hs_taxonomy_views_requirements($phase) {
   $requirements = array();
 
   if ($phase == 'runtime') {
@@ -142,7 +142,7 @@ EOT;
       $severity = REQUIREMENT_ERROR;      
     }
 
-    $requirements['hs_views_taxonomy'] = array(
+    $requirements['hs_taxonomy_views'] = array(
       'title'       => t('Hierarchical Select Views Taxonomy'),
       'value'       => $value,
       'description' => $description,
@@ -166,7 +166,7 @@ EOT;
  * @param $vid
  *   A vocabulary id. Provides necessary context.
  */
-function hs_views_taxonomy_config_form($view_name, $vid) {
+function hs_taxonomy_views_config_form($view_name, $vid) {
   // Find the exposed filter, we need this to set the default value of
   // $config['dropbox']['status'].
   $view = views_get_view($view_name);
@@ -178,7 +178,7 @@ function hs_views_taxonomy_config_form($view_name, $vid) {
   }
 
   // Add the Hierarchical Select config form.
-  $module = 'hs_views_taxonomy';
+  $module = 'hs_taxonomy_views';
   $params = array('vid' => $vid, 'optional' => (bool) $exposed_filter['optional']);
   $config_id = "views-taxonomy-$view_name-$vid";
   $vocabulary = taxonomy_get_vocabulary($vid);
@@ -230,14 +230,14 @@ function hs_views_taxonomy_config_form($view_name, $vid) {
 /**
  * Implementation of hook_hierarchical_select_params().
  */
-function hs_views_taxonomy_hierarchical_select_params() {
+function hs_taxonomy_views_hierarchical_select_params() {
   return array('optional') + taxonomy_hierarchical_select_params();
 }
 
 /**
  * Implementation of hook_hierarchical_select_root_level().
  */
-function hs_views_taxonomy_hierarchical_select_root_level($params) {
+function hs_taxonomy_views_hierarchical_select_root_level($params) {
   $root_level =  ($params['optional']) ? array('**ALL**' => '<'. t('all') .'>') : array();
   $root_level += taxonomy_hierarchical_select_root_level($params);
   return $root_level;
@@ -246,28 +246,28 @@ function hs_views_taxonomy_hierarchical_select_root_level($params) {
 /**
  * Implementation of hook_hierarchical_select_children().
  */
-function hs_views_taxonomy_hierarchical_select_children($parent, $params) {
+function hs_taxonomy_views_hierarchical_select_children($parent, $params) {
   return ($parent == '**ALL**') ? array() : taxonomy_hierarchical_select_children($parent, $params);
 }
 
 /**
  * Implementation of hook_hierarchical_select_lineage().
  */
-function hs_views_taxonomy_hierarchical_select_lineage($item, $params) {
+function hs_taxonomy_views_hierarchical_select_lineage($item, $params) {
   return ($item == '**ALL**') ? array($item) : taxonomy_hierarchical_select_lineage($item, $params);
 }
 
 /**
  * Implementation of hook_hierarchical_select_valid_item().
  */
-function hs_views_taxonomy_hierarchical_select_valid_item($item, $params) {
+function hs_taxonomy_views_hierarchical_select_valid_item($item, $params) {
   return ($item == '**ALL**' || taxonomy_hierarchical_select_valid_item($item, $params));
 }
 
 /**
  * Implementation of hook_hierarchical_select_item_get_label().
  */
-function hs_views_taxonomy_hierarchical_select_item_get_label($item, $params) {
+function hs_taxonomy_views_hierarchical_select_item_get_label($item, $params) {
   return ($item == '**ALL**') ? '<'. t('all') .'>' : taxonomy_hierarchical_select_item_get_label($item, $params);
 }
 
@@ -281,7 +281,7 @@ function hs_views_taxonomy_hierarchical_select_item_get_label($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_node_count().
  */
-function hs_views_taxonomy_hierarchical_select_node_count($item, $params) {
+function hs_taxonomy_views_hierarchical_select_node_count($item, $params) {
   if ($item == '**ALL**') {
     return db_result(db_query('SELECT COUNT(DISTINCT(t.nid)) FROM {term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1'));
   }
@@ -293,7 +293,7 @@ function hs_views_taxonomy_hierarchical_select_node_count($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_implementation_info().
  */
-function hs_views_taxonomy_hierarchical_select_implementation_info() {
+function hs_taxonomy_views_hierarchical_select_implementation_info() {
   return array(
     'hierarchy type' => t('Taxonomy'),
     'entity type'    => t('Views'),
@@ -303,7 +303,7 @@ function hs_views_taxonomy_hierarchical_select_implementation_info() {
 /**
  * Implementation of hook_hierarchical_select_config_info().
  */
-function hs_views_taxonomy_hierarchical_select_config_info() {
+function hs_taxonomy_views_hierarchical_select_config_info() {
   static $config_info;
 
   if (!isset($config_info)) {
@@ -315,7 +315,7 @@ function hs_views_taxonomy_hierarchical_select_config_info() {
       $view = views_get_view($view->name);
 
       foreach ($view->exposed_filter as $filter_id => $filter) {
-        $vid = _hs_views_taxonomy_parse_vocabulary_id_from_id($filter['id']);
+        $vid = _hs_taxonomy_views_parse_vocabulary_id_from_id($filter['id']);
         if ($vid) {
           $vocabulary = taxonomy_get_vocabulary($vid);
 
@@ -342,7 +342,7 @@ function hs_views_taxonomy_hierarchical_select_config_info() {
  * @return
  *   When no valid id was given, FALSE, otherwise the vid.
  */
-function _hs_views_taxonomy_parse_vocabulary_id_from_id($id) {
+function _hs_taxonomy_views_parse_vocabulary_id_from_id($id) {
   $vid = FALSE;
 
   if (preg_match("/term_node_(\d+)\.tid/", $id, $matches)) {
