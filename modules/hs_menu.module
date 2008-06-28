@@ -22,10 +22,10 @@ function hs_menu_form_alter($form_id, &$form) {
         'status' => 0,
       ),
       'dropbox' => array(
-        'status'   => 0,
+        'status' => 0,
       ),
       'editability' => array(
-        'status'           => 0,
+        'status' => 0,
       ),
     );
   }
