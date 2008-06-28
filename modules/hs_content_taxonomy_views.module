@@ -308,6 +308,16 @@ function hs_content_taxonomy_views_hierarchical_select_node_count($item, $params
 }
 
 /**
+ * Implementation of hook_hierarchical_select_implementation_info().
+ */
+function hs_content_taxonomy_views_hierarchical_select_implementation_info() {
+  return array(
+    'hierarchy type' => t('Content Taxonomy'),
+    'entity type'    => t('View'),
+  );
+}
+
+/**
  * Implementation of hook_hierarchical_select_config_info().
  */
 function hs_content_taxonomy_views_hierarchical_select_config_info() {

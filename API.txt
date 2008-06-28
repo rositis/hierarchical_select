@@ -215,20 +215,32 @@ Hooks
    Optional hook. When this hook is not implemented, this functionality will
    never be used, even when you configure it that way.
 
-10) hook_hierarchical_select_config_info();
+10) hook_hierarchical_select_implementation_info();
+    Return metadata about this implementation.
+    This information is used to generate the implementations overview at
+    admin/settings/hierarchical_select/implementations. The expected format is:
+
+      array(
+        'hierarchy type' => t('Taxonomy'),
+        'entity type'    => t('Node'),
+      );
+
+11) hook_hierarchical_select_config_info();
     Return metadata about each available user-editable configuration for this
-    implementation. This information is used to generate the configurations
-    overview page at admin/settings/hierarchical_select/configs. The expected
+    implementation.
+    Optional hook. This information is used to generate the configurations
+    overview at admin/settings/hierarchical_select/configs. The expected
     format is:
 
-      $config_info["$config_id|$content_type_name"] = array(
+      $config_info[$config_id] = array(
         'config_id'      => $config_id,
-        'hierarchy type' => t('Content Taxonomy'),
-        'hierarchy'      => t($vocabulary->name) ." ($field_name)",
-        'entity type'    => t('node'),
-        'entity'         => t($content_type['name']),
-        'edit link'      => "admin/content/types/$content_type_name/fields/$field_name/hs_config",
+        'hierarchy type' => t('Taxonomy'),
+        'hierarchy'      => t($vocabulary->name),
+        'entity type'    => t('Node'),
+        'entity'         => implode(', ', array_map('t', $entities)),
+        'edit link'      => "admin/content/taxonomy/edit/vocabulary/$vid",
       );
+
 
 JavaScript events
 -----------------

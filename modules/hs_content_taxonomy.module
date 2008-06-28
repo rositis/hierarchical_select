@@ -79,12 +79,17 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
   $field = $content_type['fields'][$field_name];
 
   // Extract the necessary context from the $field array.
-  $vid = $field['vid'];  
+  $vid = $field['vid'];
+  $tid = $field['tid'];
   $depth = (empty($field['depth'])) ? 0 : $field['depth'];
 
   // Add the Hierarchical Select config form.
   $module = 'hs_content_taxonomy';
-  $params = array('vid' => $vid, 'depth' => $depth);
+  $params = array(
+    'vid'   => $vid,
+    'tid'   => $tid,
+    'depth' => $depth,
+  );
   $config_id = "content-taxonomy-$field_name";
   $vocabulary = taxonomy_get_vocabulary($vid);
   $defaults = array(
@@ -258,7 +263,8 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
           '#config' => array(
             'module' => 'hs_content_taxonomy',
             'params' => array(
-              'vid' => $vid,
+              'vid'   => $vid,
+              'tid'   => $tid,
               'depth' => $depth,
             ),
           ),
@@ -292,8 +298,9 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
  */
 function hs_content_taxonomy_hierarchical_select_params() {
   $params = array(
-    'vid',
-    'depth',
+    'vid',   // The vocabulary id.
+    'tid',   // The root term's term id.
+    'depth', // The depth of the tree.
   );
   return $params;
 }
@@ -302,7 +309,8 @@ function hs_content_taxonomy_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_content_taxonomy_hierarchical_select_root_level($params) {
-  return taxonomy_hierarchical_select_root_level($params);
+  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid'], -1, 1);
+  return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
 /**
@@ -310,20 +318,21 @@ function hs_content_taxonomy_hierarchical_select_root_level($params) {
  */
 function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
   static $tree;
-  
-  $vid = $params['vid'];
+
+  $vid   = $params['vid'];
+  $tid   = $params['tid'];
   $depth = $params['depth'];
 
   // Keep a static cache of the entire tree, this allows us to quickly look up
   // if a term is not to deep – because if it's too deep, we don't want to
   // return any children.
-  if (!isset($tree[$vid])) {
-    $raw_tree = _taxonomy_hierarchical_select_get_tree($vid, 0);
+  if (!isset($tree[$vid][$tid])) {
+    $raw_tree = _taxonomy_hierarchical_select_get_tree($vid, $tid);
     foreach ($raw_tree as $term) {
-      $tree[$vid][$term->tid] = $term->depth;
+      $tree[$vid][$tid][$term->tid] = $term->depth;
     }
   }
-  $terms = ($depth > 0 && $tree[$vid][$parent] + 1 >= $depth) ? array() : _taxonomy_hierarchical_select_get_tree($vid, $parent, -1, 1);
+  $terms = ($depth > 0 && $tree[$vid][$tid][$parent] + 1 >= $depth) ? array() : _taxonomy_hierarchical_select_get_tree($vid, $parent, -1, 1);
   return _taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -331,7 +340,15 @@ function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
  * Implementation of hook_hierarchical_select_lineage().
  */
 function hs_content_taxonomy_hierarchical_select_lineage($item, $params) {
-  return taxonomy_hierarchical_select_lineage($item, $params);
+  $lineage = taxonomy_hierarchical_select_lineage($item, $params);
+
+  // Remove all terms before the root term and then the root term itself, too.
+  while ($lineage[0] != $params['tid']) {
+    array_shift($lineage);
+  }
+  array_shift($lineage);
+
+  return $lineage;
 }
 
 /**
@@ -342,8 +359,8 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  $terms = _taxonomy_hierarchical_select_get_tree($params['vid']);
-  return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['depth']));
+  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid']);
+  return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['tid'], $params['depth']));
 }
 
 /**
@@ -370,6 +387,16 @@ function hs_content_taxonomy_hierarchical_select_node_count($item, $params) {
 }
 
 /**
+ * Implementation of hook_hierarchical_select_implementation_info().
+ */
+function hs_content_taxonomy_hierarchical_select_implementation_info() {
+  return array(
+    'hierarchy type' => t('Content Taxonomy'),
+    'entity type'    => t('Node'),
+  );
+}
+
+/**
  * Implementation of hook_hierarchical_select_config_info().
  */
 function hs_content_taxonomy_hierarchical_select_config_info() {
@@ -392,7 +419,7 @@ function hs_content_taxonomy_hierarchical_select_config_info() {
               'config_id'      => $config_id,
               'hierarchy type' => t('Content Taxonomy'),
               'hierarchy'      => t($vocabulary->name) ." ($field_name)",
-              'entity type'    => t('node'),
+              'entity type'    => t('Node'),
               'entity'         => t($content_type['name']),
               'edit link'      => "admin/content/types/$content_type_name/fields/$field_name/hs_config",
             );
@@ -433,7 +460,7 @@ function _hs_content_taxonomy_parse_context_from_url() {
   return FALSE;
 }
 
-function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_depth) {
+function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $root_tid, $allowed_depth) {
   // If the allowed depth is zero, then every term is allowed!
   if ($allowed_depth == 0) {
     return TRUE;
@@ -441,14 +468,14 @@ function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $allowed_dep
 
   // Otherwise, only allow terms that are within the allowed depth.
   static $valid_tids;
-  if (!isset($valid_tids[$vid][$allowed_depth])) {
-    $valid_tids[$vid][$allowed_depth] = array();
-    $tree = _taxonomy_hierarchical_select_get_tree($vid);
+  if (!isset($valid_tids[$vid][$root_tid][$allowed_depth])) {
+    $valid_tids[$vid][$root_tid][$allowed_depth] = array();
+    $tree = _taxonomy_hierarchical_select_get_tree($vid, $root_tid);
     foreach ($tree as $term) {
       if ($term->depth < $allowed_depth) {
-        $valid_tids[$vid][$allowed_depth][] = $term->tid;
+        $valid_tids[$vid][$root_tid][$allowed_depth][] = $term->tid;
       }
     }
   }
-  return in_array($tid, $valid_tids[$vid][$allowed_depth]);
+  return in_array($tid, $valid_tids[$vid][$root_tid][$allowed_depth]);
 }

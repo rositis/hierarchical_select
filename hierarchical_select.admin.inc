@@ -112,13 +112,12 @@ function hierarchical_select_admin_implementations() {
   foreach (module_implements('hierarchical_select_root_level') as $module) {
     $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
     $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
-    // Try to extract the hierarchy type from hook_hierarchical_select_config_info().
-    $hierarchy_type = t('N/A');
-    if (module_hook($module, 'hierarchical_select_config_info')) {
-      $config_info = module_invoke($module, 'hierarchical_select_config_info');
-      $config = reset($config_info);
-      $hierarchy_type = $config['hierarchy type'];
-      $entity_type    = $config['entity type'];
+    // Try to extract the hierarchy type from the optional hook_hierarchical_select_config_info().
+    $hierarchy_type = $entity_type = t('unknown');
+    if (module_hook($module, 'hierarchical_select_implementation_info')) {
+      $implementation = module_invoke($module, 'hierarchical_select_implementation_info');
+      $hierarchy_type = $implementation['hierarchy type'];
+      $entity_type    = $implementation['entity type'];
     }
 
     $rows[] = array(

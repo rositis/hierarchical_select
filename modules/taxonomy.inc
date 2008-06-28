@@ -197,6 +197,16 @@ function taxonomy_hierarchical_select_node_count($item, $params) {
 }
 
 /**
+ * Implementation of hook_hierarchical_select_implementation_info().
+ */
+function taxonomy_hierarchical_select_implementation_info() {
+  return array(
+    'hierarchy type' => t('Taxonomy'),
+    'entity type'    => t('Node'),
+  );
+}
+
+/**
  * Implementation of hook_hierarchical_select_config_info().
  */
 function taxonomy_hierarchical_select_config_info() {
@@ -222,7 +232,7 @@ function taxonomy_hierarchical_select_config_info() {
           'config_id'      => $config_id,
           'hierarchy type' => t('Taxonomy'),
           'hierarchy'      => t($vocabulary->name),
-          'entity type'    => t('node'),
+          'entity type'    => t('Node'),
           'entity'         => implode(', ', array_map('t', $entities)),
           'edit link'      => "admin/content/taxonomy/edit/vocabulary/$vid",
         );
