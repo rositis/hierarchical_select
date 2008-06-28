@@ -181,53 +181,48 @@ An example:
 
 Hooks
 -----
-1) hook_hierarchial_select_form_alter($form_id, &$form);
-   This hook is absolutely optional! The sole reason for its existence, is to
-   allow easy altering of forms of modules that don't support Hierarchical
-   Select natively, to use the hierarchical_select form element.
-
-2) hook_hierarchical_select_params();
+1) hook_hierarchical_select_params();
    Returns the names of all parameters that should be present.
 
-3) hook_hierarchical_select_root_level($params);
+2) hook_hierarchical_select_root_level($params);
    Returns the root level of the hierarchy.
 
-4) hook_hierarchical_select_children($parent, $params);
+3) hook_hierarchical_select_children($parent, $params);
    Gets the children of $parent and returns them.
 
-5) hook_hierarchical_select_lineage($item, $params);
+4) hook_hierarchical_select_lineage($item, $params);
    Calculates the lineage of $item and returns it. Necessary when the
    "enforce_deepest" option is enabled.
 
-6) hook_hierarchical_select_valid_item($item, $params);
+5) hook_hierarchical_select_valid_item($item, $params);
    Validates an item, returns TRUE if valid, FALSE if invalid.
 
-7) hook_hierarchical_select_item_get_label($item, $params);
+6) hook_hierarchical_select_item_get_label($item, $params);
    Given a valid item, returns the label.
 
-8) hook_hierarchical_select_create_item($label, $parent, $params);
+7) hook_hierarchical_select_create_item($label, $parent, $params);
    Given a parent item and the label of a new item, create a new item as a
    child of the parent item. When $parent == 0, this means a new item is being
    created at the root level.
    Optional hook. When this hook is not implemented, this functionality will
    never be used, even when you configure it that way in code.
 
-9) hook_hierarchical_select_node_count($item, $params);
+8) hook_hierarchical_select_node_count($item, $params);
    Given a item, get the number of nodes that are related to the given item.
    Optional hook. When this hook is not implemented, this functionality will
    never be used, even when you configure it that way.
 
-10) hook_hierarchical_select_implementation_info();
-    Return metadata about this implementation.
-    This information is used to generate the implementations overview at
-    admin/settings/hierarchical_select/implementations. The expected format is:
+9) hook_hierarchical_select_implementation_info();
+   Return metadata about this implementation.
+   This information is used to generate the implementations overview at
+   admin/settings/hierarchical_select/implementations. The expected format is:
 
       array(
         'hierarchy type' => t('Taxonomy'),
         'entity type'    => t('Node'),
       );
 
-11) hook_hierarchical_select_config_info();
+10) hook_hierarchical_select_config_info();
     Return metadata about each available user-editable configuration for this
     implementation.
     Optional hook. This information is used to generate the configurations
