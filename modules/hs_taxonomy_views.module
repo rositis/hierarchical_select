@@ -68,7 +68,7 @@ function hs_taxonomy_views_form_alter($form_id, &$form) {
               // This is a GET form, so also render the flat select.
               'render_flat_select' => 1,
             );
-            hierarchical_select_common_config_apply($form["filter$id"], "views-taxonomy-$view->name-$vid", $defaults_override);
+            hierarchical_select_common_config_apply($form["filter$id"], "taxonomy-views-$view->name-$vid", $defaults_override);
             
             // Inherit #config['dropbox']['status'] from the exposed filter
             // settings.
@@ -180,7 +180,7 @@ function hs_taxonomy_views_config_form($view_name, $vid) {
   // Add the Hierarchical Select config form.
   $module = 'hs_taxonomy_views';
   $params = array('vid' => $vid, 'optional' => (bool) $exposed_filter['optional']);
-  $config_id = "views-taxonomy-$view_name-$vid";
+  $config_id = "taxonomy-views-$view_name-$vid";
   $vocabulary = taxonomy_get_vocabulary($vid);
   $defaults = array(
     // Enable the save_lineage setting by default if the multiple parents
@@ -319,7 +319,7 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
         if ($vid) {
           $vocabulary = taxonomy_get_vocabulary($vid);
 
-          $config_id = "views-taxonomy-$view->name-$vid";
+          $config_id = "taxonomy-views-$view->name-$vid";
           $config_info[$config_id] = array(
             'config_id' => $config_id,
             'hierarchy type' => t('Taxonomy'),

@@ -48,6 +48,17 @@ function hierarchical_select_update_2() {
   return $ret;
 }
 
+// Helper function for update 3.
+function hierarchical_select_update_3_taxonomy_hierarchical_select_get_depth($vid) {
+  $tree = taxonomy_get_tree($vid);
+  foreach ($tree as $term) {
+    if ($term->depth > $depth) {
+      $depth = $term->depth;
+    }
+  }
+  return $depth;
+}
+
 // Convert the Hierarchical Select settings for each vocabulary to the
 // standardized format.
 function hierarchical_select_update_3() {
@@ -72,7 +83,7 @@ function hierarchical_select_update_3() {
     $config['level_labels']['status'] = variable_get($var, 0);
     variable_del($var);
     $config['level_labels']['labels'] = array();
-    for ($depth = 0; $depth < _taxonomy_hierarchical_select_get_depth($vid); $depth++) {
+    for ($depth = 0; $depth < hierarchical_select_update_3_taxonomy_hierarchical_select_get_depth($vid); $depth++) {
       $var = "hierarchical_select_level_{$depth}_{$vid}";
       $config['level_labels']['labels'][$depth] = variable_get($var, '');
       variable_del($var);
@@ -130,6 +141,23 @@ function hierarchical_select_update_5() {
   $ret = array();
 
   $ret[] = update_sql("ALTER TABLE {variable} MODIFY name varchar(128) NOT NULL default ''");
+
+  return $ret;
+}
+
+// Several modules were renamed for consistency. Only one of these needs a
+// change in its config variables.
+function hierarchical_select_update_6() {
+  $ret = array();
+
+  // hs_views_taxonomy -> hs_taxonomy_views
+  $result = db_query("SELECT SUBSTRING(name, 26) AS config_id FROM {variable} WHERE name LIKE 'hs_config_views-taxonomy_%'");
+  while ($row = db_fetch_object($result)) {
+    $config_id = $row->config_id;
+    $value = variable_get("hs_config_views-taxonomy_$config_id", serialize(array()));
+    variable_set("hs_config_taxonomy-views_$config_id", $value);
+    variable_del("hs_config_views-taxonomy_$config_id");
+  }
 
   return $ret;
 }
