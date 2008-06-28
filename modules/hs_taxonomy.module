@@ -2,16 +2,15 @@
 // $Id$
 
 
-require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-
-
 //----------------------------------------------------------------------------
-// Hierarchical Select hooks.
+// Drupal core hooks.
 
 /**
- * Implementation of hook_hierarchical_select_form_alter().
+ * Implementation of hook_form_alter().
  */
-function hs_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
+function hs_taxonomy_form_alter($form_id, &$form) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
     drupal_add_js(drupal_get_path('module', 'hs_taxonomy') .'/hs_taxonomy.js', 'module');
@@ -94,6 +93,10 @@ function hs_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     }
   }
 }
+
+
+//----------------------------------------------------------------------------
+// Hierarchical Select hooks.
 
 /**
  * Implementation of hook_hierarchical_select_params().
