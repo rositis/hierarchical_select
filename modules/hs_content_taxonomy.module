@@ -46,7 +46,7 @@ function hs_content_taxonomy_menu($may_cache) {
  */
 function hs_content_taxonomy_form_alter($form_id, &$form) {
   if ($form_id == '_content_admin_field') {
-    if (variable_get('hs-config-content-taxonomy-'. $form['field_name']['#value'], FALSE) !== FALSE) {
+    if (variable_get('hs_config_content-taxonomy-'. $form['field_name']['#value'], FALSE) !== FALSE) {
       $form['field']['multiple'] = array(
         '#type'  => 'hidden',
         '#value' => $form['field']['multiple']['#default_value'],
