@@ -8,6 +8,10 @@
  */
 
 
+// Make sure that the devel module is installed when you enable developer mode!
+define('HS_DEVELOPER_MODE', FALSE);
+
+
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 
@@ -106,9 +110,10 @@ function hierarchical_select_elements() {
         'labels' => array()
       ),
       'dropbox' => array(
-        'status' => 0,
-        'title'  => t('All selections'),
-        'limit'  => 0,
+        'status'   => 0,
+        'title'    => t('All selections'),
+        'limit'    => 0,
+        'reset_hs' => 1,
       ),
       'editability' => array(
         'status'           => 0,
@@ -192,6 +197,12 @@ function hierarchical_select_json() {
 
   $form_id = $_POST['form_id'];
   $hs_form_build_id = $_POST['hs_form_build_id'];
+
+  if (HS_DEVELOPER_MODE) {
+    dpm("Hierarchical Select AJAX request.
+    form_id: $form_id
+    hs_form_build_id: $hs_form_build_id");
+  }
 
   // Collect all necessary variables.
   $cached = cache_get($hs_form_build_id, 'cache');
@@ -280,6 +291,14 @@ function hierarchical_select_process($element) {
   // we need these before we can render anything.
   list($hs_selection, $db_selection) = _hierarchical_select_process_calculate_selections($element);
 
+  if (HS_DEVELOPER_MODE) {
+    dpm("Calculated hierarchical select selection: ". print_r($hs_selection, TRUE));
+
+    if ($config['dropbox']['status']) {
+      dpm("Calculated dropbox selection: ". print_r($db_selection));
+    }
+  }
+
   // If the exclusive_lineages setting has been configured, and the dropbox
   // is enabled, then do the necessary processing to make exclusive lineages
   // possible.
@@ -315,6 +334,14 @@ function hierarchical_select_process($element) {
   // were just calculated.
   $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
   $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
+
+  if (HS_DEVELOPER_MODE) {
+    dpm("Generated hierarchy: ". print_r($hierarchy, TRUE));
+
+    if ($config['dropbox']['status']) {
+      dpm("Generated dropbox: ". print_r($dropbox, TRUE));
+    }
+  }
 
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.

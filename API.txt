@@ -216,6 +216,20 @@ Reserved item values
   the empty selection.
 
 
+Developer mode
+--------------
+When you are writing your implementation of the Hierarchical Select API, you
+will often wonder what Hierarchical Select is doing internally with the data
+you're feeding it. That's why there's a developer mode: it will show you this
+data, even the data generated in AJAX callbacks.
+You must have the devel module installed for this. Next, go to Hierarchical
+Select's .module file and set the define for the HS_DEVELOPER_MODE constant to
+TRUE.
+You'll now see messages at the top of each page showing you the internal data
+structures that have been built. To see the messages that are generated in
+AJAX request, just open any other Drupal page after each AJAX request.
+
+
 Hooks
 -----
 1) hook_hierarchical_select_params();

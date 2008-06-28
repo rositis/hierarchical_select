@@ -168,6 +168,8 @@ EOT;
  *   A vocabulary id. Provides necessary context.
  */
 function hs_taxonomy_views_config_form($view_name, $vid) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
   // Find the exposed filter, we need this to set the default value of
   // $config['dropbox']['status'].
   $view = views_get_view($view_name);
