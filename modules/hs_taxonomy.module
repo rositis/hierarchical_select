@@ -11,10 +11,10 @@ require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common
 /**
  * Implementation of hook_hierarchical_select_form_alter().
  */
-function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
+function hs_taxonomy_hierarchical_select_form_alter($form_id, &$form) {
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/modules/taxonomy.js', 'module');
+    drupal_add_js(drupal_get_path('module', 'hs_taxonomy') .'/hs_taxonomy.js', 'module');
 
     $vid = $form['vid']['#value'];
     $first_part = array_slice($form, 0, 10);
@@ -28,7 +28,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
     );
 
     // Add the Hierarchical Select config form.
-    $module = 'taxonomy';
+    $module = 'hs_taxonomy';
     $params = array('vid' => $vid);
     $config_id = "taxonomy-$vid";
     $vocabulary = taxonomy_get_vocabulary($vid);
@@ -37,7 +37,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       // vocabulary option is enabled.
       'save_lineage' => (int) ($vocabulary->hierarchy == 2),
       'editability' => array(
-        'max_levels' => _taxonomy_hierarchical_select_get_depth($vid),
+        'max_levels' => _hs_taxonomy_hierarchical_select_get_depth($vid),
       ),
     );
     $strings = array(
@@ -47,7 +47,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
       'items'       => t('terms'),
       'item_type'   => t('term type'),
     );
-    $max_hierarchy_depth = _taxonomy_hierarchical_select_get_depth($vid);
+    $max_hierarchy_depth = _hs_taxonomy_hierarchical_select_get_depth($vid);
     $preview_is_required = $vocabulary->required;
     $form['hierarchical_select'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
@@ -83,12 +83,12 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 
           $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
           $form['taxonomy'][$vid]['#config'] = array(
-            'module' => 'taxonomy',
+            'module' => 'hs_taxonomy',
             'params' => array(
               'vid' => $vid,
             ),
           );
-          taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
+          hs_taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
         }
       }
     }
@@ -98,7 +98,7 @@ function taxonomy_hierarchical_select_form_alter($form_id, &$form) {
 /**
  * Implementation of hook_hierarchical_select_params().
  */
-function taxonomy_hierarchical_select_params() {
+function hs_taxonomy_hierarchical_select_params() {
   $params = array(
     'vid',
   );
@@ -108,23 +108,23 @@ function taxonomy_hierarchical_select_params() {
 /**
  * Implementation of hook_hierarchical_select_root_level().
  */
-function taxonomy_hierarchical_select_root_level($params) {
-  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
-  return _taxonomy_hierarchical_select_terms_to_options($terms);
+function hs_taxonomy_hierarchical_select_root_level($params) {
+  $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
+  return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
 /**
  * Implementation of hook_hierarchical_select_children().
  */
-function taxonomy_hierarchical_select_children($parent, $params) {
+function hs_taxonomy_hierarchical_select_children($parent, $params) {
   $terms = taxonomy_get_children($parent, $params['vid']);
-  return _taxonomy_hierarchical_select_terms_to_options($terms);
+  return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
 /**
  * Implementation of hook_hierarchical_select_lineage().
  */
-function taxonomy_hierarchical_select_lineage($item, $params) {
+function hs_taxonomy_hierarchical_select_lineage($item, $params) {
   $lineage = array();
 
   $terms = array_reverse(taxonomy_get_parents_all($item));
@@ -137,7 +137,7 @@ function taxonomy_hierarchical_select_lineage($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_valid_item().
  */
-function taxonomy_hierarchical_select_valid_item($item, $params) {
+function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
   if (!is_numeric($item) || $item < 1) {
     return FALSE;
   }
@@ -148,7 +148,7 @@ function taxonomy_hierarchical_select_valid_item($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_item_get_label().
  */
-function taxonomy_hierarchical_select_item_get_label($item, $params) {
+function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
   
   if (!isset($labels[$item])) {
@@ -164,7 +164,7 @@ function taxonomy_hierarchical_select_item_get_label($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_create_item().
  */
-function taxonomy_hierarchical_select_create_item($label, $parent, $params) {
+function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
   $form_values = array(
     'name'   => $label,
     'parent' => $parent,
@@ -174,7 +174,7 @@ function taxonomy_hierarchical_select_create_item($label, $parent, $params) {
   
   if ($status == SAVED_NEW) {
     // Reset the cached tree.
-    _taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
+    _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
 
     // Retrieve the tid.
     $children = taxonomy_get_children($parent, $params['vid']);
@@ -192,14 +192,14 @@ function taxonomy_hierarchical_select_create_item($label, $parent, $params) {
 /**
  * Implementation of hook_hierarchical_select_node_count().
  */
-function taxonomy_hierarchical_select_node_count($item, $params) {
+function hs_taxonomy_hierarchical_select_node_count($item, $params) {
   return hs_taxonomy_term_count_nodes($item);
 }
 
 /**
  * Implementation of hook_hierarchical_select_implementation_info().
  */
-function taxonomy_hierarchical_select_implementation_info() {
+function hs_taxonomy_hierarchical_select_implementation_info() {
   return array(
     'hierarchy type' => t('Taxonomy'),
     'entity type'    => t('Node'),
@@ -209,7 +209,7 @@ function taxonomy_hierarchical_select_implementation_info() {
 /**
  * Implementation of hook_hierarchical_select_config_info().
  */
-function taxonomy_hierarchical_select_config_info() {
+function hs_taxonomy_hierarchical_select_config_info() {
   static $config_info;
 
   if (!isset($config_info)) {
@@ -280,7 +280,7 @@ function hierarchical_select_taxonomy_form_vocabulary_submit($form_id, $form_val
  * trees, which obviously causes problems when you create new items between
  * two calls to it.
  */
-function _taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -1, $max_depth = NULL, $reset = FALSE) {
+function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -1, $max_depth = NULL, $reset = FALSE) {
   static $children, $parents, $terms;
 
   if ($reset) {
@@ -314,7 +314,7 @@ function _taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -1, 
         $tree[] = $term;
 
         if ($children[$vid][$child]) {
-          $tree = array_merge($tree, _taxonomy_hierarchical_select_get_tree($vid, $child, $depth, $max_depth));
+          $tree = array_merge($tree, _hs_taxonomy_hierarchical_select_get_tree($vid, $child, $depth, $max_depth));
         }
       }
     }
@@ -331,7 +331,7 @@ function hs_taxonomy_term_count_nodes($tid, $type = 0) {
   static $count;
 
   $term = taxonomy_get_term($tid);
-  $tree = _taxonomy_hierarchical_select_get_tree($term->vid, $tid);
+  $tree = _hs_taxonomy_hierarchical_select_get_tree($term->vid, $tid);
   $tids = array($tid);
   foreach ($tree as $descendant) {
     $tids[] = $descendant->tid;
@@ -357,7 +357,7 @@ function hs_taxonomy_term_count_nodes($tid, $type = 0) {
  * @return
  *  An associative array of options, keys are tids, values are term names.
  */
-function _taxonomy_hierarchical_select_terms_to_options($terms) {
+function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
   $options = array();
   foreach ($terms as $key => $term) {
     // Use the translated term when available!
@@ -374,8 +374,8 @@ function _taxonomy_hierarchical_select_terms_to_options($terms) {
  * @return
  *   The depth of the vocabulary's tree.
  */
-function _taxonomy_hierarchical_select_get_depth($vid) {
-  $tree = _taxonomy_hierarchical_select_get_tree($vid);
+function _hs_taxonomy_hierarchical_select_get_depth($vid) {
+  $tree = _hs_taxonomy_hierarchical_select_get_tree($vid);
   foreach ($tree as $term) {
     if ($term->depth > $depth) {
       $depth = $term->depth;
@@ -392,7 +392,7 @@ function _taxonomy_hierarchical_select_get_depth($vid) {
  * @param $vid
  *   The id of the vocabulary of which the configuration should be applied.
  */
-function taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
+function hs_taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
   unset($form_item['#options']); // Unset to prevent passing around of possibly huge HTML.
   unset($form_item['#theme']);   // Unset to prevent theme_taxonomy_term_select() from running.
 

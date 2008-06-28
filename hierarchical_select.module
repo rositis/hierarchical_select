@@ -8,14 +8,6 @@
  */
 
 
-// Enable out-of-the-box support for some modules, if they are enabled.
-$modules = array('taxonomy', 'subscriptions_taxonomy');
-foreach ($modules as $module) {
-  if (module_exists($module)) {
-    require_once drupal_get_path('module', 'hierarchical_select') ."/modules/$module.inc";
-  }
-}
-
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 

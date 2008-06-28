@@ -97,7 +97,7 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
     // vocabulary option is enabled.
     'save_lineage' => (int) ($vocabulary->hierarchy == 2),
     'editability' => array(
-      'max_levels' => min($depth, _taxonomy_hierarchical_select_get_depth($vid)),
+      'max_levels' => min($depth, _hs_taxonomy_hierarchical_select_get_depth($vid)),
     ),
   );
   // If this config is being created (not edited), then enable the dropbox if
@@ -113,7 +113,7 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
     'items'       => t('terms'),
     'item_type'   => t('term type'),
   );
-  $max_hierarchy_depth = min($depth, _taxonomy_hierarchical_select_get_depth($vid));
+  $max_hierarchy_depth = min($depth, _hs_taxonomy_hierarchical_select_get_depth($vid));
   $preview_is_required = $field['required'];
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
@@ -309,8 +309,8 @@ function hs_content_taxonomy_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_content_taxonomy_hierarchical_select_root_level($params) {
-  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid'], -1, 1);
-  return _taxonomy_hierarchical_select_terms_to_options($terms);
+  $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid'], -1, 1);
+  return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
 /**
@@ -327,20 +327,20 @@ function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
   // if a term is not to deep – because if it's too deep, we don't want to
   // return any children.
   if (!isset($tree[$vid][$tid])) {
-    $raw_tree = _taxonomy_hierarchical_select_get_tree($vid, $tid);
+    $raw_tree = _hs_taxonomy_hierarchical_select_get_tree($vid, $tid);
     foreach ($raw_tree as $term) {
       $tree[$vid][$tid][$term->tid] = $term->depth;
     }
   }
-  $terms = ($depth > 0 && $tree[$vid][$tid][$parent] + 1 >= $depth) ? array() : _taxonomy_hierarchical_select_get_tree($vid, $parent, -1, 1);
-  return _taxonomy_hierarchical_select_terms_to_options($terms);
+  $terms = ($depth > 0 && $tree[$vid][$tid][$parent] + 1 >= $depth) ? array() : _hs_taxonomy_hierarchical_select_get_tree($vid, $parent, -1, 1);
+  return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
 /**
  * Implementation of hook_hierarchical_select_lineage().
  */
 function hs_content_taxonomy_hierarchical_select_lineage($item, $params) {
-  $lineage = taxonomy_hierarchical_select_lineage($item, $params);
+  $lineage = hs_taxonomy_hierarchical_select_lineage($item, $params);
 
   // Remove all terms before the root term and then the root term itself, too.
   while ($lineage[0] != $params['tid']) {
@@ -359,7 +359,7 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  $terms = _taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid']);
+  $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid']);
   return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['tid'], $params['depth']));
 }
 
@@ -367,7 +367,7 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
  * Implementation of hook_hierarchical_select_item_get_label().
  */
 function hs_content_taxonomy_hierarchical_select_item_get_label($item, $params) {
-  return taxonomy_hierarchical_select_item_get_label($item, $params);
+  return hs_taxonomy_hierarchical_select_item_get_label($item, $params);
 }
 
 /**
@@ -376,14 +376,14 @@ function hs_content_taxonomy_hierarchical_select_item_get_label($item, $params) 
 function hs_content_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
   // TRICKY: no depth check is necessary because HS's internal validation
   // prevents an invalid parent.
-  return taxonomy_hierarchical_select_create_item($label, $parent, $params);
+  return hs_taxonomy_hierarchical_select_create_item($label, $parent, $params);
 }
 
 /**
  * Implementation of hook_hierarchical_select_node_count().
  */
 function hs_content_taxonomy_hierarchical_select_node_count($item, $params) {
-  return taxonomy_hierarchical_select_node_count($item, $params);
+  return hs_taxonomy_hierarchical_select_node_count($item, $params);
 }
 
 /**
@@ -470,7 +470,7 @@ function _hs_content_taxonomy_term_within_allowed_depth($tid, $vid, $root_tid, $
   static $valid_tids;
   if (!isset($valid_tids[$vid][$root_tid][$allowed_depth])) {
     $valid_tids[$vid][$root_tid][$allowed_depth] = array();
-    $tree = _taxonomy_hierarchical_select_get_tree($vid, $root_tid);
+    $tree = _hs_taxonomy_hierarchical_select_get_tree($vid, $root_tid);
     foreach ($tree as $term) {
       if ($term->depth < $allowed_depth) {
         $valid_tids[$vid][$root_tid][$allowed_depth][] = $term->tid;

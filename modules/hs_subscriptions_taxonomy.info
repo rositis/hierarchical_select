@@ -1,0 +1,5 @@
+; $I$
+name = Hierarchical Select Taxonomy Subscriptions
+description = Use Hierarchical Select for Taxonomy Subscriptions.
+dependencies = hierarchical_select subscriptions_taxonomy hs_taxonomy
+package = Form Elements

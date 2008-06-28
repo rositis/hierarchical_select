@@ -65,7 +65,7 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
             'params' => array(
               'optional' => (bool) $view->exposed_filter[$id]['optional'],
               'vid'      => $vid,
-              'depth'    => min($field['depth'], _taxonomy_hierarchical_select_get_depth($vid)),
+              'depth'    => min($field['depth'], _hs_taxonomy_hierarchical_select_get_depth($vid)),
             ),
             // When the **ALL** option is selected, nothing else should be.
             'exclusive_lineages' => array('**ALL**'),
@@ -204,7 +204,7 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
       'status' => !$exposed_filter['single'],
     ),
     'editability' => array(
-      'max_levels' => min($depth, _taxonomy_hierarchical_select_get_depth($vid)),
+      'max_levels' => min($depth, _hs_taxonomy_hierarchical_select_get_depth($vid)),
     ),
   );
   $strings = array(
@@ -214,7 +214,7 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
     'items'       => t('terms'),
     'item_type'   => t('term type'),
   );
-  $max_hierarchy_depth = min($depth, _taxonomy_hierarchical_select_get_depth($vid));
+  $max_hierarchy_depth = min($depth, _hs_taxonomy_hierarchical_select_get_depth($vid));
   $preview_is_required = !(bool)$exposed_filter['optional'];
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
