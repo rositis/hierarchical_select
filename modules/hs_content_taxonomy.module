@@ -262,6 +262,8 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
 
     switch ($op) {
       case 'form':
+        require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
         $form[$field_name]['#tree'] = TRUE;
         $form[$field_name]['tids'] = array(
           '#title' => $field['widget']['label'],

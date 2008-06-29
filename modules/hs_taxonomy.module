@@ -9,10 +9,9 @@
  * Implementation of hook_form_alter().
  */
 function hs_taxonomy_form_alter($form_id, &$form) {
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
+    require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
     drupal_add_js(drupal_get_path('module', 'hs_taxonomy') .'/hs_taxonomy.js', 'module');
 
     $vid = $form['vid']['#value'];
@@ -76,6 +75,8 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
         // Hierarchical Select only makes sense if there's a hierarchy.
         if ($vocabulary->hierarchy > 0) {
+          require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
           // #size is set as soon as save_lineage or the dropbox is enabled,
           // because then "multiple select" is enabled. Unset #size.
           unset($form['taxonomy'][$vid]['#size']);
