@@ -53,15 +53,25 @@ function hs_subscriptions_taxonomy_form_alter($form_id, &$form) {
         // Finally, make it a Hierarchical Select!
         $form[$name]['select']['#type'] = 'hierarchical_select';
         $form[$name]['select']['#default_value'] = $selected_tids;
-        $form[$name]['select']['#hierarchical_select_settings'] = array(
-          'module' => 'taxonomy',
+        $form[$name]['select']['#config'] = array(
+          'module' => 'hs_taxonomy',
           'params' => array(
             'vid' => $vocabulary->vid,
           ),
-          'save_linage' => FALSE,
-          'enforce_deepest' => TRUE,
-          'dropbox_title' => t('Subscribed to:'),
-          'dropbox_limit' => 0,
+          'save_lineage'    => 0,
+          'enforce_deepest' => 1,
+          'level_labels' => array(
+            'status' => 0,
+          ),
+          'dropbox' => array(
+            'status'   => $form[$name]['select']['#multiple'],
+            'title'    => t('Subscribed to:'),
+            'limit'    => 0,
+            'reset_hs' => 0,
+          ),
+          'editability' => array(
+            'status' => 0,
+          ),
         );
       }
     }
