@@ -156,19 +156,38 @@ tr.dropbox-is-empty {
 
 /* The "Update" button and help text (used when Javascript is disabled). */
 .hierarchical-select-wrapper .nojs .update-button {
-  margin-top: 0;  
+  margin: 0 0 1em;
 }
 
 .hierarchical-select-wrapper .nojs .help-text {
   font-size: 90%;
-  color: gray;
+  color: transparent;
   display: block;
   border: 1px dotted black;
-  min-width: 30em;
-  max-width: 45em;
-  padding: .8em;
+  overflow: hidden;
+  width: 34em;
+  height: 1.2em;
+  padding: .6em;
+  line-height: normal;
 }
 
+.hierarchical-select-wrapper .nojs .help-text:hover {
+  height: auto;
+  width: auto;
+  min-width: 25em;
+  max-width: 45em;
+  color: gray;
+}
+
+.hierarchical-select-wrapper .nojs .help-text .ask-to-hover {
+  color: gray;
+  font-style: italic;
+}
+
+.hierarchical-select-wrapper .nojs .help-text:hover .ask-to-hover {
+  display: none;
+}
+  
 .hierarchical-select-wrapper .nojs .help-text .highlight {
   text-decoration: underline;
 }

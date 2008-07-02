@@ -1126,6 +1126,9 @@ function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
   $output .= '<span class="warning">';
   $output .= t("You don't have Javascript enabled.");
   $output .= '</span> ';
+  $output .= '<span class="ask-to-hover">';
+  $output .= t('Hover for more information!');
+  $output .= '</span> ';
   $output .= t("But don't worry: you can still use this web site! You have two options:");
   $output .= theme('item_list', $items, NULL, 'ul', array('class' => 'solutions'));
   
