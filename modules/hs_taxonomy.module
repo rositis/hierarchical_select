@@ -23,6 +23,14 @@ function hs_taxonomy_form_alter($form_id, &$form) {
       '#type' => 'checkbox',
       '#title' => t('Use the Hierarchical Select form element for this vocabulary.'),
       '#default_value' => variable_get("taxonomy_hierarchical_select_$vid", 0),
+      '#description' => t(
+        'When checked, the %free_tagging and %multiple_values settings will
+        be managed by the Hierarchical Select configuration.',
+        array(
+          '%free_tagging' => t('Free tagging'),
+          '%multiple_values' => t('Multiple values'),
+        )
+      ),
     );
 
     // Add the Hierarchical Select config form.
