@@ -187,13 +187,15 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
   $field = content_fields($field_name);
 
   // Extract the necessary context from the $field array.
-  $vid = $field['vid'];  
+  $vid = $field['vid'];
+  $tid = $field['tid'];
   $depth = (empty($field['depth'])) ? 0 : $field['depth'];
 
   // Add the Hierarchical Select config form.
   $module = 'hs_content_taxonomy_views';
   $params = array(
     'vid'      => $vid,
+    'tid'      => $tid,
     'depth'    => $depth,
     'optional' => (bool) $exposed_filter['optional'],
   );
