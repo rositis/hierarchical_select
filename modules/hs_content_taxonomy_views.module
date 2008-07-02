@@ -51,6 +51,7 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
           
           $field = content_fields($field_name);
           $vid = $field['vid']; // This is the vocabulary id, not the view id!
+          $tid = $field['tid'];
           $view = $form['view']['#value'];
 
           // Make it use a hierarchical select.
@@ -65,6 +66,7 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
             'params' => array(
               'optional' => (bool) $view->exposed_filter[$id]['optional'],
               'vid'      => $vid,
+              'tid'      => $tid,
               'depth'    => min($field['depth'], _hs_taxonomy_hierarchical_select_get_depth($vid)),
             ),
             // When the **ALL** option is selected, nothing else should be.
