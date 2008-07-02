@@ -98,7 +98,8 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
   // configuration when appropriate.
   if ($form_id == 'views_edit_view') {
     foreach ($form['exposed_filter'] as $filter_id => $filter) {
-      if (is_numeric($filter_id)) {
+      // If $filter['field'] is not set, the exposed filter is being deleted.
+      if (is_numeric($filter_id) && isset($filter['field'])) {
         $id = $form['exposed_filter'][$filter_id]['id']['#default_value'];
         $field_name = _hs_content_taxonomy_views_parse_fieldname_from_id($id);
         if ($field_name !== FALSE) {
