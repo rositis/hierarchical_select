@@ -252,7 +252,8 @@ Hooks
    Validates an item, returns TRUE if valid, FALSE if invalid.
 
 6) hook_hierarchical_select_item_get_label($item, $params);
-   Given a valid item, returns the label.
+   Given a valid item, returns the label. Is only used for rendering the
+   selections in the dropbox.
 
 7) hook_hierarchical_select_create_item($label, $parent, $params);
    Given a parent item and the label of a new item, create a new item as a
