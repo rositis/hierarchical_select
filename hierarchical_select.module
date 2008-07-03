@@ -295,7 +295,7 @@ function hierarchical_select_process($element) {
     dpm("Calculated hierarchical select selection: ". print_r($hs_selection, TRUE));
 
     if ($config['dropbox']['status']) {
-      dpm("Calculated dropbox selection: ". print_r($db_selection));
+      dpm("Calculated dropbox selection: ". print_r($db_selection, TRUE));
     }
   }
 
