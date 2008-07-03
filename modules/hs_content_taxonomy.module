@@ -350,11 +350,16 @@ function hs_content_taxonomy_hierarchical_select_children($parent, $params) {
 function hs_content_taxonomy_hierarchical_select_lineage($item, $params) {
   $lineage = hs_taxonomy_hierarchical_select_lineage($item, $params);
 
-  // Remove all terms before the root term and then the root term itself, too.
-  while ($lineage[0] != $params['tid']) {
+  // If there is NO root term, then the tid parameter is set to 0. In that
+  // case, there is no need to remove any of the terms before the root term,
+  // because there won't be any.
+  if ($params['tid'] != 0) {
+    // Remove all terms before the root term and then the root term itself, too.
+    while ($lineage[0] != $params['tid']) {
+      array_shift($lineage);
+    }
     array_shift($lineage);
   }
-  array_shift($lineage);
 
   return $lineage;
 }
@@ -367,7 +372,6 @@ function hs_content_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
-  $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $params['tid']);
   return ($term->vid == $params['vid'] && _hs_content_taxonomy_term_within_allowed_depth($term->tid, $term->vid, $params['tid'], $params['depth']));
 }
 
