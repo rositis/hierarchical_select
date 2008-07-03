@@ -57,6 +57,19 @@ function hs_taxonomy_form_alter($form_id, &$form) {
     $preview_is_required = $vocabulary->required;
     $form['hierarchical_select'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
+    // The forum selection requires that only the deepest term is saved!
+    // See http://drupal.org/node/241766#comment-808464.
+    if ($vid == variable_get('forum_nav_vocabulary', 0)) {
+      $form['hierarchical_select']['save_lineage']['#value'] = 0;
+      $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
+      $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
+        'This is the vocabulary that will be used for forum navigation and it
+        <strong>always</strong> requires the %dont_save_lineage setting to be
+        set!',
+        array('%dont_save_lineage' => t('Save only the deepest term'))
+      );
+    }
+
     // Add the the submit handler for the Hierarchical Select config form.
     $parents = array('hierarchical_select');
     $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
