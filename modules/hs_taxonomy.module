@@ -15,8 +15,9 @@ function hs_taxonomy_form_alter($form_id, &$form) {
     drupal_add_js(drupal_get_path('module', 'hs_taxonomy') .'/hs_taxonomy.js', 'module');
 
     $vid = $form['vid']['#value'];
-    $first_part = array_slice($form, 0, 10);
-    $second_part = array_slice($form, 10);
+    $split = array_search('weight', array_keys($form)) + 1;
+    $first_part = array_slice($form, 0, $split);
+    $second_part = array_slice($form, $split);
     $form = $first_part;
 
     $form['hierarchical_select_status'] = array(
@@ -87,7 +88,7 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
   // Change the term selection of nodes. Only affects hierarchical
   // vocabularies.
-  if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && is_array($form['taxonomy'])) {
+  else if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && is_array($form['taxonomy'])) {
     foreach ($form['taxonomy'] as $vid => $form_item) {
 
       // Only apply Hierarchical Select if it's enabled for this vocabulary.
@@ -114,12 +115,29 @@ function hs_taxonomy_form_alter($form_id, &$form) {
       }
     }
   }
-  
-  if ($form_id == 'taxonomy_form_term') {
+
+  // The taxonomy term form.
+  else if ($form_id == 'taxonomy_form_term') {
     unset($form['parent']['#options']);
     unset($form['parent']['#theme']);
     $form['parent']['#type'] = 'hierarchical_select';
     $form['parent']['#config'] = array(
+      'module'          => 'hs_taxonomy',
+      'enforce_deepest' => 0,
+      'save_lineage'    => 0,
+      'params' => array(
+        'vid'         => $form['vid']['#value'],
+        'exclude_tid' => $form['tid']['#value'],
+      ),
+    );
+  }
+
+  // The forum 'forum' form.
+  else if ($form_id == 'forum_form_forum') {
+    unset($form['parent'][0]['#options']);
+    unset($form['parent'][0]['#theme']);
+    $form['parent'][0]['#type'] = 'hierarchical_select';
+    $form['parent'][0]['#config'] = array(
       'module'          => 'hs_taxonomy',
       'enforce_deepest' => 0,
       'save_lineage'    => 0,
@@ -296,11 +314,14 @@ function hs_taxonomy_hierarchical_select_config_info() {
  * Additional validate callback for the taxonomy_form_vocabulary form.
  */
 function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_values, $form) {
-  // Enable Taxonomy's "multiple select" setting when:
-  // - Hierarchical Select's "multiple select" setting is enabled
-  // - Hierarchical Select's "save term lineage" setting is enabled
-  $multiple_select_enabled = ($form_values['hierarchical_select']['dropbox']['status'] || $form_values['hierarchical_select']['save_lineage']);
-  form_set_value($form['multiple'], (int) $multiple_select_enabled);
+  // The "multiple select" setting doesn't exist for the forum vocabulary!
+  if (isset($form['multiple'])) {
+    // Enable Taxonomy's "multiple select" setting when:
+    // - Hierarchical Select's "multiple select" setting is enabled, or:
+    // - Hierarchical Select's "save term lineage" setting is enabled
+    $multiple_select_enabled = ($form_values['hierarchical_select']['dropbox']['status'] || $form_values['hierarchical_select']['save_lineage']);
+    form_set_value($form['multiple'], (int) $multiple_select_enabled);
+  }
 
   // If Hierarchical Select is enabled, disable freetagging.
   if ($form_values['hierarchical_select']['status']) {
