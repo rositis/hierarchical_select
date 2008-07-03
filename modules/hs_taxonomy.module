@@ -101,6 +101,21 @@ function hs_taxonomy_form_alter($form_id, &$form) {
       }
     }
   }
+  
+  if ($form_id == 'taxonomy_form_term') {
+    unset($form['parent']['#options']);
+    unset($form['parent']['#theme']);
+    $form['parent']['#type'] = 'hierarchical_select';
+    $form['parent']['#config'] = array(
+      'module'          => 'hs_taxonomy',
+      'enforce_deepest' => 0,
+      'save_lineage'    => 0,
+      'params' => array(
+        'vid'         => $form['vid']['#value'],
+        'exclude_tid' => $form['tid']['#value'],
+      ),
+    );
+  }
 }
 
 
@@ -113,6 +128,7 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 function hs_taxonomy_hierarchical_select_params() {
   $params = array(
     'vid',
+    'exclude_tid', // Allows a term to be excluded (necessary for the taxonomy_form_term form).
   );
   return $params;
 }
@@ -130,6 +146,10 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
  */
 function hs_taxonomy_hierarchical_select_children($parent, $params) {
   $terms = taxonomy_get_children($parent, $params['vid']);
+
+  // Unset the term that's being excluded, if it is among the children.
+  unset($terms[$params['exclude_tid']]);
+
   return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -150,7 +170,7 @@ function hs_taxonomy_hierarchical_select_lineage($item, $params) {
  * Implementation of hook_hierarchical_select_valid_item().
  */
 function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
-  if (!is_numeric($item) || $item < 1) {
+  if (!is_numeric($item) || $item < 1 || $item == $params['exclude_tid']) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
