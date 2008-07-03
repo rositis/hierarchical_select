@@ -11,11 +11,13 @@ function hs_book_form_alter($form_id, &$form) {
   if ($form_id == 'book_node_form') {
     unset($form['parent']['#options']);
     $form['parent']['#type'] = 'hierarchical_select';
+    $form['parent']['#required'] = TRUE;
     $form['parent']['#config'] = array(
       'module' => 'hs_book',
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
     );
+    $form['parent']['#default_value'] = (!is_numeric($form['parent']['#default_value'])) ? 0 : $form['parent']['#default_value'];
   }
 }
 
@@ -39,9 +41,9 @@ function hs_book_hierarchical_select_root_level($params) {
 
   // If the user has permission to create new books, add the top-level book page to the menu;
   if (user_access('create new books')) {
-    $root_level[] = '<'. t('top-level') .'>';
+    $root_level[0] = '<'. t('top-level') .'>';
   }
-  $root_level += hs_book_hierarchical_select_children(0, $params);
+  $root_level += hs_book_hierarchical_select_children(-1, $params);
 
   return $root_level;
 }
@@ -50,6 +52,18 @@ function hs_book_hierarchical_select_root_level($params) {
  * Implementation of hook_hierarchical_select_children().
  */
 function hs_book_hierarchical_select_children($parent, $params) {
+  // TRICKY: because the book form assumes that the value "0" corresponds to
+  // the <top-level page> option (for creating a new menu item at the root
+  // level) *AND* 0 is also a pseudo-value in the actual hierarchy (it
+  // represents the root), we have to pretend in the code that -1 is the root
+  // in the hierarchy instead of 0.
+  if ($parent == 0) {
+    return array();
+  }
+  if ($parent == -1) {
+    $parent = 0;
+  }
+
   $result = db_query(db_rewrite_sql('SELECT n.nid, n.title FROM {node} n INNER JOIN {book} b ON n.vid = b.vid WHERE n.status = 1 AND b.parent = %d ORDER BY b.weight, n.title'), $parent);
 
   $children = array();
@@ -86,6 +100,11 @@ function hs_book_hierarchical_select_lineage($item, $params) {
 function hs_book_hierarchical_select_valid_item($item, $params) {
   if (!is_numeric($item) || $item < 0) {
     return FALSE;
+  }
+
+  // Item 0 corresponds to the special <top-level page> option.
+  if ($item == 0) {
+    return TRUE;
   }
 
   $count = db_result(db_query(db_rewrite_sql("SELECT COUNT(nid) FROM {book} WHERE nid = %d"), $item));
