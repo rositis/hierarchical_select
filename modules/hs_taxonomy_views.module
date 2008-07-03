@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------
 // Core hooks.
 
-
 /**
  * Implementation of hook_menu().
  */
@@ -41,7 +40,7 @@ function hs_taxonomy_views_form_alter($form_id, &$form) {
     foreach ($form['view']['#value']->exposed_filter as $id => $filter) {
       if (preg_match("/term_node_(\d+)\.tid/", $filter['field'], $matches)) {
         $vid = $matches[1];
-        
+
         // Only apply Hierarchical Select if it's enabled for this vocabulary.
         if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
           $hs_exposed_filters_found++;
@@ -70,11 +69,11 @@ function hs_taxonomy_views_form_alter($form_id, &$form) {
               'render_flat_select' => 1,
             );
             hierarchical_select_common_config_apply($form["filter$id"], "taxonomy-views-$view->name-$vid", $defaults_override);
-            
+
             // Inherit #config['dropbox']['status'] from the exposed filter
             // settings.
             $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
-            
+
             // Inherit #required from the exposed filter settings.
             $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
 
@@ -140,7 +139,7 @@ EOT;
         version of the Views module!",
         array('!patch_url' => 'http://drupal.org/files/issues/hs_compatibility.patch')
       );
-      $severity = REQUIREMENT_ERROR;      
+      $severity = REQUIREMENT_ERROR;
     }
 
     $requirements['hs_taxonomy_views'] = array(
@@ -213,7 +212,7 @@ function hs_taxonomy_views_config_form($view_name, $vid) {
     '#suffix' => '</div>',
     '#weight' => -5,
   );
-  
+
   $form['save'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -222,7 +221,7 @@ function hs_taxonomy_views_config_form($view_name, $vid) {
   // Add the the submit handler for the Hierarchical Select config form.
   $parents = array('hierarchical_select_config');
   $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
-  
+
   return $form;
 }
 
