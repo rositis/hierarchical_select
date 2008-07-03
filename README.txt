@@ -21,6 +21,9 @@ Dependencies
 
 Integrates with
 ---------------
+* Book (Drupal core)
+* Forum (Drupal core)
+* Menu (Drupal core)
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy)
 * Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
@@ -57,10 +60,6 @@ If you ever have problems, make sure to go through these steps:
 2) Ensure that the page isn't being served from your browser's cache. Use
    CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the
    browser to reload everything, preventing it from using its cache.
-
-3) When using Hierarchical Select for forum selection (with forum.module), you
-   *must* enable the setting "Save only the deepest item".
-   See http://drupal.org/node/241766#comment-808464.
 
 In case of problems, don't forget to try a hard refresh in your browser!
 
