@@ -64,6 +64,24 @@ If you ever have problems, make sure to go through these steps:
 In case of problems, don't forget to try a hard refresh in your browser!
 
 
+Limitations
+-----------
+- Creating new items in the hierarchy in a multiple parents hierarchy (more
+  scientifically: a directed acyclic graph) is *not* supported.
+- Not the entire scalability problem can be solved by installing this set of
+  modules; read the maximum scalability section for details.
+
+
+Maximum scalability
+-------------------
+While the hs_taxonomy, hs_book, hs_menu and hs_subscriptions modules override
+existing form items, those form items are *still* being generated. This can
+cause scalability issues.
+If you want to fix this, you *will* have to modify the original modules (so
+that includes Drupal core modules). Simply move the changes from the
+hook_form_alter() implementations into the corresponding form definitions.
+
+
 Sponsors
 --------
 * Initial development:
