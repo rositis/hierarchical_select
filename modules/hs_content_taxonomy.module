@@ -279,7 +279,7 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
         return $form;
 
       case 'process form values':
-        // TRICKY: this piece of utterly u2gly, crappy and dysfunctional code
+        // TRICKY: this piece of utterly ugly, crappy and dysfunctional code
         // is here thanks to the ugly internal works of the content_taxonomy
         // module that don't make any sense at all. It's necessary to support
         // the 'both' (and 'cck') "save option" of content_taxonomy.

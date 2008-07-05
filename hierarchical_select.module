@@ -594,7 +594,7 @@ function _hierarchical_select_validate(&$element) {
  * Hierarchical select form element #submit callback.
  */
 function _hierarchical_select_submit($form_id, $form_values, $hs_form_build_id) {
-  // Remove the 
+  // Delete the stored form information when the form is submitted.
   cache_clear_all($hs_form_build_id, 'cache');
 }
 
