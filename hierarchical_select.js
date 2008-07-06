@@ -73,7 +73,7 @@ Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
 
   // Update the name attribute of the "flat select" form element
   var $flatSelect = $('#hierarchical-select-'+ hsid +'-wrapper .flat-select', Drupal.HierarchicalSelect.context);
-  var newName = $flatSelect.attr('name').replace(/(.*)(\[flat_select\]\[\])$/, "$1[]");
+  var newName = $flatSelect.attr('name').replace(/^([a-zA-Z0-9_\-]*)(?:\[flat_select\]){1}(\[\])?$/, "$1$2");
   $flatSelect.attr('name', newName);
 
   Drupal.HierarchicalSelect.triggerEvents(hsid, 'prepared-GET-submit');
