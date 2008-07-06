@@ -47,7 +47,6 @@ function hs_content_taxonomy_menu($may_cache) {
 function hs_content_taxonomy_form_alter($form_id, &$form) {
   if ($form_id == '_content_admin_field') {
     if ($form['widget']['widget_type']['#default_value'] == 'content_taxonomy_hs') {
-      $form['field']['multiple']['#value'] = $form['field']['multiple']['#default_value'];
       $form['field']['multiple']['#attributes'] = array('disabled' => 'disabled');
       $form['field']['multiple']['#description'] = t(
         'This setting is now managed by the Hierarchical Select widget
