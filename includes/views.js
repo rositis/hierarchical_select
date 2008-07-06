@@ -7,17 +7,17 @@
  */
 
 if (Drupal.jsEnabled) {
-	$(document).ready(function(){
-		var td;
-		var cols;
-		var i = 0;;
-	  $("form#views-filters table td:has(.hierarchical-select-wrapper)").each(function() {
-	    i++;
+  $(document).ready(function(){
+    var td;
+    var cols;
+    var i = 0;;
+    $("form#views-filters table td:has(.hierarchical-select-wrapper)").each(function() {
+      i++;
       td = $(this);
       cols = td.siblings().length;
 
       // Add another row to the table.
-  		$("form#views-filters > div > table > tbody")
+      $("form#views-filters > div > table > tbody")
       .append('<tr class="odd" id="hs-new-row-' + i + '"></tr>');
     
       // Update colspan of the td in which our modified exposed filter exists.
@@ -40,5 +40,5 @@ if (Drupal.jsEnabled) {
       // exposed filters for a GET submit.
       $('form#views-filters .hierarchical-select-wrapper').trigger('prepare-GET-submit');
     });
-	});
+  });
 }
