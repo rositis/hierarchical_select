@@ -14,6 +14,7 @@ Drupal.HierarchicalSelect.initialize = function() {
   }
 
   for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
+    Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
     this.transform(hsid);
     this.attachBindings(hsid);
     if (this.cache != null && this.cache.status()) {
@@ -88,9 +89,14 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   data.hsid = hsid;
 
   $('#hierarchical-select-'+ hsid +'-wrapper', this.context)
+  // "disable-updates" event
+  .unbind('disable-updates').bind('disable-updates', data, function(e) {
+    Drupal.settings.HierarchicalSelect.settings[e.data.hsid]['updatesEnabled'] = false;
+  })
+  
   // "enforce-update" event
-  .unbind('enforce-update').bind('enforce-update', data, function(e) {
-    Drupal.HierarchicalSelect.update(e.data.hsid, 'enforced-update', {});
+  .unbind('enforce-update').bind('enforce-update', data, function(e, extraPost) {
+     Drupal.HierarchicalSelect.update(e.data.hsid, 'enforced-update', { extraPost: extraPost });
   })
 
   // "prepare-GET-submit" event
@@ -98,12 +104,16 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
     Drupal.HierarchicalSelect.prepareGETSubmit(e.data.hsid);
   })
 
-  // "update hierarchical select" event
+  // "update-hierarchical-select" event
   .find('.hierarchical-select > select').unbind().change(function(_hsid) {
-    return function() { Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') }); };
+    return function() {
+      if (Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled']) {
+        Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
+      }
+    };
   }(hsid)).end()
 
-  // "create new item" event
+  // "create-new-item" event
   .find('.hierarchical-select .create-new-item .create-new-item-create').unbind().click(function(_hsid) {
     return function() {
       Drupal.HierarchicalSelect.update(_hsid, 'create-new-item', { opString : createNewItemOpString });
@@ -254,8 +264,6 @@ Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType) {
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   var post = $('form:has(#hierarchical-select-' + hsid +'-wrapper)', Drupal.HierarchicalSelect.context).formToArray();
-  
-  Drupal.settings.yarr = post;
 
   // Pass the hierarchical_select id via POST.
   post.push({ name : 'hsid', value : hsid });
@@ -270,6 +278,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // updateType is one of:
   // - 'none' (default)
   // - 'update-hierarchical-select'
+  // - 'enforced-update'
   // - 'create-new-item'
   // - 'create-new-level'
   // - 'remove-from-dropbox'
@@ -288,6 +297,10 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         });
         return;
       }
+      break;
+    
+    case 'enforced-update':
+      post = post.concat(settings.extraPost);
       break;
 
     case 'create-new-item':

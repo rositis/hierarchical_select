@@ -385,12 +385,76 @@ An example of binding a function to the 'create-new-item' event of the second
 
 And finally, you can trigger a special event to enforce an update (this can be
 useful when you have changed a hierarchy through another form item, or for
-live previews, or …).
+live previews, or …). You can then also pass additional information that will
+be POSTed. You can even disable normal updates, to manage that completely
+yourself via enforced updates. This allows you to write a Hierarchical Select
+implementation that gets some of its information ($params) from another form
+item!
 Suppose you'd like to enforce an update of the first (hsid == 0)
 hierarchical_select form item on the page:
 
   $('#hierarchical-select-0-wrapper')
   .trigger('enforce-update');
+
+Now let's move on to a more advanced example, in which we will disable normal
+updates and let another form item (here a select) provide a part of the
+information that will be used to render the Hierarchical Select. Effectively,
+this other form item will *influence* the hierarchy that will be presented by
+Hierarchical Select!
+
+  $(document).ready(function() {
+    Drupal.settings.specialfilter = {};
+
+    // .specialfilter-first: a select form item
+    // .specialfilter-second: a hierarchical_select form item
+
+    update = function() {
+      var selection = Drupal.settings.specialfilter.currentSelection;
+
+      // Send an extra parameter via POST: dynamicParameter. This is the stored
+      // selection.
+      $('.specialfilter-second')
+      .trigger('enforce-update',
+        [
+          { name : 'dynamicParameter', value : selection }
+        ]
+      );
+    };
+
+    attachHSBindings = function() {
+      // When a user navigates the hierarchical_select form item, we still want to
+      // POST the the extra dynamicParameter, or otherwise we will no longer have
+      // a hierarchy in the hierarchical_select form item that really depends on
+      // the select.
+      $('.specialfilter-second .hierarchical-select > select')
+      .change(function() { update(); });
+
+      $('.specialfilter-second')
+      .unbind('enforced-update').bind('enforced-update', function() { return attachHSBindings(); });
+    };
+
+    // Initialize after 25 ms, because otherwise the event binding of HS will
+    // not yet be ready, and hence this won't have any effect
+    setTimeout(function() {
+      // Get the initial selection (before the user has changed anything).
+      Drupal.settings.specialfilter.currentSelection = $('.specialfilter-first').attr('value');
+
+      // When the select form item changes, we want to *store* that selection, and
+      // update the hierarchical_select form item.
+      $('.specialfilter-first')
+      .change(function() {
+        // Store the current selection.
+        Drupal.settings.specialfilter.currentSelection = $(this).attr('value');
+    
+        update();
+      });
+
+      $('.specialfilter-second')
+      .trigger('disable-updates');
+
+      attachHSBindings();
+    }, 25);
+  });
 
 The 'enforced-update' (notice the past tense!) event is triggered upon
 completion.
