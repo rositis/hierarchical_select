@@ -353,7 +353,7 @@ function hierarchical_select_process($element) {
 
   // If render_flat_select is enabled, render a flat select.
   if ($config['render_flat_select']) {
-    $element['flat_select'] = _hierarchical_select_process_render_flat_select($hs_selection, $db_selection, $config);
+    $element['flat_select'] = _hierarchical_select_process_render_flat_select($hierarchy, $dropbox, $config);
   }
 
   // Render the hierarchical select.
@@ -918,10 +918,10 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
  * necessary for backwards compatibility (together with some Javascript code)
  * in case of GET forms. 
  *
- * @param $hs_selection
- *   A flat list of selected ids in the hierarchical select.
- * @param $db_selection
- *   A flat list of selected ids in the dropbox.
+ * @param $hierarchy
+ *   A hierarchy object.
+ * @param $dropbox
+ *   A dropbox object.
  * @param $config
  *   A config array with at least the following settings:
  *   - module
@@ -931,8 +931,16 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
  * @return
  *   A structured array for use in the Forms API.
  */
-function _hierarchical_select_process_render_flat_select($hs_selection, $db_selection, $config) {
-  $selection = ($config['dropbox']['status']) ? $db_selection : $hs_selection;
+function _hierarchical_select_process_render_flat_select($hierarchy, $dropbox, $config) {
+  $selection = array();
+  if ($config['dropbox']['status']) {
+    foreach ($dropbox->lineages_selections as $lineage_selection) {
+      $selection += $lineage_selection;
+    }
+  }
+  else {
+    $selection = $hierarchy->lineage;
+  }
 
   $options = array();
   foreach ($selection as $value) {
