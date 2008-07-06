@@ -311,10 +311,11 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'editability-allow-new-levels'),
     );
     $form['editability']['max_levels'] = array(
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => t('Maximum number of levels allowed'),
-      '#size' => 3  ,
-      '#maxlength' => 255,
+      '#options' => array(
+        0 => t('0 (no limit)'), 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ),
       '#default_value' => $config['editability']['max_levels'],
       '#description' => t(
         'When the user is allowed to create new levels, this option prevents

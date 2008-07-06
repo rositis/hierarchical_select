@@ -757,7 +757,7 @@ function _hierarchical_select_process_calculate_selections($element) {
       $selects = $element['#value']['hierarchical_select']['selects'];
 
       // Ensure that this new item will not violate the max_levels setting.
-      if (count($selects) < $config['editability']['max_levels']) {
+      if ($config['editability']['max_levels'] == 0 || count($selects) < $config['editability']['max_levels']) {
         // Create the new item in the hierarchy and retrieve its value.
         $label = $element['#value']['hierarchical_select']['create_new_item']['input'];
         $parent = (count($selects) > 0) ? end($selects) : 0;
@@ -1447,7 +1447,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // NOTE: this uses an optional hook, so we also check if it's implemented.  
   if ($config['editability']['status']
       && $config['editability']['allow_new_levels']
-      && count($hierarchy->lineage) < $config['editability']['max_levels']
+      && $config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels']
       && module_invoke($config['module'], 'hierarchical_select_valid_item', end($hierarchy->lineage), $config['params'])
       && module_hook($config['module'], 'hierarchical_select_create_item'))
   {
