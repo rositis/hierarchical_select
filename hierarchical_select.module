@@ -58,6 +58,13 @@ function hierarchical_select_menu($may_cache) {
     );
   }
   else {
+    // Work-around for bug in Drupal 5 (fixed in Drupal 5.8).
+    // See http://drupal.org/node/109459.
+    global $user;
+    if (!isset($user->theme)) {
+      $user->theme = variable_get('theme_default', 'garland');
+    }
+
     if (arg(0) == 'admin' && arg(1) == 'settings' && arg(2) == 'hierarchical_select') {
       require_once(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.admin.inc');
 
