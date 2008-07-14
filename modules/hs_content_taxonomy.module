@@ -355,11 +355,20 @@ function hs_content_taxonomy_hierarchical_select_lineage($item, $params) {
   // case, there is no need to remove any of the terms before the root term,
   // because there won't be any.
   if ($params['tid'] != 0) {
-    // Remove all terms before the root term and then the root term itself, too.
-    while ($lineage[0] != $params['tid']) {
+    // TRICKY: When the root term has been *changed* over time, it *might* not
+    // be in the lineage, because the lineage. This means the lineage is not
+    // inside the tree below the defined root term. So we have to reset the
+    // lineage.
+    if (!in_array($params['tid'], $lineage)) {
+      $lineage = array();
+    }
+    else {
+      // Remove all terms before the root term and then the root term itself, too.
+      while (count($lineage) && $lineage[0] != $params['tid']) {
+        array_shift($lineage);
+      }
       array_shift($lineage);
     }
-    array_shift($lineage);
   }
 
   return $lineage;
