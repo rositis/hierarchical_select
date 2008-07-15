@@ -56,6 +56,7 @@ If you ever have problems, make sure to go through these steps:
    - jQuery Update
    - Hierarchical Select
    - Hierarchical Select Taxonomy Views (if installed)
+   - Hierarchical Select Content Taxonomy Views (if installed)
 
 2) Ensure that the page isn't being served from your browser's cache. Use
    CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the

@@ -1,5 +1,5 @@
 ; $Id$
 name = Hierarchical Select Content Taxonomy Views
 description = Use Hierarchical Select for Content Taxonomy exposed filters in Views.
-dependencies = hierarchical_select views content_taxonomy
+dependencies = hierarchical_select content_taxonomy_views
 package = Form Elements

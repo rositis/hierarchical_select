@@ -26,7 +26,7 @@ function hierarchical_select_menu($may_cache) {
       'type'               => MENU_CALLBACK,
       // TODO: Needs improvements. Ideally, this would inherit the permissions
       // of the form the Hierarchical Select was in.
-      'access'             => user_access('access content'),
+      'access'             => TRUE,
     );
     $items[] = array(
       'path'               => 'admin/settings/hierarchical_select',

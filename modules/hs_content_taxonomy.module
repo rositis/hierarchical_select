@@ -47,11 +47,24 @@ function hs_content_taxonomy_menu($may_cache) {
 function hs_content_taxonomy_form_alter($form_id, &$form) {
   if ($form_id == '_content_admin_field') {
     if ($form['widget']['widget_type']['#default_value'] == 'content_taxonomy_hs') {
-      $form['field']['multiple']['#attributes'] = array('disabled' => 'disabled');
-      $form['field']['multiple']['#description'] = t(
+      // Hide the "multiple values" setting, so the user can't change it.
+      $form['field']['multiple']['#type'] = 'hidden';
+
+      // Add a fake checkbox form item to indicate the current state of this
+      // setting. Because this checkbox is disabled, it won't be submitted,
+      // and that's why we have to add a fake form item.
+      $split = array_search('multiple', array_keys($form['field'])) + 1;
+      $first_part = array_slice($form['field'], 0, $split);
+      $second_part = array_slice($form['field'], $split);
+      $form['field'] = $first_part;
+      $form['field']['fake_multiple'] = $form['field']['multiple'];
+      $form['field']['fake_multiple']['#type'] = 'checkbox';
+      $form['field']['fake_multiple']['#attributes'] = array('disabled' => 'disabled');
+      $form['field']['fake_multiple']['#description'] = t(
         'This setting is now managed by the Hierarchical Select widget
         configuration!'
       );
+      $form['field'] += $second_part;
     }
   }
 }
