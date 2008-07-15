@@ -323,7 +323,7 @@ function hs_content_taxonomy_views_hierarchical_select_entity_count($item, $para
 function hs_content_taxonomy_views_hierarchical_select_implementation_info() {
   return array(
     'hierarchy type' => t('Content Taxonomy'),
-    'entity type'    => t('View'),
+    'entity type'    => t('Node'),
   );
 }
 
@@ -349,12 +349,12 @@ function hs_content_taxonomy_views_hierarchical_select_config_info() {
 
           $config_id = "content-taxonomy-views-$view->name-$field_name";
           $config_info[$config_id] = array(
-            'config_id' => $config_id,
+            'config_id'      => $config_id,
             'hierarchy type' => t('Content Taxonomy'),
-            'hierarchy' => t($vocabulary->name) ." ($field_name)",
-            'entity type' => t('view'),
-            'entity' => t($view->name),
-            'edit link' => "admin/build/views/$view->name/hs_config/$field_name",
+            'hierarchy'      => t($vocabulary->name) ." ($field_name)",
+            'entity type'    => t('Node'),
+            'entity'         => t($view->name),
+            'edit link'      => "admin/build/views/$view->name/hs_config/$field_name",
           );
         }
       }

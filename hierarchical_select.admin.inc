@@ -97,7 +97,7 @@ function hierarchical_select_admin_configs() {
     );
   }
 
-  return theme('table', $header, $rows);
+  return theme('table', $header, $rows, array(), t('Overview of all Hierarchical Select configurations.'));
 }
 
 /**
@@ -105,7 +105,7 @@ function hierarchical_select_admin_configs() {
  * and the features they support.
  */
 function hierarchical_select_admin_implementations() {
-  $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Entity type'), t('Create new items'), t('Node count'));
+  $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Entity type'), t('Create new items'), t('Entity count'));
 
   // Retrieve all information items
   $rows = array();
@@ -129,7 +129,7 @@ function hierarchical_select_admin_implementations() {
     );
   }
 
-  return theme('table', $header, $rows);
+  return theme('table', $header, $rows, array(), t('Overview of all installed Hierarchical Select implementations.'));
 }
 
 /**
@@ -168,7 +168,7 @@ function hierarchical_select_admin_import($config_id) {
     '#rows' => 15,
     '#description' => t('Copy and paste the results of an exported
       Hierarchical Select configuration here.<br />This will override the
-      current Hierarchical Select configuration for %config_id',
+      current Hierarchical Select configuration for %config_id.',
       array('%config_id' => $config_id)
     ),
     '#attributes' => array('class' => 'hierarchical-select-config-code'),

@@ -300,7 +300,7 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
 function hs_taxonomy_views_hierarchical_select_implementation_info() {
   return array(
     'hierarchy type' => t('Taxonomy'),
-    'entity type'    => t('Views'),
+    'entity type'    => t('Node'),
   );
 }
 
@@ -325,12 +325,12 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
 
           $config_id = "taxonomy-views-$view->name-$vid";
           $config_info[$config_id] = array(
-            'config_id' => $config_id,
+            'config_id'      => $config_id,
             'hierarchy type' => t('Taxonomy'),
-            'hierarchy' => t($vocabulary->name),
-            'entity type' => t('view'),
-            'entity' => t($view->name),
-            'edit link' => "admin/build/views/$view->name/hs_config/$vid",
+            'hierarchy'      => t($vocabulary->name),
+            'entity type'    => t('Node'),
+            'entity'         => t($view->name),
+            'edit link'      => "admin/build/views/$view->name/hs_config/$vid",
           );
         }
       }
