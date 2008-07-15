@@ -125,7 +125,7 @@ function hierarchical_select_admin_implementations() {
       $hierarchy_type,
       $entity_type,
       (module_hook($module, 'hierarchical_select_create_item')) ? t('Yes') : t('No'),
-      (module_hook($module, 'hierarchical_select_node_count'))  ? t('Yes') : t('No'),
+      (module_hook($module, 'hierarchical_select_entity_count'))  ? t('Yes') : t('No'),
     );
   }
 
@@ -232,7 +232,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "  'config_id'       => '". $config['config_id'] ."',\n";
   $output .= "  'save_lineage'    => ". $config['save_lineage'] .",\n";
   $output .= "  'enforce_deepest' => ". $config['enforce_deepest'] .",\n";
-  $output .= "  'node_count'      => ". $config['node_count'] .",\n";
+  $output .= "  'entity_count'    => ". $config['entity_count'] .",\n";
   $output .= "  'level_labels' => array(\n";
   $output .= "    'status' => ". $config['level_labels']['status'] .",\n";
   $output .= "    'labels' => array(\n";

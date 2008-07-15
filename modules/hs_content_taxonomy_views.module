@@ -221,6 +221,8 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
     'item'        => t('term'),
     'items'       => t('terms'),
     'item_type'   => t('term type'),
+    'entity'      => t('node'),
+    'entities'    => t('nodes'),
   );
   $max_hierarchy_depth = min($depth, _hs_taxonomy_hierarchical_select_get_depth($vid));
   $preview_is_required = !(bool)$exposed_filter['optional'];
@@ -302,16 +304,16 @@ function hs_content_taxonomy_views_hierarchical_select_item_get_label($item, $pa
 // anything for that item?
 
 /**
- * Implementation of hook_hierarchical_select_node_count().
+ * Implementation of hook_hierarchical_select_entity_count().
  */
-function hs_content_taxonomy_views_hierarchical_select_node_count($item, $params) {
+function hs_content_taxonomy_views_hierarchical_select_entity_count($item, $params) {
   if ($item == '**ALL**') {
     // Unlike in the hs_taxonomy_views implementation, we can't use a simple
     // SQL query here, because no depth information is stored in the database.
     return count(_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, $params['depth']));
   }
   else {
-    return hs_content_taxonomy_hierarchical_select_node_count($item, $params);
+    return hs_content_taxonomy_hierarchical_select_entity_count($item, $params);
   }
 }
 

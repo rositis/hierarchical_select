@@ -24,7 +24,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
     'config_id' => $config_id,
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
-    'node_count'      => 0,
+    'entity_count'    => 0,
     'level_labels' => array(
       'status' => 0,
     ),
@@ -160,17 +160,21 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#attributes' => array('class' => 'enforce-deepest'),
   );
   
-  if (module_hook($module, 'hierarchical_select_node_count')) {
-    $form['node_count'] = array(
+  if (module_hook($module, 'hierarchical_select_entity_count')) {
+    $form['entity_count'] = array(
       '#type' => 'radios',
-      '#title' => t('Display the node count'),
-      '#description' => t('When you enable this, the user will see the number of nodes that match the current !item listed between brackets.', array('!item' => $strings['item'])),
+      '#title' => t('Display the !entity count', array('!entity' => $strings['entity'])),
+      '#description' => t(
+        'When you enable this, the user will see the number of !entities that
+        match the current !item listed between brackets.',
+        array('!entities' => $strings['entities'], '!item' => $strings['item'])
+      ),
       '#options' => array(
         0 => t('Disabled'),
         1 => t('Enabled'),
       ),
-      '#default_value' => $config['node_count'],
-      '#attributes' => array('class' => 'node-counts'),
+      '#default_value' => $config['entity_count'],
+      '#attributes' => array('class' => 'entity-count'),
     );
   }
 

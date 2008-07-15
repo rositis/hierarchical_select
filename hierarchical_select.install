@@ -161,3 +161,22 @@ function hierarchical_select_update_6() {
 
   return $ret;
 }
+
+// Rename 'node_count' as 'entity_count'.
+function hierarchical_select_update_7() {
+  $ret = array();
+
+  $result = db_query("SELECT name AS config_id, value AS config FROM {variable} WHERE name LIKE 'hs_config_%'");
+  while ($row = db_fetch_object($result)) {
+    $config_id = $row->config_id;
+    $config = unserialize($row->config);
+    if (isset($config['node_count'])) {
+      print_r('updating the shit');
+      $config['entity_count'] = $config['node_count'];
+      unset($config['node_count']);
+      $ret[] = update_sql("UPDATE {variable} SET value = '%s' WHERE name = '%s'", serialize($config), $config_id);
+    }
+  }
+
+  return $ret;
+}

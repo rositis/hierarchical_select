@@ -111,7 +111,7 @@ function hierarchical_select_elements() {
       'params' => array(),
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
-      'node_count'      => 0,
+      'entity_count'    => 0,
       'level_labels' => array(
         'status' => 0,
         'labels' => array()
@@ -1444,15 +1444,15 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     }
   }
 
-  // If the node_count setting is enabled, add node counts.
+  // If the entity_count setting is enabled, add entity counts.
   // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['node_count'] && module_hook($config['module'], 'hierarchical_select_node_count')) {
+  if ($config['entity_count'] && module_hook($config['module'], 'hierarchical_select_entity_count')) {
     foreach (array_keys($hierarchy->levels) as $depth) {
       foreach ($hierarchy->levels[$depth] as $value => $label) {
         $is_valid_item = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
         if ($is_valid_item) {
-          $node_count = module_invoke($config['module'], 'hierarchical_select_node_count', $value, $config['params']);
-          $hierarchy->levels[$depth][$value] = "$label ($node_count)";
+          $entity_count = module_invoke($config['module'], 'hierarchical_select_entity_count', $value, $config['params']);
+          $hierarchy->levels[$depth][$value] = "$label ($entity_count)";
         }
       }
     }
