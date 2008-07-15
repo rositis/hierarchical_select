@@ -77,7 +77,7 @@ Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
   var newName = $flatSelect.attr('name').replace(/^([a-zA-Z0-9_\-]*)(?:\[flat_select\]){1}(\[\])?$/, "$1$2");
   $flatSelect.attr('name', newName);
 
-  Drupal.HierarchicalSelect.triggerEvents(hsid, 'prepared-GET-submit');
+  Drupal.HierarchicalSelect.triggerEvents(hsid, 'prepared-GET-submit', {});
 };
 
 Drupal.HierarchicalSelect.attachBindings = function(hsid) {
@@ -257,9 +257,9 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
   } 
 };
 
-Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType) {
+Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType, settings) {
   $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
-  .trigger(updateType, [ hsid ]);
+  .trigger(updateType, [ hsid, settings ]);
 };
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
@@ -321,7 +321,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     dataType:   'json',
     data:       post,
     beforeSend: function() {
-      Drupal.HierarchicalSelect.triggerEvents(hsid, 'before-' + updateType);
+      Drupal.HierarchicalSelect.triggerEvents(hsid, 'before-' + updateType, settings);
       Drupal.HierarchicalSelect.disableForm(hsid); 
     },
     success:    function(response) {
@@ -346,7 +346,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
           Drupal.HierarchicalSelect.cache.sync(hsid, response.cache);
         }
 
-        Drupal.HierarchicalSelect.triggerEvents(hsid, updateType);
+        Drupal.HierarchicalSelect.triggerEvents(hsid, updateType, settings);
       });
     }
   };
