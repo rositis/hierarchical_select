@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Book module.
+ */
+
+
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 

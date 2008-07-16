@@ -1,6 +1,11 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Taxonomy module.
+ */
+
 
 //----------------------------------------------------------------------------
 // Drupal core hooks.
@@ -215,7 +220,7 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
  */
 function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
-  
+
   if (!isset($labels[$item])) {
     $term = taxonomy_get_term($item);
     // Use the translated term when available!
@@ -236,7 +241,7 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
     'vid'    => $params['vid'],
   );
   $status = taxonomy_save_term($form_values);
-  
+
   if ($status == SAVED_NEW) {
     // Reset the cached tree.
     _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);

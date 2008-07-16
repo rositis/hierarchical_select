@@ -2,6 +2,12 @@
 // $Id$
 
 /**
+ * @file
+ * Install file for the Hierarchical Select module.
+ */
+
+
+/**
  * Implementation of hook_install().
  */
 function hierarchical_select_install() {
@@ -30,7 +36,7 @@ function hierarchical_select_update_1() {
   $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
   $weight++;
-  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name  = 'hierarchical_select'");
+  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'");
 
   return $ret;
 }
@@ -43,7 +49,7 @@ function hierarchical_select_update_2() {
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
   $weight++;
-  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name  = 'hierarchical_select'");
+  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'");
 
   return $ret;
 }
@@ -109,7 +115,7 @@ function hierarchical_select_update_3() {
 
     drupal_set_message('Migrated Hierarchical Select settings for vocabulary '. $vid .'.');
   }
-  
+
   return $ret;
 }
 
@@ -129,7 +135,7 @@ function hierarchical_select_update_4() {
     variable_set("hs_config_$config_id", $value);
     variable_del("hierarchical_select_config_$config_id");
   }
-  
+
   return $ret;
 }
 

@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Menu module.
+ */
+
+
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 
@@ -115,7 +121,7 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
 
-  $type = db_result(db_query("SELECT type FROM {menu} WHERE mid = %d", $item));  
+  $type = db_result(db_query("SELECT type FROM {menu} WHERE mid = %d", $item));
 
   // mid 1 corresponds to the hardcoded "Navigation" menu.
   return (($item == 1) || ($type & (MENU_MODIFIABLE_BY_ADMIN | MENU_IS_ROOT)));

@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API that allows one to use
+ * Hierarchical Select's dropbox for selecting multiple items of a flat list.
+ */
+
 
 //----------------------------------------------------------------------------
 // Hierarchical Select hooks.

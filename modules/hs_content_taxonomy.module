@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Content Taxonomy
+ * module.
+ */
+
 
 /**
  * TRICKY: Content Taxonomy's depth setting:
@@ -137,18 +143,18 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
     '#suffix' => '</div>',
     '#weight' => -5,
   );
-  
+
   $form['save'] = array(
-    '#type' => 'submit', 
+    '#type' => 'submit',
     '#value' => t('Save'),
   );
 
   // Add the the submit handler for the Hierarchical Select config form.
   $parents = array('hierarchical_select_config');
   $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
-  
+
   $form['#submit']['hs_content_taxonomy_common_config_form_submit'] = array($content_type_name, $field_name);
-  
+
   return $form;
 }
 
@@ -161,7 +167,7 @@ function hs_content_taxonomy_common_config_form_submit($form_id, $form_values, $
 
   $content_type = content_types($content_type_name);
   $field = $content_type['fields'][$field_name];
-  
+
   $form_values = array(
     'widget_type' => 'content_taxonomy_hs',
     'label'       => $field['widget']['label'],
@@ -212,9 +218,9 @@ function hs_content_taxonomy_widget_settings($op, $widget) {
       $context = _hs_content_taxonomy_parse_context_from_url();
       list($content_type_name, $field_name) = $context;
       $content_type = content_types($content_type_name);
-  
+
       $url = 'admin/content/types/'. $content_type['url_str'] .'/fields/'. $field_name .'/hs_config';
-    
+
       $items[] = t(
         "Due to limitations of CCK, there is a separate form to
         <a href=\"!url\"> configure this Hierarchical Select widget's
@@ -228,7 +234,7 @@ function hs_content_taxonomy_widget_settings($op, $widget) {
         array(
           '%multiple_values'    => t('Multiple values'),
           '%enable_the_dropbox' => t('Enable the dropbox'),
-          '%save_term_lineage'  => t('Save term lineage'),  
+          '%save_term_lineage'  => t('Save term lineage'),
         )
       );
 
@@ -298,9 +304,9 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
         // module that don't make any sense at all. It's necessary to support
         // the 'both' (and 'cck') "save option" of content_taxonomy.
         if ($field['multiple'] && is_array($node_field['tids'])) {
-          foreach ($node_field['tids'] as $key => $tid) {                
+          foreach ($node_field['tids'] as $key => $tid) {
             if ($tid != 0) {
-              $keys[$key] = $tid; 
+              $keys[$key] = $tid;
             }
           }
         }
@@ -487,7 +493,7 @@ function _hs_content_taxonomy_parse_context_from_url() {
 
     $field_name = arg(5);
 
-    if (arg(4) == 'fields' && !empty($field_name) && isset($content_type['fields'][$field_name])) {        
+    if (arg(4) == 'fields' && !empty($field_name) && isset($content_type['fields'][$field_name])) {
       if ($content_type['fields'][$field_name]['type'] == 'content_taxonomy' && $content_type['fields'][$field_name]['widget']['type'] == 'content_taxonomy_hs') {
         return array($content_type['type'], $field_name);
       }

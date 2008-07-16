@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Content Taxonomy
+ * Views module.
+ */
+
 
 //----------------------------------------------------------------------------
 // Core hooks.
@@ -15,7 +21,7 @@ function hs_content_taxonomy_views_menu($may_cache) {
     $view_name = arg(3);
     $field_name = arg(5);
     $widget_type = db_result(db_query("SELECT widget_type FROM {node_field_instance} WHERE field_name = '%s'", $field_name));
-    
+
     if ($widget_type == 'content_taxonomy_hs') {
       $items[] = array(
         'path' => "admin/build/views/$view_name/hs_config/$field_name",
@@ -48,7 +54,7 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
         // Only apply Hierarchical Select if it's enabled for this field.
         if ($widget_type == 'content_taxonomy_hs') {
           $hs_exposed_filters_found++;
-          
+
           $field = content_fields($field_name);
           $vid = $field['vid']; // This is the vocabulary id, not the view id!
           $tid = $field['tid'];
@@ -76,11 +82,11 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
             'render_flat_select' => 1,
           );
           hierarchical_select_common_config_apply($form["filter$id"], "content-taxonomy-views-$view->name-$vid", $defaults_override);
-          
+
           // Inherit #config['dropbox']['status'] from the exposed filter
           // settings.
           $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
-          
+
           // Inherit #required from the exposed filter settings.
           $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
 
@@ -172,7 +178,7 @@ EOT;
         version of the Views module!",
         array('!patch_url' => 'http://drupal.org/files/issues/hs_compatibility.patch')
       );
-      $severity = REQUIREMENT_ERROR;      
+      $severity = REQUIREMENT_ERROR;
     }
 
     $requirements['hs_content_taxonomy_views'] = array(
@@ -259,7 +265,7 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
     '#suffix' => '</div>',
     '#weight' => -5,
   );
-  
+
   $form['save'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -270,7 +276,7 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
   $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
 
   $form['#submit']['hs_content_taxonomy_views_common_config_form_submit'] = array($view_name);
-  
+
   return $form;
 }
 

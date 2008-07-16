@@ -87,7 +87,7 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
  */
 function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth, $preview_is_required)  {
   static $js_added;
-  
+
   if (!isset($js_added)) {
     $js_added = TRUE;
     drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/includes/common_config_form.css', 'module');
@@ -159,7 +159,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     ),
     '#attributes' => array('class' => 'enforce-deepest'),
   );
-  
+
   if (module_hook($module, 'hierarchical_select_entity_count')) {
     $form['entity_count'] = array(
       '#type' => 'radios',
@@ -221,7 +221,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#title' => t('Enable the dropbox'),
     '#default_value' => $config['dropbox']['status'],
     '#attributes' => array('class' => 'dropbox-status'),
-  );  
+  );
   $form['dropbox']['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -273,7 +273,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         array('!hierarchy' => $strings['hierarchy'], '!items' => $strings['items'])
       ),
       '#collapsible' => TRUE,
-    );    
+    );
     $form['editability']['status'] = array(
       '#type' => 'checkbox',
       '#title' => t('Allow creation of new !items', array('!items' => $strings['items'])),
@@ -283,7 +283,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       ),
       '#default_value' => $config['editability']['status'],
       '#attributes' => array('class' => 'editability-status'),
-    );    
+    );
     for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
       $form['editability']['item_types'][$depth] = array(
         '#type' => 'textfield',
@@ -351,7 +351,7 @@ function hierarchical_select_common_config_form_submit($form_id, $form_values, $
  */
 function hierarchical_select_common_views_exposed_filters_reposition() {
   static $js_added;
-  
+
   if (!isset($js_added)) {
     drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/includes/views.js', 'module');
   }

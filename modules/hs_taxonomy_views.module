@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implementation of the Hierarchical Select API for the Taxonomy module's
+ * Views exposed filters.
+ */
+
 
 //----------------------------------------------------------------------------
 // Core hooks.
