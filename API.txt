@@ -235,6 +235,15 @@ structures that have been built. To see the messages that are generated in
 AJAX request, just open any other Drupal page after each AJAX request.
 
 
+Hierarchical Select implementations: gotcha's
+---------------------------------------------
+- "warning: Missing argument 1 for drupal_retrieve_form() …"
+  This implies that your implementation's module weight is heavier than
+  hierarchical_select.module. In that case, Hierarchical Select will not be
+  able to detect hierarchical_select form items, preventing it from applying
+  some magic, and AJAX updates won't work.
+
+
 Hooks
 -----
 1) hook_hierarchical_select_params();
