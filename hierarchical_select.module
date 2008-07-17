@@ -1434,7 +1434,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         // NOTE: this uses an optional hook, so we also check if it's implemented.
         $item_type = $config['editability']['item_types'][$depth];
         $item_type = (!empty($item_type)) ? $item_type : 'item';
-        $hierarchy->levels[$depth] = ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) ? array('create_new_item' => '<'. t('create new !item', array('!item' => $item)) .'>') : array();
+        $hierarchy->levels[$depth] = ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) ? array('create_new_item' => '<'. t('create new !item', array('!item' => $item_type)) .'>') : array();
 
         // Level label: set an empty level label if they've been disabled.
         $hierarchy->lineage[$depth] = 'label_'. $depth;
