@@ -176,6 +176,14 @@ function hs_taxonomy_hierarchical_select_params() {
  */
 function hs_taxonomy_hierarchical_select_root_level($params) {
   $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
+
+  // Unset the term that's being excluded, if it is among the terms.
+  foreach ($terms as $key => $term) {
+    if ($term->tid == $params['exclude_tid']) {
+      unset($terms[$key]);
+    }
+  }
+
   return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
