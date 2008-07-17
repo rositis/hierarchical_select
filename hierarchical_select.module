@@ -558,8 +558,11 @@ function _hierarchical_select_validate(&$element) {
   $config = $element['#config'];
   if ($config['dropbox']['status']) {
     if ($config['dropbox']['limit'] > 0) { // Zero as dropbox limit means no limit.
-      // TRICKY: #validate is not called upon the initial rendering. Running
-      // _form_validate($element) doesn't help either.
+      // TRICKY: #validate is not called upon the initial rendering (i.e. it
+      // is assumed that the default value is valid). However, Hierarchical
+      // Select's config can influence the validity (i.e. how many selections
+      // may be added to the dropbox). This means it's possible the user has
+      // actually selected too many items without being notified of this.
       $lineage_count = count($element['#value']['dropbox']['hidden']['lineages_selections']);
       if ($lineage_count > $config['dropbox']['limit']) {
         // TRICKY: this should propagate the error down to the children, but
@@ -842,7 +845,8 @@ function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
 }
 
 /**
- * Render the hidden part of the dropbox.
+ * Render the hidden part of the dropbox. This part stores the lineages of all
+ * selections in the dropbox.
  *
  * @param $hsid
  *   A hierarchical select id.
@@ -855,9 +859,6 @@ function _hierarchical_select_process_render_db_hidden($hsid, $dropbox) {
   $element['#tree'] = TRUE;
 
   foreach ($dropbox->lineages_selections as $x => $lineage_selection) {
-    // TRICKY: we have to use #type = 'hidden' here, because 'value' doesn't
-    // maintain the values after the form is submitted, or at least cannot
-    // provide it to a #process callback, not in $element nor in $form_values.
     $element['lineages_selections'][$x] = array('#type' => 'hidden', '#value' => serialize($lineage_selection));
   }
   return $element;
