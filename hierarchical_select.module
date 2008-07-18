@@ -1553,7 +1553,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // NOTE: this uses an optional hook, so we also check if it's implemented.
   if ($config['editability']['status']
       && $config['editability']['allow_new_levels']
-      && $config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels']
+      && ($config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels'])
       && module_invoke($config['module'], 'hierarchical_select_valid_item', end($hierarchy->lineage), $config['params'])
       && module_hook($config['module'], 'hierarchical_select_create_item')
   ) {
