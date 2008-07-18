@@ -1163,6 +1163,19 @@ function _hierarchical_select_mark_as_disabled(&$element) {
   }
 }
 
+/**
+ * Helper function to determine whether a given depth (i.e. the depth of a
+ * level) is allowed by the allowed_levels setting.
+ *
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - editability
+ *     - allowed_levels
+ * @param $depth
+ *   A depth, starting from 0.
+ * @return
+ *   0 or 1 if it allowed_levels is set for the given depth, 1 otherwise.
+ */
 function _hierarchical_select_create_new_item_is_allowed($config, $depth) {
   return (isset($config['editability']['allowed_levels'][$depth])) ? $config['editability']['allowed_levels'][$depth] : 1;
 }
