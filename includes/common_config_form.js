@@ -18,17 +18,24 @@ cfg.levelLabels = function(configId) {
   var $enforceDeepest = $('.enforce-deepest input', cfg.context(configId));
 
   var showHide = function(speed) {
-    $affected = $('.level-label', cfg.context(configId)); 
+    $affected = $('.level-labels-settings', cfg.context(configId)); 
     if (!$status.is(':checked')) {
-      $affected.parent().hide(speed);
+      $affected.hide(speed);
     }
     else {
-      if ($enforceDeepest.eq(1).is(':checked')) {
-        $affected.parent().show(speed);
+      if ($enforceDeepest.slice(1, 2).is(':checked')) {
+        $affected
+        .find('tr').slice(2) // Make sure all tr's are shown.
+        .add($affected) // The entire table should be shown.
+        .show(speed, function() {
+          // jQuery leaves style="display:block;" behind, which causes badly
+          // displayed tr's.
+          $(this).removeAttr('style');
+        });
       }
       else {
-        $affected.gt(0).parent().hide(speed);
-        $affected.lt(1).parent().show(speed);
+        $affected.find('tr').slice(0, 2).show(speed); // Show header tr and root level tr.
+        $affected.find('tr').slice(2).hide(speed); // Hide all other tr's.
       }
     }
   };
@@ -60,7 +67,7 @@ cfg.editability = function(configId) {
   var $allowNewLevels = $('.editability-allow-new-levels', cfg.context(configId)); 
 
   var showHide = function(speed) {
-    var $affected = $('.editability-item-type, label:has(.editability-allow-new-levels)', cfg.context(configId)).parent();
+    var $affected = $('.editability-per-level-settings, .form-item:has(.editability-allow-new-levels)', cfg.context(configId));
     var $maxLevels = $('.editability-max-levels', cfg.context(configId)).parent();
     if ($status.is(':checked')) {
       if ($allowNewLevels.is(':checked')) {

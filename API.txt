@@ -63,6 +63,11 @@ element type:
       'editability' => array(
         'status'           => 0,
         'item_types'       => array(),
+        'allowed_levels'   => array(
+          0 => 0,
+          1 => 0,
+          2 => 1,
+        ),
         'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
@@ -139,6 +144,16 @@ array. These are the items it can contain:
    "region" for the second and "city" for the third. When the user then wants
    to create a new item, the default label for the new item will be of the
    form "new <item type>", e.g. "new region".
+
+ - editability['allowed_levels'] (optional, defaults to 1 for each level)
+   Only meaningful when editable is set to TRUE.
+   Specify in which levels the user is allowed to create new items. In the
+   example, the user is only allowed to create new items in the third level.
+   When a setting for a level is ommitted, it defaults to 1 (i.e. allowed for
+   that level). This means you only have to specify in which levels the user
+   is not allowed to create new items.
+   This only applies to *existing* levels: it does not affect the
+   allow_new_levels setting (the next setting).
 
  - editability['allow_new_levels'] (optional, defaults to 0)
    Only meaningful when editable is set to TRUE.

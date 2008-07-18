@@ -254,6 +254,11 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "      $depth => '$item_type',\n";
   }
   $output .= "    ),\n";
+  $output .= "    'allowed_levels' => array(\n";
+  foreach ($config['editability']['allowed_levels'] as $depth => $allowed_level) {
+  $output .= "      $depth => '$allowed_level',\n";
+  }
+  $output .= "    ),\n";
   $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
   $output .= "    'max_levels'       => ". $config['editability']['max_levels'] .",\n";
   $output .= "  ),\n";

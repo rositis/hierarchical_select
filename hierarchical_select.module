@@ -125,6 +125,7 @@ function hierarchical_select_elements() {
       'editability' => array(
         'status'           => 0,
         'item_types'       => array(),
+        'allowed_levels'   => array(),
         'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
@@ -405,7 +406,7 @@ function hierarchical_select_process($element) {
   // Check if a new item is being created.
   if (isset($element['#value']['hierarchical_select']['selects'])) {
     foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
-      if ($value == 'create_new_item') {
+      if ($value == 'create_new_item' && _hierarchical_select_create_new_item_is_allowed($config, $depth)) {
         // We want to override the select in which the "create_new_item"
         // option was selected and hide all selects after that, if they exist.
         $element['hierarchical_select']['selects'] = array_slice($element['hierarchical_select']['selects'], 0, $depth + 1);
@@ -450,7 +451,7 @@ function hierarchical_select_process($element) {
 
   if ($config['dropbox']['status']) {
     // Append an "Add" button to the selects.
-    $element['hierarchical_select']['dropbox-add'] = array(
+    $element['hierarchical_select']['dropbox_add'] = array(
       '#type'       => 'button',
       '#value'      => t('Add'),
       '#attributes' => array('class' => 'add-to-dropbox'),
@@ -793,16 +794,22 @@ function _hierarchical_select_process_calculate_selections(&$element) {
 
       $label = trim($element['#value']['hierarchical_select']['create_new_item']['input']);
       $selects = $element['#value']['hierarchical_select']['selects'];
+      $depth = count($selects);
 
       // Disallow items with empty labels; allow the user again to create a
       // (proper) new item.
       if (empty($label)) {
         $element['#value']['hierarchical_select']['selects'][count($selects)] = 'create_new_item';
       }
-      // Ensure that this new item will not violate the max_levels setting.
-      else if ($config['editability']['max_levels'] == 0 || count($selects) < $config['editability']['max_levels']) {
+      // Ensure that this new item will not violate the max_levels and
+      // allowed_levels settings.
+      else if (
+        ($config['editability']['max_levels'] == 0 || $depth < $config['editability']['max_levels'])
+        &&
+        (_hierarchical_select_create_new_item_is_allowed($config, $depth))
+      ) {
         // Create the new item in the hierarchy and retrieve its value.
-        $parent = (count($selects) > 0) ? end($selects) : 0;
+        $parent = ($depth > 0) ? end($selects) : 0;
         $value = module_invoke($config['module'], 'hierarchical_select_create_item', check_plain($label), $parent, $config['params']);
 
         // Ensure the newly created item will be selected after rendering.
@@ -1153,6 +1160,10 @@ function _hierarchical_select_mark_as_disabled(&$element) {
   }
 }
 
+function _hierarchical_select_create_new_item_is_allowed($config, $depth) {
+  return (isset($config['editability']['allowed_levels'][$depth])) ? $config['editability']['allowed_levels'][$depth] : 1;
+}
+
 /**
  * Helper function that generates the help text is that is displayed to the
  * user when Javascript is disabled.
@@ -1390,13 +1401,17 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // Start building the levels, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']);
 
-  // Prepend a "<create new item>" option to the root level when the editable
-  // setting is enabled.
-  // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
+  // Prepend a "<create new item>" option to the root level when:
+  // - the editability setting is enabled, and
+  // - the hook is implemented (this is an optional hook), and
+  // - the allowed_levels setting allows to create new items at this level.
+  if ($config['editability']['status']
+      && module_hook($config['module'], 'hierarchical_select_create_item')
+      && _hierarchical_select_create_new_item_is_allowed($config, 0)
+  ) {
     $item_type = $config['editability']['item_types'][0];
-    $item_type = (!empty($item_type)) ? $item_type : 'item';
-    $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new !item', array('!item' => $item_type)) .'>') + $hierarchy->levels[0];
+    $item_type = (!empty($item_type)) ? $item_type : t('item');
+    $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[0];
   }
 
   // Prepend a "<none>" option to the root level when:
@@ -1421,14 +1436,19 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   }
 
   if ($config['enforce_deepest']) {
-    // If the editable setting is enabled, create "<create new item>" options
-    // in all levels below the root level.
-    // NOTE: this is an optional hook, so we also check if it's implemented.
-    if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
+    // Prepend a "<create new item>" option to each level below the root level
+    // when:
+    // - the editability setting is enabled, and
+    // - the hook is implemented (this is an optional hook), and
+    // - the allowed_levels setting allows to create new items at this level.
+    if ($config['editability']['status']
+        && module_hook($config['module'], 'hierarchical_select_create_item')
+        && _hierarchical_select_create_new_item_is_allowed($config, $depth)
+    ) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $item_type = $config['editability']['item_types'][$depth];
-        $item_type = (!empty($item_type)) ? $item_type : 'item';
-        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item', array('!item' => $item_type)) .'>') + $hierarchy->levels[$depth];
+        $item_type = (!empty($item_type)) ? $item_type : t('item');
+        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[$depth];
       }
     }
 
@@ -1440,12 +1460,19 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   else if (!$config['enforce_deepest']) {
     // Prepend special options to every level.
     for ($depth = 0; $depth <= $max_depth; $depth++) {
-      // A "<create new item>" option, if the editable setting is enabled.
-      // NOTE: this is an optional hook, so we also check if it's implemented.
-      if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item') && $depth > 0) { // The root level already has this.
+      // Prepend a "<create new item>" option to the current level when:
+      // - this is not the root level (the root level already has this), and
+      // - the editability setting is enabled, and
+      // - the hook is implemented (this is an optional hook), and
+      // - the allowed_levels setting allows to create new items at this level.
+      if ($depth > 0
+          && $config['editability']['status']
+          && module_hook($config['module'], 'hierarchical_select_create_item')
+          && _hierarchical_select_create_new_item_is_allowed($config, $depth)
+      ) {
         $item_type = $config['editability']['item_types'][$depth];
-        $item_type = (!empty($item_type)) ? $item_type : 'item';
-        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item', array('!item' => $item_type)) .'>') + $hierarchy->levels[$depth];
+        $item_type = (!empty($item_type)) ? $item_type : t('item');
+        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[$depth];
       }
       // Level label: set an empty level label if they've been disabled.
       $label = ($config['level_labels']['status']) ? $config['level_labels']['labels'][$depth] : '';
@@ -1460,11 +1487,20 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         // We're good, let's add one level!
         $depth = $max_depth + 1;
 
-        // A "<create new item>" option, if the editable setting is enabled.
-        // NOTE: this uses an optional hook, so we also check if it's implemented.
-        $item_type = $config['editability']['item_types'][$depth];
-        $item_type = (!empty($item_type)) ? $item_type : 'item';
-        $hierarchy->levels[$depth] = ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) ? array('create_new_item' => '<'. t('create new !item', array('!item' => $item_type)) .'>') : array();
+        $hierarchy->levels[$depth] = array();
+
+        // Prepend a "<create new item>" option to the current level when:
+        // - the editability setting is enabled, and
+        // - the hook is implemented (this is an optional hook), and
+        // - the allowed_levels setting allows to create new items at this level.
+        if ($config['editability']['status']
+            && module_hook($config['module'], 'hierarchical_select_create_item')
+            && _hierarchical_select_create_new_item_is_allowed($config, $depth)
+        ) {
+          $item_type = $config['editability']['item_types'][$depth];
+          $item_type = (!empty($item_type)) ? $item_type : t('item');
+          $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>');
+        }
 
         // Level label: set an empty level label if they've been disabled.
         $hierarchy->lineage[$depth] = 'label_'. $depth;
@@ -1490,7 +1526,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
 
   // Add an extra level with only a level label and a "<create new item>"
   // option, if:
-  // - the editable setting is enabled
+  // - the editability setting is enabled
   // - the allow_new_levels setting is enabled
   // - an additional level is permitted by the max_levels setting
   // - the deepest item of the lineage is a valid item
@@ -1503,19 +1539,18 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   ) {
     $depth = $max_depth + 1;
 
-    // A "<create new item>" option, if the editable setting is enabled.
-    // NOTE: this uses an optional hook, so we also check if it's implemented.
-    $item_type = $config['editability']['item_types'][$depth];
-    $item_type = (!empty($item_type)) ? $item_type : 'item';
-
     // Level label: set an empty level label if they've been disabled.
     $hierarchy->lineage[$depth] = 'label_'. $depth;
     $label = ($config['level_labels']['status']) ? $config['level_labels']['labels'][$depth] : '';
 
-    // The new level.
+    // Item type.
+    $item_type = $config['editability']['item_types'][$depth];
+    $item_type = (!empty($item_type)) ? $item_type : t('item');
+
+    // The new level with only a level label and a "<create new item>" option.
     $hierarchy->levels[$depth] = array(
       'label_'. $depth  => $label,
-      'create_new_item' => '<'. t('create new !item', array('!item' => $item)) .'>',
+      'create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>',
     );
   }
 
