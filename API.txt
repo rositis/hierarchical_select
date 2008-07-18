@@ -227,6 +227,9 @@ When you are writing your implementation of the Hierarchical Select API, you
 will often wonder what Hierarchical Select is doing internally with the data
 you're feeding it. That's why there's a developer mode: it will show you this
 data, even the data generated in AJAX callbacks.
+Also, when you're just creating a new HS config and it doesn't quite work
+right, it can be helpful to enable the developer mode. It will perform some
+basic diagnostics that might help you track down the cause.
 You must have the devel module installed for this. Next, go to Hierarchical
 Select's .module file and set the define for the HS_DEVELOPER_MODE constant to
 TRUE.

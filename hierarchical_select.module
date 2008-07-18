@@ -294,6 +294,33 @@ function hierarchical_select_process($element) {
     'setting'
   );
 
+  // Basic config validation and diagnostics.
+  if (HS_DEVELOPER_MODE) {
+    $diagnostics = array();
+    if (!isset($config['module']) || empty($config['module'])) {
+      $diagnostics[] = "'module is not set!";
+    }
+    else {
+      $required_params = module_invoke($config['module'], 'hierarchical_select_params');
+      $missing_params = array_diff($required_params, array_keys($config['params']));
+      if (!empty($missing_params)) {
+        $diagnostics[] = "'params' is missing values for: ". implode(', ', $missing_params) .'.';
+      }
+    }
+    $config_id = (isset($config['config_id']) && is_string($config['config_id'])) ? $config['config_id'] : 'none';
+    if (empty($diagnostics)) {
+      dpm("Config diagnostics (config id: $config_id): no problems found!");
+    }
+    else {
+      $diagnostics_string = print_r($diagnostics, TRUE);
+      $message = "Config diagnostics (config id: $config_id): $diagnostics_string";
+      dpm($message);
+      $element['#type']= 'item';
+      $element['#value'] = '<p><span style="color:red;">Fix the indicated errors in the #config property first!</span><br />'. nl2br($message) .'</p>';
+      return $element;
+    }
+  }
+
   // Calculate the selections in both the hierarchical select and the dropbox,
   // we need these before we can render anything.
   list($hs_selection, $db_selection) = _hierarchical_select_process_calculate_selections($element);
@@ -837,7 +864,9 @@ function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
       // modified after each update.
       '#DANGEROUS_SKIP_CHECK' => TRUE,
       // Use a #theme callback to prevent the select from being wrapped in a
-      // div. This simplifies the CSS and JS code.
+      // div. This simplifies the CSS and JS code. Also sets a special class
+      // on the level label option, if any, to make level label styles
+      // possible.
       '#theme' => 'hierarchical_select_select',
     );
   }

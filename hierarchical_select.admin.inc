@@ -176,7 +176,7 @@ function hierarchical_select_admin_import($config_id) {
   $form['interpreted_config'] = array('#type' => 'value', '#value' => NULL);
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t("Submit"),
+    '#value' => t("Import"),
   );
   $form['#redirect'] = NULL;
   return $form;
