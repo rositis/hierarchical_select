@@ -795,6 +795,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
       $label = trim($element['#value']['hierarchical_select']['create_new_item']['input']);
       $selects = $element['#value']['hierarchical_select']['selects'];
       $depth = count($selects);
+      $parent = ($depth > 0) ? end($selects) : 0;
 
       // Disallow items with empty labels; allow the user again to create a
       // (proper) new item.
@@ -804,12 +805,14 @@ function _hierarchical_select_process_calculate_selections(&$element) {
       // Ensure that this new item will not violate the max_levels and
       // allowed_levels settings.
       else if (
-        ($config['editability']['max_levels'] == 0 || $depth < $config['editability']['max_levels'])
+        (count(module_invoke($config['module'], 'hierarchical_select_children', $parent, $config['params']))
+          || $config['editability']['max_levels'] == 0
+          || $depth < $config['editability']['max_levels']
+        )
         &&
         (_hierarchical_select_create_new_item_is_allowed($config, $depth))
       ) {
         // Create the new item in the hierarchy and retrieve its value.
-        $parent = ($depth > 0) ? end($selects) : 0;
         $value = module_invoke($config['module'], 'hierarchical_select_create_item', check_plain($label), $parent, $config['params']);
 
         // Ensure the newly created item will be selected after rendering.
