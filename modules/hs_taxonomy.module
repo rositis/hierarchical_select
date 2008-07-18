@@ -41,7 +41,11 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
     // Add the Hierarchical Select config form.
     $module = 'hs_taxonomy';
-    $params = array('vid' => $vid);
+    $params = array(
+      'vid'         => $vid,
+      'exclude_tid' => NULL,
+      'root_term'   => NULL,
+    );
     $config_id = "taxonomy-$vid";
     $vocabulary = taxonomy_get_vocabulary($vid);
     $defaults = array(
@@ -114,7 +118,9 @@ function hs_taxonomy_form_alter($form_id, &$form) {
           $form['taxonomy'][$vid]['#config'] = array(
             'module' => 'hs_taxonomy',
             'params' => array(
-              'vid' => $vid,
+              'vid'         => $vid,
+              'exclude_tid' => NULL,
+              'root_term'   => NULL,
             ),
           );
           hs_taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
@@ -135,12 +141,13 @@ function hs_taxonomy_form_alter($form_id, &$form) {
       'params' => array(
         'vid'         => $form['vid']['#value'],
         'exclude_tid' => $form['tid']['#value'],
+        'root_term'   => TRUE,
       ),
     );
   }
 
-  // The forum 'forum' form.
-  else if ($form_id == 'forum_form_forum') {
+  // The forum 'container' and 'forum' forms.
+  else if ($form_id == 'forum_form_forum' || $form_id == 'forum_form_container') {
     unset($form['parent'][0]['#options']);
     unset($form['parent'][0]['#theme']);
     $form['parent'][0]['#type'] = 'hierarchical_select';
@@ -151,6 +158,7 @@ function hs_taxonomy_form_alter($form_id, &$form) {
       'params' => array(
         'vid'         => $form['vid']['#value'],
         'exclude_tid' => $form['tid']['#value'],
+        'root_term'   => TRUE,
       ),
     );
   }
@@ -167,6 +175,7 @@ function hs_taxonomy_hierarchical_select_params() {
   $params = array(
     'vid',
     'exclude_tid', // Allows a term to be excluded (necessary for the taxonomy_form_term form).
+    'root_term',   // Displays a fake "<root>" term in the root level (necessary for the taxonomy_form-term form).
   );
   return $params;
 }
@@ -177,10 +186,20 @@ function hs_taxonomy_hierarchical_select_params() {
 function hs_taxonomy_hierarchical_select_root_level($params) {
   $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
 
+  // If the root_term parameter is enabled, then prepend a fake "<root>" term.
+  if ($params['root_term'] === TRUE) {
+    $root_term = new StdClass();
+    $root_term->tid = 0;
+    $root_term->name = '<'. t('root') .'>';
+    $terms = array_merge(array($root_term), $terms);
+  }
+
   // Unset the term that's being excluded, if it is among the terms.
-  foreach ($terms as $key => $term) {
-    if ($term->tid == $params['exclude_tid']) {
-      unset($terms[$key]);
+  if (isset($params['exclude_tid'])) {
+    foreach ($terms as $key => $term) {
+      if ($term->tid == $params['exclude_tid']) {
+        unset($terms[$key]);
+      }
     }
   }
 
@@ -191,6 +210,10 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
  * Implementation of hook_hierarchical_select_children().
  */
 function hs_taxonomy_hierarchical_select_children($parent, $params) {
+  if ($params['root_term'] && $item == 0) {
+    return array();
+  }
+
   $terms = taxonomy_get_children($parent, $params['vid']);
 
   // Unset the term that's being excluded, if it is among the children.
@@ -205,6 +228,10 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
 function hs_taxonomy_hierarchical_select_lineage($item, $params) {
   $lineage = array();
 
+  if ($params['root_term'] && $item == 0) {
+    return array(0);
+  }
+
   $terms = array_reverse(taxonomy_get_parents_all($item));
   foreach ($terms as $term) {
     $lineage[] = $term->tid;
@@ -216,7 +243,10 @@ function hs_taxonomy_hierarchical_select_lineage($item, $params) {
  * Implementation of hook_hierarchical_select_valid_item().
  */
 function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
-  if (!is_numeric($item) || $item < 1 || $item == $params['exclude_tid']) {
+  if ($params['root_term'] && $item == 0) {
+    return TRUE;
+  }
+  else if (!is_numeric($item) || $item < 1 || $item == $params['exclude_tid']) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
