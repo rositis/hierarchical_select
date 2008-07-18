@@ -1967,8 +1967,8 @@ function theme_hierarchical_select_dropbox_table($element) {
 
   $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
 
-
-  $output .= '<table class="dropbox">';
+  $output .= '<div class="dropbox">';
+  $output .= '<table>';
   $output .= '<caption class="dropbox-title">'. $title .'</caption>';
   $output .= '<tbody>';
 
@@ -2007,6 +2007,7 @@ function theme_hierarchical_select_dropbox_table($element) {
 
   $output .= '</tbody>';
   $output .= '</table>';
+  $output .= '</div>';
 
   return $output;
 }

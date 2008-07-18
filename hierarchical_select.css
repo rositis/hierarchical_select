@@ -2,8 +2,12 @@
 
 
 /* The hierarchical select. */
-.hierarchical-select-wrapper .hierarchical-select {
-  margin-bottom: 1em;
+.hierarchical-select-wrapper {
+  margin: 2px; /* Make sure a Hierarchical Selects is *indistuingishable*
+                  from a normal select with regards to spacing. Firefox seems
+                  to be giving special treatment to select elements though,
+                  because it's not rendering the 2px horizontal margins though
+                  they *are* set. */
 }
 
 .hierarchical-select-wrapper .hierarchical-select select,
@@ -90,29 +94,25 @@ p.hierarchical-select-dropbox-limit-warning {
   margin-bottom: 0.2em;
 }
 
-.hierarchical-select-wrapper table.dropbox {
-  margin: 0px;
+.hierarchical-select-wrapper .dropbox {
+  display: inline-block;
+  margin: .5em 0;
+}
+
+.hierarchical-select-wrapper .dropbox table {
+  margin: 0;  
   width: auto;
   max-width: 100%;
   min-width: 20em;
-  margin-bottom: 1em;
-  padding: 0px;
   color: gray;
   font-size: 90%;
-  padding: 1em;
-  margin-left: 1px;
-}
-
-.hierarchical-select-wrapper table.dropbox tbody {
-  margin: 0;
-  padding: 0;
   border: 1px solid gray;
 }
 
 tr.dropbox-entry {
   line-height: 1.3em;
   padding: .3em .6em;
-}  
+}
 
 tr.dropbox-entry.even {
   background-color: transparent;
@@ -144,9 +144,12 @@ tr.dropbox-entry.last {
 td.dropbox-remove *,
 td.dropbox-remove a:link,
 td.dropbox-remove a:visited {
-  margin: 0px;
-  padding: 0px;
   color: #F7A54F;
+  text-decoration: none;
+}
+
+td.dropbox-remove a:hover {
+  text-decoration: underline;
 }
 
 tr.dropbox-is-empty {
