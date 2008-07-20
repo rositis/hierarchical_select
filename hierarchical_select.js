@@ -235,8 +235,20 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       break;
 
     case 'create-new-item':
-    case 'cancel-new-item':
     case 'create-new-level':
+      // Make sure that other Hierarchical Selects that represent the same
+      // hierarchy are also updated, to make sure that they have the newly
+      // created item!
+      var cacheId = Drupal.settings.HierarchicalSelect.settings[hsid].cacheId;
+      for (var otherHsid in Drupal.settings.HierarchicalSelect.settings) {
+        if (Drupal.settings.HierarchicalSelect.settings[otherHsid].cacheId == cacheId) {
+          $('#hierarchical-select-'+ otherHsid +'-wrapper')
+          .trigger('enforce-update');
+        }
+      }
+      // TRICKY: NO BREAK HERE!
+
+    case 'cancel-new-item':
     case 'cancel-new-level':
       // After an item/level has been created/cancelled, reset focus to the
       // beginning of the hierarchical select.
