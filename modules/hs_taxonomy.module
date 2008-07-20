@@ -104,27 +104,22 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
       // Only apply Hierarchical Select if it's enabled for this vocabulary.
       if (is_numeric($vid) && variable_get("taxonomy_hierarchical_select_$vid", 0)) {
-        $vocabulary = taxonomy_get_vocabulary($vid);
+        require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+        
+        // #size is set as soon as save_lineage or the dropbox is enabled,
+        // because then "multiple select" is enabled. Unset #size.
+        unset($form['taxonomy'][$vid]['#size']);
 
-        // Hierarchical Select only makes sense if there's a hierarchy.
-        if ($vocabulary->hierarchy > 0) {
-          require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-
-          // #size is set as soon as save_lineage or the dropbox is enabled,
-          // because then "multiple select" is enabled. Unset #size.
-          unset($form['taxonomy'][$vid]['#size']);
-
-          $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
-          $form['taxonomy'][$vid]['#config'] = array(
-            'module' => 'hs_taxonomy',
-            'params' => array(
-              'vid'         => $vid,
-              'exclude_tid' => NULL,
-              'root_term'   => NULL,
-            ),
-          );
-          hs_taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
-        }
+        $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
+        $form['taxonomy'][$vid]['#config'] = array(
+          'module' => 'hs_taxonomy',
+          'params' => array(
+            'vid'         => $vid,
+            'exclude_tid' => NULL,
+            'root_term'   => NULL,
+          ),
+        );
+        hs_taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
       }
     }
   }
