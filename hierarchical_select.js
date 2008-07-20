@@ -108,7 +108,10 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   .find('.hierarchical-select > select').unbind().change(function(_hsid) {
     return function() {
       if (Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled']) {
-        Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
+        var selectedOption = $(this).val();
+        if ($(this).find('option[@value='+ selectedOption +']').attr('class') == 'has-children') {
+          Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
+        }
       }
     };
   }(hsid)).end()

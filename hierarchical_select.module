@@ -878,6 +878,9 @@ function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
       // on the level label option, if any, to make level label styles
       // possible.
       '#theme' => 'hierarchical_select_select',
+      // Add child information. When a child has no children, its
+      // corresponding "option" element will be marked as such.
+      '#childinfo' => $hierarchy->childinfo[$depth],
     );
   }
   return $form;
@@ -1574,6 +1577,35 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     );
   }
 
+  // Add child information.
+  $hierarchy = _hierarchical_select_hierarchy_add_childinfo($hierarchy, $config);
+
+  return $hierarchy;
+}
+
+/**
+ * Extends a hierarchy object with child information: for each item in the
+ * hierarchy, the child count will be retrieved and stored in the hierarchy
+ * object, in the "childinfo" property. Items are grouped per level.
+ *
+ * @param $hierarchy
+ *   A hierarchy object with the "levels" property set.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - params
+ * @return
+ *   An updated hierarchy object with the "childinfo" property set.
+ */
+function _hierarchical_select_hierarchy_add_childinfo($hierarchy, $config) {
+  foreach ($hierarchy->levels as $depth => $level) {
+    foreach (array_keys($level) as $item) {
+      if (!preg_match('/(none|label_\d+|create_new_item)/', $item)) {
+        $hierarchy->childinfo[$depth][$item] = count(module_invoke($config['module'], 'hierarchical_select_children', $item, $config['params']));
+      }
+    }
+  }
+
   return $hierarchy;
 }
 
@@ -1841,6 +1873,8 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
  * This is an altered clone of form_select_options(). The reason: I need to be
  * able to set a class on an option element if it contains a level label, to
  * allow for level label styles.
+ * Secondly, I need to be able to mark childless items (i.e. "option"
+ * elements).
  */
 function _hierarchical_select_options($element) {
   if (!isset($choices)) {
@@ -1859,8 +1893,20 @@ function _hierarchical_select_options($element) {
     else {
       $selected = '';
     }
-    $class = (preg_match('/label_\d+/', $key)) ? ' class="level-label"' : '';
-    $options .= '<option value="'. check_plain($key) .'"'. $class . $selected .'>'. check_plain($choice) .'</option>';
+
+    // If an option DOES NOT have child info, then it's a special option:
+    // - label_\d+ (level label)
+    // - none ("<none>")
+    // - create_new_item ("<create new item>")
+    // Only when it's a level label, we have to add a class to this option.
+    if (!isset($element['#childinfo'][$key])) {
+      $class = (preg_match('/label_\d+/', $key)) ? ' level-label' : '';
+    }
+    else {
+      $class = ($element['#childinfo'][$key] == 0) ? 'has-no-children' : 'has-children';
+    }
+    
+    $options .= '<option value="'. check_plain($key) .'" class="'. $class .'"'. $selected .'>'. check_plain($choice) .'</option>';
   }
   return $options;
 }
