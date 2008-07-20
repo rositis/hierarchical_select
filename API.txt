@@ -225,11 +225,11 @@ Concepts
 
 Reserved item values
 --------------------
-- Ensure that your items don't have a "none", "all", "create_new_item" or
-  "create_new_level" value, nor "label_\d+" values (the latter means "label_"
-  followed by one or more digits). Your values should also not contain a pipe
-  ("|"), since pipes are used to separate the selection of values that are
-  sent back to the server in the callbacks.
+- Ensure that your items don't have a "none", "all", "create_new_item" nor
+  "label_\d+" values (the latter means "label_" followed by one or more
+  digits). Your values should also not contain a pipe ("|"), since pipes are
+  used to separate the selection of values that are sent back to the server
+  in the callbacks.
 - Valid 'empty' selections (i.e. if you want to set the #default_value
   property of your form item), are -1 and the empty array. The empty string is
   also considered valid, because Drupal core's Taxonomy module uses this as
