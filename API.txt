@@ -385,8 +385,6 @@ The following events are triggered:
   - update-hierarchical-select
   - create-new-item
   - cancel-new-item
-  - create-new-level
-  - cancel-new-level
   - add-to-dropbox
   - remove-from-dropbox
   - enforced-update
@@ -399,8 +397,6 @@ the equivalent "before" events exist as well:
   - before-update-hierarchical-select
   - before-create-new-item
   - before-cancel-new-item
-  - before-create-new-level
-  - before-cancel-new-level
   - before-add-to-dropbox
   - before-remove-from-dropbox
   - before-enforced-update

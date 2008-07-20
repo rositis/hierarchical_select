@@ -129,22 +129,6 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
     };
   }(hsid)).end()
 
-  // "create-new-level" event
-  .find('.hierarchical-select .create-new-level .create-new-item-create').unbind().click(function(_hsid) {
-    return function() {
-      Drupal.HierarchicalSelect.update(_hsid, 'creat-new-level', { opString : createNewItemOpString });
-      return false; // Prevent the browser from POSTing the page.
-    };
-  }(hsid)).end()
-
-  // "cancel-new-level" event"
-  .find('.hierarchical-select .create-new-level .create-new-item-cancel').unbind().click(function(_hsid) {
-    return function() {
-      Drupal.HierarchicalSelect.update(_hsid, 'cancel-new-level', { opString : cancelNewItemOpString });
-      return false; // Prevent the browser from POSTing the page (in case of the "Cancel" button).
-    };
-  }(hsid)).end()
-
   // "add-to-dropbox" event
   .find('.hierarchical-select .add-to-dropbox').unbind().click(function(_hsid) {
     return function() {
@@ -235,7 +219,6 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       break;
 
     case 'create-new-item':
-    case 'create-new-level':
       // Make sure that other Hierarchical Selects that represent the same
       // hierarchy are also updated, to make sure that they have the newly
       // created item!
@@ -249,7 +232,6 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       // TRICKY: NO BREAK HERE!
 
     case 'cancel-new-item':
-    case 'cancel-new-level':
       // After an item/level has been created/cancelled, reset focus to the
       // beginning of the hierarchical select.
       $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
@@ -292,7 +274,6 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - 'update-hierarchical-select'
   // - 'enforced-update'
   // - 'create-new-item'
-  // - 'create-new-level'
   // - 'remove-from-dropbox'
   switch (updateType) {
     case 'update-hierarchical-select':
@@ -317,8 +298,6 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
     case 'create-new-item':
     case 'cancel-new-item':
-    case 'create-new-level':
-    case 'cancel-new-level':
     case 'add-to-dropbox':
       post.push({ name : 'op', value : settings.opString });
       break;

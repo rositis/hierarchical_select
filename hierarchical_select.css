@@ -12,8 +12,7 @@
 
 .hierarchical-select-wrapper .hierarchical-select select,
 .hierarchical-select-wrapper .hierarchical-select .add-to-dropbox,
-.hierarchical-select-wrapper .hierarchical-select .create-new-item,
-.hierarchical-select-wrapper .hierarchical-select .create-new-level {
+.hierarchical-select-wrapper .hierarchical-select .create-new-item {
   margin: 0;
   margin-right: .5em;
   float: left;
@@ -27,23 +26,13 @@
 
 
 /* The pseudo-modal window for creating a new item or new level. */
-.hierarchical-select-wrapper .hierarchical-select .create-new-item,
-.hierarchical-select-wrapper .hierarchical-select .create-new-level {
+.hierarchical-select-wrapper .hierarchical-select .create-new-item {
   padding: .7em;
   border: 2px outset gray;
 }
 
 .hierarchical-select-wrapper .hierarchical-select .create-new-item {
   width: 11em;
-}
-.hierarchical-select-wrapper .hierarchical-select .create-new-level {
-  width: 21em;
-}
-
-.hierarchical-select-wrapper .hierarchical-select .create-new-level-parent {
-  margin: 0;
-  margin-right: 2em;
-  float: left;
 }
 
 .hierarchical-select-wrapper .hierarchical-select .create-new-item-create,
