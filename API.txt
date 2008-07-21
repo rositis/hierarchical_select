@@ -358,7 +358,7 @@ An example:
 
   // Apply the configuration.
   require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-  hierarchical_select_common_config_set($config_id, $config_id);
+  hierarchical_select_common_config_set($config_id, $config);
 
 
 JavaScript events
