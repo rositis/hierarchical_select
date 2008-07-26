@@ -11,7 +11,9 @@ if (Drupal.jsEnabled) {
     var td;
     var cols;
     var i = 0;;
-    $("form#views-filters table td:has(.hierarchical-select-wrapper)").each(function() {
+    $("form#views-filters, $form#views-filterblock")
+    .find('table td:has(.hierarchical-select-wrapper)')
+    .each(function() {
       i++;
       td = $(this);
       cols = td.siblings().length;
