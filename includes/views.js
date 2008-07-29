@@ -11,7 +11,7 @@ if (Drupal.jsEnabled) {
     var td;
     var cols;
     var i = 0;;
-    $("form#views-filters, $form#views-filterblock")
+    $("form#views-filters, form#views-filterblock")
     .find('table td:has(.hierarchical-select-wrapper)')
     .each(function() {
       i++;
@@ -33,14 +33,16 @@ if (Drupal.jsEnabled) {
       $("form#views-filters div table thead tr th").slice(cols).remove();
     });
 
-    $('form#views-filters').submit(function() {
+    $('form#views-filters, form#views-filterblock').submit(function() {
       // Remove the Hierarchical Select form build id and the form id, to
       // prevent them from ending up in the GET URL.
-      $('#edit-hs-form-build-id, #edit-views-filters').remove();
+      $('#edit-hs-form-build-id, #edit-views-filters, #edit-views-filterblock').remove();
 
       // Prepare the hierarchical select form elements that are used as
       // exposed filters for a GET submit.
-      $('form#views-filters .hierarchical-select-wrapper').trigger('prepare-GET-submit');
+      $('form#views-filters, form#views-filterblock')
+      .find('.hierarchical-select-wrapper')
+      .trigger('prepare-GET-submit');
     });
   });
 }
