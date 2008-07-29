@@ -5,14 +5,23 @@ Upgrading (from Hierarchical Select 2 to 3)
 1) Upgrade this module just like any other: overwrite existing files and run
    update.php.
 
-2) All modules that Hierarchical Select integrates with are split out into
+2) Upgrade to jQuery Update 2.
+
+3) Disable and uninstall the jQuery Interface module. It's no longer necessary
+   and in fact it's even *incompatible*.
+
+4) If you're using Views, update to the Views 5.x-1.x-dev tarball of May 11 or
+   later, or apply this patch:
+   http://drupal.org/files/issues/hs_compatibility.patch
+
+5) All modules that Hierarchical Select integrates with are split out into
    their own module now! Go to admin/build/modules (Site building -> Modules)
    and enable all the modules you'd like to use. E.g.:
    - Taxonomy: enable the Hierarchical Select Taxonomy module
    - Taxonomy exposed filters in Views: enable the Hierchical Select Taxonomy 
      Views module
 
-3) One very special case: if you had been using Hierarchical Select for your
+6) One very special case: if you had been using Hierarchical Select for your
    content_taxonomy CCK fields, you had been told to use the "select" widget,
    Hierarchical Select would automatically override it. Well, that's no longer
    the case. Now there's a CCK widget especially for content_taxonomy CCK

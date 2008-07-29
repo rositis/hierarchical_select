@@ -153,8 +153,9 @@ function hierarchical_select_requirements($phase) {
 
     $up_to_date = (end($updates) == $current);
     $jquery_update_v2 = (file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js'));
+    $jquery_interface = module_exists('jquery_interface');
 
-    if ($up_to_date && $jquery_update_v2) {
+    if ($up_to_date && $jquery_update_v2 && !$jquery_interface) {
       $value = t('All updates installed. jQuery Update 2.x installed.');
       $description = '';
       $severity = REQUIREMENT_OK;
@@ -178,6 +179,14 @@ function hierarchical_select_requirements($phase) {
         code of Hierarchical Select!'
       );
       $severity = REQUIREMENT_ERROR;
+    }
+    elseif ($jquery_interface) {
+      $value = t('jQuery Interface installed!');
+      $description = t('Please disable and uninstall jQuery Interface, as it
+        is incompatible with jQuery Update 2. It is very buggy anyway and any
+        module that uses it should upgrade to jQuery UI.'
+      );
+      $severity = REQUIREMENT_ERROR;      
     }
 
     $requirements['hierarchical_select'] = array(
