@@ -139,6 +139,11 @@ function hs_taxonomy_form_alter($form_id, &$form) {
         'root_term'   => TRUE,
       ),
     );
+    // When 'multiple parents' are enabled, we should support that as well!
+    if ($form['parent']['#multiple']) {
+      unset($form['parent']['#size']);
+      $form['parent']['#config']['dropbox']['status'] = 1;
+    }
   }
 
   // The forum 'container' and 'forum' forms.
