@@ -169,15 +169,15 @@ Drupal.HierarchicalSelect.cache.createAndUpdateSelects = function(hsid, subLevel
   // Remove all levels below the level in which a value was selected, if they
   // exist.
   // Note: the root level can never change because of this!
-  $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select').gt(lastUnchanged).remove();
+  $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select').slice(lastUnchanged).remove();
 
   // Create the new sublevels, by cloning the root level and then modifying
   // that clone.
-  var $rootSelect = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select select:first');
+  var $rootSelect = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select:first');
   for (var depth in subLevels) {
     var optionElements = $.map(subLevels[depth], function(item) { return '<option value="'+ item.value +'">'+ item.label +'</option>'; });
 
-    var level = 1 + parseInt(lastUnchanged) + parseInt(depth);
+    var level = parseInt(lastUnchanged) + parseInt(depth);
 
     $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select').append(
       $rootSelect.clone()
@@ -196,21 +196,21 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
   Drupal.HierarchicalSelect.cache.hasChildren(hsid, value, function() {
     console.log("Cache hit.");
     Drupal.HierarchicalSelect.cache.getSubLevels(hsid, value, function(subLevels) {
-      Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {        
+      Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update-hierarchical-select', lastUnchanged, function() {        
         if (subLevels !== false) {
           Drupal.HierarchicalSelect.cache.createAndUpdateSelects(hsid, subLevels, lastUnchanged);              
         }
         else {
           // Nothing must happen: the user selected a value that doesn't
           // have any subLevels.
-          $('#hierarchical-select-0-wrapper .hierarchical-select select').gt(lastUnchanged).remove();
+          $('#hierarchical-select-0-wrapper .hierarchical-select select').slice(lastUnchanged).remove();
         }
 
-        Drupal.HierarchicalSelect.postUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {
+        Drupal.HierarchicalSelect.postUpdateAnimations(hsid, 'update-hierarchical-select', lastUnchanged, function() {
           // Reattach the bindings.
           Drupal.HierarchicalSelect.attachBindings(hsid);
 
-          Drupal.HierarchicalSelect.triggerEvents(hsid, 'update hierarchical select');
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'update-hierarchical-select');
         });
       });
     });   
@@ -218,7 +218,7 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
     // This item was not yet requested before, so we still have to perform
     // the dynamic form submit.
     console.log("Cache miss. Querying the server.");
-    Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update hierarchical select', lastUnchanged, function() {
+    Drupal.HierarchicalSelect.preUpdateAnimations(hsid, 'update-hierarchical-select', lastUnchanged, function() {
       $.ajax(ajaxOptions); 
     });
   });
