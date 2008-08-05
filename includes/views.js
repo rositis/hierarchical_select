@@ -1,38 +1,20 @@
 // $Id$
 
+
 /**
  * @file
- * Corrects the table that contains the exposed filters for Views. It puts
- * each hierarchical select in its own row.
+ * Make Hierarchical Select work in Views' exposed filters form.
+ *
+ * Views' exposed filters form is a GET form, but since Hierarchical Select
+ * really is a combination of various form items, this will result in a very
+ * ugly and unnecessarily long GET URL, which also breaks the exposed filters.
+ * This piece of JavaScript is a necessity to make it work again, but it will
+ * of course only work when JavaScript is enabled!
  */
+
 
 if (Drupal.jsEnabled) {
   $(document).ready(function(){
-    var td;
-    var cols;
-    var i = 0;;
-    $("form#views-filters, form#views-filterblock")
-    .find('table td:has(.hierarchical-select-wrapper)')
-    .each(function() {
-      i++;
-      td = $(this);
-      cols = td.siblings().length;
-
-      // Add another row to the table.
-      $("form#views-filters > div > table > tbody")
-      .append('<tr class="odd" id="hs-new-row-' + i + '"></tr>');
-    
-      // Update colspan of the td in which our modified exposed filter exists.
-      td.attr("colspan", cols);
-
-      // Move all filters except our modified one to the newly added row.
-      td.siblings()
-      .appendTo("#hs-new-row-"+ i);
-
-      // Reduce the number of headers to the number of columns we have left.
-      $("form#views-filters div table thead tr th").slice(cols).remove();
-    });
-
     $('form#views-filters, form#views-filterblock').submit(function() {
       // Remove the Hierarchical Select form build id and the form id, to
       // prevent them from ending up in the GET URL.
