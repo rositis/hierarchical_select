@@ -108,10 +108,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   .find('.hierarchical-select > select').unbind().change(function(_hsid) {
     return function() {
       if (Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled']) {
-        var selectedOption = $(this).val();
-        if ($(this).find('option[@value='+ selectedOption +']').attr('class') == 'has-children') {
-          Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
-        }
+        Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
       }
     };
   }(hsid)).end()
@@ -282,9 +279,11 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     case 'update-hierarchical-select':
       var value = $('#'+ settings.select_id).val();
       var lastUnchanged = parseInt(settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1")) + 1;
+      var optionClass = $('#'+ settings.select_id).find('option[@value='+ value +']').attr('class');
 
-      // Don't do anything if it's one of the "no action values".
-      if (value == 'none' || value.match(/^label_\d+$/)) {
+      // Don't do anything if it's one of the "no action values" or if the
+      // option's class is 'has-no-children'.
+      if (value == 'none' || value.match(/^label_\d+$/) || optionClass == 'has-no-children') {
         Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
           // Remove the sublevels.
           $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
