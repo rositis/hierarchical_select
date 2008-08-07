@@ -303,17 +303,26 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
         // is here thanks to the ugly internal works of the content_taxonomy
         // module that don't make any sense at all. It's necessary to support
         // the 'both' (and 'cck') "save option" of content_taxonomy.
-        if ($field['multiple'] && is_array($node_field['tids'])) {
-          foreach ($node_field['tids'] as $key => $tid) {
-            if ($tid != 0) {
-              $keys[$key] = $tid;
+        if (isset($field['save']) && $field['save'] != 'tag') {
+          if ($field['multiple'] && is_array($node_field['tids'])) {
+            foreach ($node_field['tids'] as $key => $tid) {
+              if ($tid != 0) {
+                $keys[$tid] = $tid;
+              }
             }
           }
+          else {
+            $keys[$node_field['tids']] = $node_field['tids'];
+          }
+          $node_field = content_transpose_array_rows_cols(array('value' => $keys));
         }
         else {
-          $keys[$node_field['tids']] = $node_field['tids'];
+          if (!$field['multiple']) {
+            $value = $node_field['tids'];
+            $node_field['tids'] = array();
+            $node_field['tids'][0] = $value;
+          }
         }
-        $node_field = content_transpose_array_rows_cols(array('value' => $keys));
         break;
     }
   }
