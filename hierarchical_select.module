@@ -413,9 +413,12 @@ function hierarchical_select_process($element) {
   }
 
   // Check if a new item is being created.
+  $creating_new_item = FALSE;
   if (isset($element['#value']['hierarchical_select']['selects'])) {
     foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
       if ($value == 'create_new_item' && _hierarchical_select_create_new_item_is_allowed($config, $depth)) {
+        $creating_new_item = TRUE;
+
         // We want to override the select in which the "create_new_item"
         // option was selected and hide all selects after that, if they exist.
         $element['hierarchical_select']['selects'] = array_slice($element['hierarchical_select']['selects'], 0, $depth + 1);
@@ -459,12 +462,14 @@ function hierarchical_select_process($element) {
 
 
   if ($config['dropbox']['status']) {
-    // Append an "Add" button to the selects.
-    $element['hierarchical_select']['dropbox_add'] = array(
-      '#type'       => 'button',
-      '#value'      => t('Add'),
-      '#attributes' => array('class' => 'add-to-dropbox'),
-    );
+    if (!$creating_new_item) {
+      // Append an "Add" button to the selects.
+      $element['hierarchical_select']['dropbox_add'] = array(
+        '#type'       => 'button',
+        '#value'      => t('Add'),
+        '#attributes' => array('class' => 'add-to-dropbox'),
+      );
+    }
 
     if ($config['dropbox']['limit'] > 0) { // Zero as dropbox limit means no limit.
       if (count($dropbox->lineages) == $config['dropbox']['limit']) {
