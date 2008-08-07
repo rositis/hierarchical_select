@@ -244,6 +244,19 @@ function hs_taxonomy_views_config_form($view_name, $vid) {
     array('%save_lineage' => $form['hierarchical_select_config']['save_lineage']['#options'][1])
   );
 
+  // Make it clear that the dropbox will be enabled automatically when the
+  // "Force Single" setting of an exposed filter is disabled and vice versa.
+  $form['hierarchical_select_config']['dropbox']['fake_status'] = $form['hierarchical_select_config']['dropbox']['status'];
+  $form['hierarchical_select_config']['dropbox']['fake_status']['#attributes']['disabled'] = TRUE;
+  $form['hierarchical_select_config']['dropbox']['fake_status']['#description'] = t('
+    This setting depends on the %force_single setting of the exposed filter:
+    when %force_single is enabled, then the dropbox will be disabled, and vice
+    versa.',
+    array('%force_single' => t('Force Single'))
+  );
+  $form['hierarchical_select_config']['dropbox']['fake_status']['#weight'] = -5;
+  $form['hierarchical_select_config']['dropbox']['status'] = array('#type' => 'hidden', '#value' => !$exposed_filter['single']);
+
   $form['link'] = array(
     '#value' => l('Back to the view configuration', "admin/build/views/$view_name/edit"),
     '#prefix' => '<div class="hierarchical-select-config-back-link">',
