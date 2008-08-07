@@ -179,8 +179,7 @@ function hierarchical_select_update_7() {
     if (isset($config['node_count'])) {
       $config['entity_count'] = $config['node_count'];
       unset($config['node_count']);
-      $config = serialize($config);
-      $ret[] = update_sql("UPDATE {variable} SET value = '$config' WHERE name = '$config_id'");
+      db_query("UPDATE {variable} SET value = '%s' WHERE name = '%s'", serialize($config), $config_id);
     }
   }
 
