@@ -342,6 +342,8 @@ function hs_taxonomy_hierarchical_select_config_info() {
           'hierarchy'      => t($vocabulary->name),
           'entity type'    => t('Node'),
           'entity'         => implode(', ', array_map('t', $entities)),
+          'context type'   => t('Node form'),
+          'context'        => '',
           'edit link'      => "admin/content/taxonomy/edit/vocabulary/$vid",
         );
       }

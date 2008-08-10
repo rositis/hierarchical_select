@@ -387,7 +387,9 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
             'hierarchy type' => t('Taxonomy'),
             'hierarchy'      => t($vocabulary->name),
             'entity type'    => t('Node'),
-            'entity'         => t($view->name),
+            'entity'         => '',
+            'context type'   => t('Views exposed filter'),
+            'context'        => t($view->name),
             'edit link'      => "admin/build/views/$view->name/hs_config/$vid",
           );
         }

@@ -473,6 +473,8 @@ function hs_content_taxonomy_hierarchical_select_config_info() {
               'hierarchy'      => t($vocabulary->name) ." ($field_name)",
               'entity type'    => t('Node'),
               'entity'         => t($content_type['name']),
+              'context type'   => t('Node form'),
+              'context'        => '',
               'edit link'      => "admin/content/types/$content_type_name/fields/$field_name/hs_config",
             );
           }

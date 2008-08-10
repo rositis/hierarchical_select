@@ -71,7 +71,7 @@ function hierarchical_select_admin_settings() {
  * Menu callback; a table that lists all Hierarchical Select configs.
  */
 function hierarchical_select_admin_configs() {
-  $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Entity'), t('Actions'));
+  $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Entity'), t('Context type'), t('Context'), t('Actions'));
 
   // Retrieve all information items
   $info_items = array();
@@ -89,6 +89,8 @@ function hierarchical_select_admin_configs() {
       $item['hierarchy'],
       $item['entity type'],
       $item['entity'],
+      $item['context type'],
+      $item['context'],
       theme('links', array(
         array('title' => t('Edit'),   'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"),
         array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"),
