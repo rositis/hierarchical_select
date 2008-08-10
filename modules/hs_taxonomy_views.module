@@ -53,39 +53,36 @@ function hs_taxonomy_views_form_alter($form_id, &$form) {
           $vocabulary = taxonomy_get_vocabulary($vid);
           $view = $form['view']['#value'];
 
-          // Hierarchical Select only makes sense if there's a hierarchy.
-          if ($vocabulary->hierarchy > 0) {
-            // Make it use a hierarchical select.
-            require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+          // Make it use a hierarchical select.
+          require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
 
-            unset($form["filter$id"]['#options']);
-            unset($form["filter$id"]['#theme']);
-            unset($form["filter$id"]['#size']);
+          unset($form["filter$id"]['#options']);
+          unset($form["filter$id"]['#theme']);
+          unset($form["filter$id"]['#size']);
 
-            $form["filter$id"]['#type'] = 'hierarchical_select';
-            $defaults_override = array(
-              'module' => 'hs_taxonomy_views',
-              'params' => array(
-                'optional' => (bool) $view->exposed_filter[$id]['optional'],
-                'vid'      => $vid,
-              ),
-              // When the **ALL** option is selected, nothing else should be.
-              'exclusive_lineages' => array('**ALL**'),
-              // This is a GET form, so also render the flat select.
-              'render_flat_select' => 1,
-            );
-            hierarchical_select_common_config_apply($form["filter$id"], "taxonomy-views-$view->name-$vid", $defaults_override);
+          $form["filter$id"]['#type'] = 'hierarchical_select';
+          $defaults_override = array(
+            'module' => 'hs_taxonomy_views',
+            'params' => array(
+              'optional' => (bool) $view->exposed_filter[$id]['optional'],
+              'vid'      => $vid,
+            ),
+            // When the **ALL** option is selected, nothing else should be.
+            'exclusive_lineages' => array('**ALL**'),
+            // This is a GET form, so also render the flat select.
+            'render_flat_select' => 1,
+          );
+          hierarchical_select_common_config_apply($form["filter$id"], "taxonomy-views-$view->name-$vid", $defaults_override);
 
-            // Inherit #config['dropbox']['status'] from the exposed filter
-            // settings.
-            $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
+          // Inherit #config['dropbox']['status'] from the exposed filter
+          // settings.
+          $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
 
-            // Inherit #required from the exposed filter settings.
-            $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
+          // Inherit #required from the exposed filter settings.
+          $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
 
-            // Put the altered exposed filters in a separate table row.
-            hierarchical_select_common_views_exposed_filters_reposition();
-          }
+          // Put the altered exposed filters in a separate table row.
+          hierarchical_select_common_views_exposed_filters_reposition();
         }
       }
     }
