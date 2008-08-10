@@ -236,8 +236,10 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "  'level_labels' => array(\n";
   $output .= "    'status' => ". $config['level_labels']['status'] .",\n";
   $output .= "    'labels' => array(\n";
-  foreach ($config['level_labels']['labels'] as $depth => $label) {
-  $output .= "      $depth => '$label',\n";
+  if (isset($config['level_labels']['labels'])) {
+    foreach ($config['level_labels']['labels'] as $depth => $label) {
+      $output .= "      $depth => '$label',\n";
+    }
   }
   $output .= "    ),\n";
   $output .= "  ),\n";
@@ -250,13 +252,17 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "  'editability' => array(\n";
   $output .= "    'status' => ". $config['editability']['status'] .",\n";
   $output .= "    'item_types' => array(\n";
-  foreach ($config['editability']['item_types'] as $depth => $item_type) {
-  $output .= "      $depth => '$item_type',\n";
+  if (isset($config['editability']['item_types'])) {
+    foreach ($config['editability']['item_types'] as $depth => $item_type) {
+      $output .= "      $depth => '$item_type',\n";
+    }
   }
   $output .= "    ),\n";
   $output .= "    'allowed_levels' => array(\n";
-  foreach ($config['editability']['allowed_levels'] as $depth => $allowed_level) {
-  $output .= "      $depth => $allowed_level,\n";
+  if (isset($config['editability']['allowed_levels'])) {
+    foreach ($config['editability']['allowed_levels'] as $depth => $allowed_level) {
+      $output .= "      $depth => $allowed_level,\n";
+    }    
   }
   $output .= "    ),\n";
   $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
