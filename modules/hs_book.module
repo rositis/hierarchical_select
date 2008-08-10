@@ -112,7 +112,7 @@ function hs_book_hierarchical_select_valid_item($item, $params) {
     return TRUE;
   }
 
-  $count = db_result(db_query(db_rewrite_sql("SELECT COUNT(nid) FROM {book} WHERE nid = %d"), $item));
+  $count = db_result(db_query(db_rewrite_sql("SELECT COUNT(n.nid) FROM {book} n WHERE n.nid = %d"), $item));
   return ($count == 1);
 }
 
