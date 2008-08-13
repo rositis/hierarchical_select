@@ -127,7 +127,7 @@ $.fn.extend({
 		return $.effects[fx] ? $.effects[fx].call(this, {method: fx, options: o || {}, duration: speed, callback: callback }) : null;
 	},
 	show: function() {
-		if(!arguments[0] || (arguments[0].constructor == Number || /(slow|normal|fast)/.test(arguments[0])))
+		if(!arguments[0] || (arguments[0].constructor == Number || (/(slow|normal|fast)/).test(arguments[0])))
 			return this._show.apply(this, arguments);
 		else {
 			var o = arguments[1] || {}; o['mode'] = 'show';
@@ -135,7 +135,7 @@ $.fn.extend({
 		}
 	},
 	hide: function() {
-		if(!arguments[0] || (arguments[0].constructor == Number || /(slow|normal|fast)/.test(arguments[0])))
+		if(!arguments[0] || (arguments[0].constructor == Number || (/(slow|normal|fast)/).test(arguments[0])))
 			return this._hide.apply(this, arguments);
 		else {
 			var o = arguments[1] || {}; o['mode'] = 'hide';
@@ -143,7 +143,7 @@ $.fn.extend({
 		}
 	},
 	toggle: function(){
-		if(!arguments[0] || (arguments[0].constructor == Number || /(slow|normal|fast)/.test(arguments[0])) || (arguments[0].constructor == Function))
+		if(!arguments[0] || (arguments[0].constructor == Number || (/(slow|normal|fast)/).test(arguments[0])) || (arguments[0].constructor == Function))
 			return this.__toggle.apply(this, arguments);
 		else {
 			var o = arguments[1] || {}; o['mode'] = 'toggle';
@@ -195,7 +195,7 @@ jQuery.each(['backgroundColor', 'borderBottomColor', 'borderLeftColor', 'borderR
 						Math.max(Math.min( parseInt((fx.pos * (fx.end[1] - fx.start[1])) + fx.start[1]), 255), 0),
 						Math.max(Math.min( parseInt((fx.pos * (fx.end[2] - fx.start[2])) + fx.start[2]), 255), 0)
 				].join(",") + ")";
-		}
+		};
 });
 
 // Color Conversion functions from highlightFade
@@ -228,11 +228,11 @@ function getRGB(color) {
 
 		// Look for rgba(0, 0, 0, 0) == transparent in Safari 3
 		if (result = /rgba\(0, 0, 0, 0\)/.exec(color))
-				return colors['transparent']
+				return colors['transparent'];
 
 		// Otherwise, we're most likely dealing with a named color
 		return colors[jQuery.trim(color).toLowerCase()];
-}
+};
 
 function getColor(elem, attr) {
 		var color;

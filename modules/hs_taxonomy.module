@@ -17,9 +17,24 @@ function hs_taxonomy_form_alter($form_id, &$form) {
   // Add per-vocabulary settings for Hierarchical Select.
   if ($form_id == 'taxonomy_form_vocabulary') {
     require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-    drupal_add_js(drupal_get_path('module', 'hs_taxonomy') .'/hs_taxonomy.js', 'module');
 
     $vid = $form['vid']['#value'];
+
+    if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
+      $form['tags']['#attributes']['disabled'] = TRUE;
+      $form['tags']['#description'] = t(
+        "This setting is irrelevant when you're using Hierarchical Select.
+        <br />Use Hierarchical Select's %editability-settings instead.",
+        array('%editability-settings' => t('Editability settings'))
+      );
+      $form['multiple']['#attributes']['disabled'] = TRUE;
+      $form['multiple']['#description'] = t(
+        "This setting is managed by the Hierarchical Select configuration, by
+        the %enable-dropbox setting.",
+        array('%enable-dropbox' => t('Enable the dropbox'))
+      );
+    }
+
     $split = array_search('weight', array_keys($form)) + 1;
     $first_part = array_slice($form, 0, $split);
     $second_part = array_slice($form, $split);
@@ -27,7 +42,7 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
     $form['hierarchical_select_status'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Use the Hierarchical Select form element for this vocabulary.'),
+      '#title' => '<strong>'. t('Use the Hierarchical Select form element for this vocabulary.') .'</strong>',
       '#default_value' => variable_get("taxonomy_hierarchical_select_$vid", 0),
       '#description' => t(
         'When checked, the %free_tagging and %multiple_values settings will
