@@ -154,9 +154,20 @@ function hierarchical_select_requirements($phase) {
     $up_to_date = (end($updates) == $current);
     $jquery_update_v2 = (file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js'));
     $jquery_interface = module_exists('jquery_interface');
+    $hierarchical_select_weight = db_result(db_query("SELECT weight FROM {system} WHERE type = 'module' AND name = 'hierarchical_select'"));
+    $weight_errors = array();
+    foreach (module_implements('hierarchical_select_root_level') as $module) {
+      $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = '%s'", $module));
+      if (!($hierarchical_select_weight > $weight)) {
+        $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
+        $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+        $weight_errors[] = t('!module (!weight)', array('!module' => $module_info['name'], '!weight' => $weight));
+      }
+    }
+    
 
-    if ($up_to_date && $jquery_update_v2 && !$jquery_interface) {
-      $value = t('All updates installed. jQuery Update 2.x installed.');
+    if ($up_to_date && $jquery_update_v2 && !$jquery_interface && !count($weight_errors)) {
+      $value = t('All updates installed. jQuery Update 2.x installed. Module weights are ok.');
       $description = '';
       $severity = REQUIREMENT_OK;
     }
@@ -187,6 +198,15 @@ function hierarchical_select_requirements($phase) {
         module that uses it should upgrade to jQuery UI.'
       );
       $severity = REQUIREMENT_ERROR;      
+    }
+    elseif ($weight_errors) {
+      $value = t('Module weight incorrectly configured!');
+      $description = t(
+        'The weight of the Hierarchical Select module (!weight) is not
+        strictly higher than the weight of the following modules',
+        array('!weight' => $hierarchical_select_weight)
+      ) .':'. theme('item_list', $weight_errors);
+      $severity = REQUIREMENT_ERROR;
     }
 
     $requirements['hierarchical_select'] = array(
