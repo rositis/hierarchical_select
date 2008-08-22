@@ -83,6 +83,46 @@ that includes Drupal core modules). Simply move the changes from the
 hook_form_alter() implementations into the corresponding form definitions.
 
 
+Addressing Views exposed filters display issues
+-----------------------------------------------
+When using Hierarchical Select to alter an exposed Views filter (i.e. an 
+exposed taxonomy filter), you may run into display issues due to the Views
+method theme_views_filters(), which renders filters as columns within a table.
+This results in behavior where the select boxes within the Hierarchical Select
+widget may split onto multiple lines or be too cramped together. The following
+theme override sample, written for the Zen theme, renders the filters as rows 
+within a table, leaving much more room for the Hierarchical Select widget. To
+use, follow the instructions for overriding theme functions described at 
+http://drupal.org/node/55126.
+
+<?php
+function zen_views_filters($form) {
+  $view = $form['view']['#value'];
+  $rows = array();
+  $form['submit']['#value'] = t('Search');
+  if (isset($view->exposed_filter)) {
+    foreach ($view->exposed_filter as $count => $expose) {
+      $rows[] = array(
+        array('data' => $expose['label'], 'header' => TRUE),
+        drupal_render($form["op$count"]) . drupal_render($form["filter$count"]),
+      );
+    }
+  }
+  $rows[] = array(
+    array('data' => '', 'header' => TRUE),
+    drupal_render($form['submit'])
+  );
+  if (count($rows) > 1) {
+    $output = drupal_render($form['q']) . theme('table', array(), $rows) . drupal_render($form);
+  }
+  else {
+    $output = drupal_render($form);
+  }
+  return $output;
+}
+?>
+
+
 Sponsors
 --------
 * Initial development:
