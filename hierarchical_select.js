@@ -281,9 +281,21 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       var lastUnchanged = parseInt(settings.select_id.replace(/^.*-hierarchical-select-selects-(\d+)$/, "$1")) + 1;
       var optionClass = $('#'+ settings.select_id).find('option[@value='+ value +']').attr('class');
 
-      // Don't do anything if it's one of the "no action values" or if the
-      // option's class is 'has-no-children'.
-      if (value == 'none' || value.match(/^label_\d+$/) || optionClass == 'has-no-children') {
+      // Don't do anything (also no callback to the server!) when the selected
+      // item is:
+      // - the '<none>' option, or
+      // - a level label, or
+      // - an option of class 'has-no-children', and
+      //   (the renderFlatSelect setting is disabled or the dropbox is enabled).
+      if (value == 'none'
+          || value.match(/^label_\d+$/)
+          || (optionClass == 'has-no-children'
+              && (Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false
+                  || $('#hierarchical-select-'+ hsid +'-wrapper .dropbox').length > 0
+                 )
+             )
+         )
+      {
         Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
           // Remove the sublevels.
           $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
@@ -346,10 +358,15 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
   // Use the client-side cache to update the hierarchical select when:
   // - the hierarchical select is being updated (i.e. no add/remove), and
+  // - the renderFlatSelect setting is disabled, and
   // - the cache system is available, and
   // - the cache system is running.
   // Otherwise, perform a normal dynamic form submit.
-  if (updateType == 'update-hierarchical-select' && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
+  if (updateType == 'update-hierarchical-select'
+      && Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false
+      && Drupal.HierarchicalSelect.cache != null
+      && Drupal.HierarchicalSelect.cache.status())
+  {
     Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, value, lastUnchanged, ajaxOptions);
   }
   else {

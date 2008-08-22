@@ -315,8 +315,9 @@ function hierarchical_select_process($element) {
       'HierarchicalSelect' => array(
         'settings' => array(
           $hsid => array(
-            'animationDelay' => ($config['animation_delay'] == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
-            'cacheId'        => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
+            'animationDelay'   => ($config['animation_delay'] == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
+            'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
+            'renderFlatSelect' => $config['render_flat_select'],
           ),
         ),
       )
@@ -1019,7 +1020,7 @@ function _hierarchical_select_process_render_flat_select($hierarchy, $dropbox, $
   $selection = array();
   if ($config['dropbox']['status']) {
     foreach ($dropbox->lineages_selections as $lineage_selection) {
-      $selection += $lineage_selection;
+      $selection = array_merge($selection, $lineage_selection);
     }
   }
   else {
