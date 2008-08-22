@@ -395,6 +395,7 @@ Retrieving all hsids in the current document can be done like this:
   }
 
 The following events are triggered:
+  - change-hierarchical-select
   - update-hierarchical-select
   - create-new-item
   - cancel-new-item

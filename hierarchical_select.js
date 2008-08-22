@@ -301,6 +301,9 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
           $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
           .slice(lastUnchanged)
           .remove();
+
+          // The selection of this hierarchical select has changed!
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'change-hierarchical-select', settings);
         });
         return;
       }
@@ -352,6 +355,11 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         }
 
         Drupal.HierarchicalSelect.triggerEvents(hsid, updateType, settings);
+
+        if (updateType == 'update-hierarchical-select') {
+          // The selection of this hierarchical select has changed!
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'change-hierarchical-select', settings);
+        }
       });
     }
   };
@@ -367,7 +375,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       && Drupal.HierarchicalSelect.cache != null
       && Drupal.HierarchicalSelect.cache.status())
   {
-    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, value, lastUnchanged, ajaxOptions);
+    Drupal.HierarchicalSelect.cache.updateHierarchicalSelect(hsid, value, settings, lastUnchanged, ajaxOptions);
   }
   else {
     Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {

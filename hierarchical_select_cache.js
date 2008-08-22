@@ -191,7 +191,7 @@ Drupal.HierarchicalSelect.cache.createAndUpdateSelects = function(hsid, subLevel
   }
 };
 
-Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value, lastUnchanged, ajaxOptions) {
+Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value, settings, lastUnchanged, ajaxOptions) {
   // If the selected value has children
   Drupal.HierarchicalSelect.cache.hasChildren(hsid, value, function() {
     console.log("Cache hit.");
@@ -210,7 +210,10 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
           // Reattach the bindings.
           Drupal.HierarchicalSelect.attachBindings(hsid);
 
-          Drupal.HierarchicalSelect.triggerEvents(hsid, 'update-hierarchical-select');
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'update-hierarchical-select', settings);
+
+          // The selection of this hierarchical select has changed!
+          Drupal.HierarchicalSelect.triggerEvents(hsid, 'change-hierarchical-select', settings);
         });
       });
     });   
