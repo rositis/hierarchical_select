@@ -155,6 +155,15 @@ function hierarchical_select_requirements($phase) {
     $jquery_update_v2 = (file_exists(drupal_get_path('module', 'jquery_update') .'/compat.js'));
     $jquery_interface = module_exists('jquery_interface');
     $hierarchical_select_weight = db_result(db_query("SELECT weight FROM {system} WHERE type = 'module' AND name = 'hierarchical_select'"));
+    $core_overriding_modules = array('hs_book', 'hs_menu', 'hs_taxonomy');
+    $path_errors = array();
+    foreach ($core_overriding_modules as $module) {
+      $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
+      if (strpos($filename, 'modules/') === 0) {
+        $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+        $path_errors[] = t('!module', array('!module' => $module_info['name']));
+      }
+    }
     $weight_errors = array();
     foreach (module_implements('hierarchical_select_root_level') as $module) {
       $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = '%s'", $module));
@@ -166,8 +175,8 @@ function hierarchical_select_requirements($phase) {
     }
     
 
-    if ($up_to_date && $jquery_update_v2 && !$jquery_interface && !count($weight_errors)) {
-      $value = t('All updates installed. jQuery Update 2.x installed. Module weights are ok.');
+    if ($up_to_date && $jquery_update_v2 && !$jquery_interface && !count($path_errors) && !count($weight_errors)) {
+      $value = t('All updates installed. jQuery Update 2.x installed. Implementation modules are installed correctly.');
       $description = '';
       $severity = REQUIREMENT_OK;
     }
@@ -197,6 +206,17 @@ function hierarchical_select_requirements($phase) {
         is incompatible with jQuery Update 2. It is very buggy anyway and any
         module that uses it should upgrade to jQuery UI.'
       );
+      $severity = REQUIREMENT_ERROR;      
+    }
+    elseif ($path_errors) {
+      $value = t('Modules incorrectly installed!');
+      $description = t(
+        "The following modules implement Hierarchical Select module for Drupal
+        core modules, but are installed in the wrong location. They're
+        installed in core's <code>modules</code> directory, but should be
+        installed in either the <code>sites/all/modules</code> directory or a
+        <code>sites/yoursite.com/modules</code> directory"
+      ) .':'. theme('item_list', $path_errors);
       $severity = REQUIREMENT_ERROR;      
     }
     elseif ($weight_errors) {

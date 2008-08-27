@@ -27,14 +27,16 @@ Integrates with
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy)
 * Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
-* Views 5.x-1.x-dev tarball of May 11 or later (http://drupal.org/project/views)
+* Views 5.x-1.x-dev tarball of May 11, 2008 or later (http://drupal.org/project/views)
   or apply this patch: http://drupal.org/files/issues/hs_compatibility.patch
 
 
 Installation
 ------------
-1) Place this module directory in your modules folder (this will usually be
-"sites/all/modules/").
+1) Place this module directory in your "modules" folder (this will usually be
+"sites/all/modules/"). Don't install your module in Drupal core's "modules"
+folder, since that will cause problems and is bad practice in general. If
+"sites/all/modules" doesn't exist yet, just create it.
 
 2) Install the modules it depends on. Don't forget to copy the jquery.js file
 included in the jQuery Update module to the "misc" directory!
