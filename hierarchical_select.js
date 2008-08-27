@@ -288,14 +288,21 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       // - the '<none>' option, or
       // - a level label, or
       // - an option of class 'has-no-children', and
-      //   (the renderFlatSelect setting is disabled or the dropbox is enabled).
+      //   (the renderFlatSelect setting is disabled or the dropbox is enabled)
+      //   and
+      //   (the createNewLevels setting is disabled).
       if (value == 'none'
           || value.match(/^label_\d+$/)
           || (optionClass == 'has-no-children'
-              && (Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false
-                  || $('#hierarchical-select-'+ hsid +'-wrapper .dropbox').length > 0
-                 )
+             &&
+             (
+               (Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false
+                || $('#hierarchical-select-'+ hsid +'-wrapper .dropbox').length > 0
+               )
+               &&
+               Drupal.settings.HierarchicalSelect.settings[hsid]['createNewLevels'] == false
              )
+           )
          )
       {
         Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {

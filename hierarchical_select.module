@@ -337,7 +337,8 @@ function hierarchical_select_process($element) {
           $hsid => array(
             'animationDelay'   => ($config['animation_delay'] == 0) ? variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
             'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
-            'renderFlatSelect' => $config['render_flat_select'],
+            'renderFlatSelect' => (isset($config['render_flat_select'])) ? $config['render_flat_select'] : 0,
+            'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? $config['editability']['allow_new_levels'] : 0,
           ),
         ),
       )
