@@ -188,9 +188,11 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       if ($createNewItemInput.size() == 0) {
         // Give focus to the level below the one that has changed, if it
         // exists.
-        $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
-        .slice(lastUnchanged, lastUnchanged + 1)
-        .focus();
+        if (!$.browser.mozilla) { // Don't give focus in Firefox: the user would have to click twice before he can make a selection.
+          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+          .slice(lastUnchanged, lastUnchanged + 1)
+          .focus();
+        }
       }
       else {
         // Give focus to the input field of the "create new item/level"
