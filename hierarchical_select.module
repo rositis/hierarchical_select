@@ -252,18 +252,23 @@ function hierarchical_select_json() {
   // drupal_json() function.
   drupal_set_header('Content-Type: text/javascript; charset=utf-8');
 
-  $form_id = $_POST['form_id'];
   $hs_form_build_id = $_POST['hs_form_build_id'];
+
+  // Collect all necessary variables.
+  $cached = cache_get($hs_form_build_id, 'cache');
+  $storage = unserialize($cached->data);
+
+  // Ensure that the form id in the POST array is the same as the one of the
+  // stored parameters of the original form. For 99% of the forms, this step
+  // is not necessary, but when a hierarchical_select form item is inside a
+  // form in a subform_element in a form, then it is necessary.
+  $form_id = $_POST['form_id'] = $storage['parameters'][0];
 
   if (HS_DEVELOPER_MODE) {
     dpm("Hierarchical Select AJAX request.
     form_id: $form_id
     hs_form_build_id: $hs_form_build_id");
   }
-
-  // Collect all necessary variables.
-  $cached = cache_get($hs_form_build_id, 'cache');
-  $storage = unserialize($cached->data);
 
   // Retrieve and process the form.
   $form = call_user_func_array('drupal_retrieve_form', $storage['parameters']);
