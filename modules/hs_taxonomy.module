@@ -167,6 +167,7 @@ function hs_taxonomy_form_alter($form_id, &$form) {
   else if ($form_id == 'forum_form_forum' || $form_id == 'forum_form_container') {
     unset($form['parent'][0]['#options']);
     unset($form['parent'][0]['#theme']);
+    unset($form['parent'][0]['#required']);
     $form['parent'][0]['#type'] = 'hierarchical_select';
     $form['parent'][0]['#config'] = array(
       'module'          => 'hs_taxonomy',
