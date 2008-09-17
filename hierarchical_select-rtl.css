@@ -10,11 +10,29 @@
                   they *are* set. */
 }
 
+.hierarchical-select-wrapper .hierarchical-select .selects {
+  float: right; /* If a block is floated, it won't consume as much width as
+                  available, only just enough. This allows the grippie to
+                  perfectly scale with the with consumed by the selects. */ 
+}
+
+.hierarchical-select-wrapper .hierarchical-select .selects .grippie {
+  clear: right; /* clear: left; */
+  height: 9px;
+  overflow: hidden;
+  background: #eee url(images/grippie.png) no-repeat center 2px;
+  border: 1px solid #ddd;
+  border-top-width: 0;
+  cursor: s-resize;
+  margin-left: 0.5em; /* margin-right: 0.5em; */ /* Give the grippie the same margin as each select. */
+}
+
 .hierarchical-select-wrapper .hierarchical-select select,
 .hierarchical-select-wrapper .hierarchical-select .add-to-dropbox,
 .hierarchical-select-wrapper .hierarchical-select .create-new-item {
   margin: 0;
   margin-left: .5em; /* margin-right: .5em; */
+  margin-bottom: 3px;
   float: right; /* float: left; */
 }
 

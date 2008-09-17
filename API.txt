@@ -74,6 +74,7 @@ element type:
       'animation_delay'    => 400,
       'exclusive_lineages' => array(),
       'render_flat_select' => 0,
+      'resizable'          => 1,
     ),
     '#default_value' => '83',
   ); 
@@ -183,6 +184,9 @@ array. These are the items it can contain:
    (or, alternatively, the 'prepare-GET-submit' event  that can be triggered,
    see the JavaScript events section for details) and you have a work-around
    (which, admittedly, only works when JS is enabled).
+
+ - resizable (optional, defaults to 1)
+   Makes the hierarchical select resizable.
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 

@@ -4,6 +4,8 @@
 
 Drupal.HierarchicalSelect = {};
 
+Drupal.HierarchicalSelect.state = [];
+
 Drupal.HierarchicalSelect.context = function() {
   return $("form .hierarchical-select-wrapper");
 };
@@ -15,7 +17,11 @@ Drupal.HierarchicalSelect.initialize = function() {
 
   for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
     Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
+    Drupal.HierarchicalSelect.state[hsid] = {};
     this.transform(hsid);
+    if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
+      this.resizable(hsid);
+    }
     this.attachBindings(hsid);
     if (this.cache != null && this.cache.status()) {
       this.cache.load(hsid);
@@ -35,14 +41,69 @@ Drupal.HierarchicalSelect.transform = function(hsid) {
   // we want to continue to use the "Remove" checkboxes.
   .find('*').hide().end()
   // Put a "Remove" link there instead.
-  .append('<a href="">'+ removeString +'</a>');
+  .append('<a href="">'+ removeString +'</a>');  
+};
+
+Drupal.HierarchicalSelect.resizable = function(hsid) {
+  var $selectsWrapper = $('#hierarchical-select-' + hsid + '-wrapper .hierarchical-select .selects', Drupal.HierarchicalSelect.context);
+
+  // Append the drag handle ("grippie").
+  $selectsWrapper.append($('<div class="grippie"></div>'));
+
+  // jQuery object that contains all selects in the hierarchical select, to
+  // speed up DOM manipulation during dragging.
+  var $selects = $selectsWrapper.find('select');
+
+  var defaultHeight = Drupal.HierarchicalSelect.state[hsid].defaultHeight = $selects.slice(0, 1).height();
+  var margin = Drupal.HierarchicalSelect.state[hsid].margin = parseInt($selects.slice(0, 1).css('margin-bottom').replace(/^(\d+)px$/, "$1"));
+
+  // Bind the drag event.
+  $('.grippie', Drupal.HierarchicalSelect.context)
+  .mousedown(startDrag)
+  .dblclick(function() {
+    if (Drupal.HierarchicalSelect.state[hsid].resizedHeight == undefined) {
+      Drupal.HierarchicalSelect.state[hsid].resizedHeight = defaultHeight;
+    }
+    var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.5 * defaultHeight;
+    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, margin);
+  });
+
+  function startDrag(e) {
+    staticOffset = $selects.slice(0, 1).height() - e.pageY;
+    $selects.css('opacity', 0.25);
+    $(document).mousemove(performDrag).mouseup(endDrag);
+    return false;
+  }
+
+  function performDrag(e) {
+    var resizedHeight = staticOffset + e.pageY;
+    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, margin);
+    return false;
+  }
+
+  function endDrag(e) {
+    var height = $selects.slice(0, 1).height();
+
+    $(document).unbind("mousemove", performDrag).unbind("mouseup", endDrag);
+    $selects.css('opacity', 1);
+    if (height > defaultHeight) {
+      Drupal.HierarchicalSelect.state[hsid].resizedHeight = height;
+    }
+  }
+};
+
+Drupal.HierarchicalSelect.resize = function($selects, defaultHeight, resizedHeight, margin) {
+  $selects
+  .attr('size', (resizedHeight > defaultHeight) ? 2 : 1)
+  .height(Math.max(defaultHeight + margin, resizedHeight)); // Without the margin component, the height() method would allow the select to be sized to low: defaultHeight - margin.
 };
 
 Drupal.HierarchicalSelect.disableForm = function(hsid) {
   // Disable *all* submit buttons in this form, as well as all input-related
   // elements of the current hierarchical select.
   $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]')
-  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select > *')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input')
   .attr('disabled', true);
 
   // Add the 'waiting' class. Default style: make everything transparent.
@@ -56,7 +117,8 @@ Drupal.HierarchicalSelect.enableForm = function(hsid) {
   // This method undoes everything the disableForm() method did.
 
   $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]')
-  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select > *')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select')
+  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input')
   .attr('disabled', false);
 
   $('#hierarchical-select-' + hsid +'-wrapper').removeClass('waiting');
@@ -105,7 +167,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   })
 
   // "update-hierarchical-select" event
-  .find('.hierarchical-select > select').unbind().change(function(_hsid) {
+  .find('.hierarchical-select .selects select').unbind().change(function(_hsid) {
     return function() {
       if (Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled']) {
         Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
@@ -156,7 +218,7 @@ Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastU
       // Drop out the selects of the levels deeper than the select of the
       // level that just changed.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
-      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context).slice(lastUnchanged);
+      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context).slice(lastUnchanged);
       if ($animatedSelects.size() > 0) {
         $animatedSelects.hide();
         for (var i = 0; i < $animatedSelects.size(); i++) {
@@ -181,6 +243,16 @@ Drupal.HierarchicalSelect.preUpdateAnimations = function(hsid, updateType, lastU
 };
 
 Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, lastUnchanged, callback) {
+  if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
+    // Restore the resize.  
+    Drupal.HierarchicalSelect.resize(
+      $('#hierarchical-select-' + hsid + '-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context),
+      Drupal.HierarchicalSelect.state[hsid].defaultHeight,
+      Drupal.HierarchicalSelect.state[hsid].resizedHeight,
+      Drupal.HierarchicalSelect.state[hsid].margin
+    );
+  }
+
   switch (updateType) {
     case 'update-hierarchical-select':
       var $createNewItemInput = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-input', Drupal.HierarchicalSelect.context);
@@ -189,7 +261,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
         // Give focus to the level below the one that has changed, if it
         // exists.
         if (!$.browser.mozilla) { // Don't give focus in Firefox: the user would have to click twice before he can make a selection.
-          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
           .slice(lastUnchanged, lastUnchanged + 1)
           .focus();
         }
@@ -203,7 +275,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       // Hide the loaded selects after the one that was just changed, then
       // drop them in.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings[hsid]['animationDelay'];
-      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context).slice(lastUnchanged);
+      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context).slice(lastUnchanged);
       if ($animatedSelects.size() > 0) {
         $animatedSelects.hide();
         for (var i = 0; i < $animatedSelects.size(); i++) {
@@ -236,7 +308,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
     case 'cancel-new-item':
       // After an item/level has been created/cancelled, reset focus to the
       // beginning of the hierarchical select.
-      $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+      $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
       .slice(0, 1)
       .focus();
 
@@ -250,7 +322,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
         callback();
       }
       break;
-  } 
+  }
 };
 
 Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType, settings) {
@@ -307,7 +379,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       {
         Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
           // Remove the sublevels.
-          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select', Drupal.HierarchicalSelect.context)
+          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
           .slice(lastUnchanged)
           .remove();
 
@@ -346,9 +418,12 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
       .html($('.hierarchical-select-wrapper > *', $(response.output)));
 
-      // Transform the hierarchical select and/or dropbox to the JS variant and
-      // re-enable the disabled form items.
+      // Transform the hierarchical select and/or dropbox to the JS variant,
+      // make it resizable again and re-enable the disabled form items.
       Drupal.HierarchicalSelect.transform(hsid);
+      if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
+        Drupal.HierarchicalSelect.resizable(hsid);
+      }
       Drupal.HierarchicalSelect.enableForm(hsid);
 
       Drupal.HierarchicalSelect.postUpdateAnimations(hsid, updateType, lastUnchanged, function() {
@@ -392,7 +467,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     });
   }
 };
-  
+
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
     // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,

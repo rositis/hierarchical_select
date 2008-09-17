@@ -169,11 +169,11 @@ Drupal.HierarchicalSelect.cache.createAndUpdateSelects = function(hsid, subLevel
   // Remove all levels below the level in which a value was selected, if they
   // exist.
   // Note: the root level can never change because of this!
-  $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select').slice(lastUnchanged).remove();
+  $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select').slice(lastUnchanged).remove();
 
   // Create the new sublevels, by cloning the root level and then modifying
   // that clone.
-  var $rootSelect = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select > select:first');
+  var $rootSelect = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select:first');
   for (var depth in subLevels) {
     var optionElements = $.map(subLevels[depth], function(item) { return '<option value="'+ item.value +'">'+ item.label +'</option>'; });
 
@@ -203,7 +203,7 @@ Drupal.HierarchicalSelect.cache.updateHierarchicalSelect = function(hsid, value,
         else {
           // Nothing must happen: the user selected a value that doesn't
           // have any subLevels.
-          $('#hierarchical-select-0-wrapper .hierarchical-select select').slice(lastUnchanged).remove();
+          $('#hierarchical-select-' + hsid + '-wrapper .hierarchical-select .selects select').slice(lastUnchanged).remove();
         }
 
         Drupal.HierarchicalSelect.postUpdateAnimations(hsid, 'update-hierarchical-select', lastUnchanged, function() {

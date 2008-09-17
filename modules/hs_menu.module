@@ -152,6 +152,7 @@ function _hs_menu_apply(&$form, $mid) {
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
+    'resizable'       => 1,
     'level_labels' => array(
       'status' => 0,
     ),

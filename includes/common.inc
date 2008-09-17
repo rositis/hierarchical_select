@@ -40,6 +40,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
       'allow_new_levels' => 0,
       'max_levels'       => 3,
     ),
+    'resizable' => 1,
   );
 
   // Allow new defaults to be set.
@@ -166,8 +167,8 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#type' => 'radios',
       '#title' => t('Display the !entity count', array('!entity' => $strings['entity'])),
       '#description' => t(
-        'When you enable this, the user will see the number of !entities that
-        match the current !item listed between brackets.',
+        'When enabled, the user will see the number of !entities that match
+        the current !item listed between brackets.',
         array('!entities' => $strings['entities'], '!item' => $strings['item'])
       ),
       '#options' => array(
@@ -178,6 +179,22 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'entity-count'),
     );
   }
+
+  $form['resizable'] = array(
+    '#type' => 'radios',
+    '#title' => t('Resizable'),
+    '#description' => t(
+      "When enabled, a handle appears below the Hierarchical Select to allow
+      the user to dynamically resize it. Double clicking will toggle between
+      the smallest and a sane 'big size'."
+    ),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled'),
+    ),
+    '#default_value' => $config['resizable'],
+    '#attributes' => array('class' => 'resizable'),
+  );
 
   $form['level_labels'] = array(
     '#tree' => TRUE,

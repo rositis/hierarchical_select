@@ -112,6 +112,7 @@ function hierarchical_select_elements() {
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
       'entity_count'    => 0,
+      'resizable'       => 1,
       'level_labels' => array(
         'status' => 0,
         'labels' => array()
@@ -344,6 +345,7 @@ function hierarchical_select_process($element) {
             'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
             'renderFlatSelect' => (isset($config['render_flat_select'])) ? $config['render_flat_select'] : 0,
             'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? $config['editability']['allow_new_levels'] : 0,
+            'resizable'        => (isset($config['resizable'])) ? $config['resizable'] : 0,
           ),
         ),
       )
@@ -925,6 +927,8 @@ function _hierarchical_select_process_calculate_selections(&$element) {
  */
 function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
   $form['#tree'] = TRUE;
+  $form['#prefix'] = '<div class="selects">';
+  $form['#suffix'] = '</div>';
 
   foreach ($hierarchy->lineage as $depth => $selected_item) {
     $form[$depth] = array(
@@ -1138,6 +1142,11 @@ function _hierarchical_select_process_calculate_return_value($hierarchy, $dropbo
  */
 function _hierarchical_select_setup_js() {
   static $ran_once;
+  
+  $jquery_ui_components = array(
+    'effects.core',
+    'effects.drop',
+  );
 
   if (!$ran_once) {
     $ran_once = TRUE;
@@ -1160,11 +1169,12 @@ function _hierarchical_select_setup_js() {
       jquery_form_add();
     }
     if (!module_exists('jquery_ui')) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/js/jquery.ui/effects.core.js');
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/js/jquery.ui/effects.drop.js');
+      foreach ($jquery_ui_components as $component) {
+        drupal_add_js(drupal_get_path('module', 'hierarchical_select') . "/js/jquery.ui/$component.js");
+      }
     }
     else {
-      jquery_ui_add(array('effects.core', 'effects.drop'));
+      jquery_ui_add($jquery_ui_components);
     }
     drupal_add_js(array('HierarchicalSelect' => array('url' => $url)), 'setting');
   }
@@ -1966,7 +1976,7 @@ function _hierarchical_select_options($element) {
     else {
       $class = ($element['#childinfo'][$key] == 0) ? 'has-no-children' : 'has-children';
     }
-    
+
     $options .= '<option value="'. check_plain($key) .'" class="'. $class .'"'. $selected .'>'. check_plain($choice) .'</option>';
   }
   return $options;
