@@ -68,12 +68,14 @@ cfg.editability = function(configId) {
 
   var showHide = function(speed) {
     var $affected = $('.editability-per-level-settings, .form-item:has(.editability-allow-new-levels)', cfg.context(configId));
-    var $maxLevels = $('.editability-max-levels', cfg.context(configId)).parent();
+    var $maxLevels = $('.form-item:has(.editability-max-levels)', cfg.context(configId));
     if ($status.is(':checked')) {
       if ($allowNewLevels.is(':checked')) {
-        $affected.add($maxLevels);
+        $affected.add($maxLevels).show(speed);
       }
-      $affected.show(speed);
+      else {
+        $affected.show(speed);
+      }
     }
     else {
       $affected.add($maxLevels).hide(speed);
