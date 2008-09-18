@@ -143,7 +143,7 @@ tr.dropbox-entry.last {
   font-weight: bold;
 }
 
-.dropbox-item-separator {
+.hierarchical-select-item-separator {
   padding-left: .5em;
   padding-right: .5em;
 }

@@ -2095,7 +2095,7 @@ function theme_hierarchical_select_dropbox_table($element) {
   $separator = $element['separator']['#value'];
   $is_empty  = $element['is_empty']['#value'];
 
-  $separator_html = '<span class="dropbox-item-separator">'. $separator .'</span>';
+  $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
 
   $output .= '<div class="dropbox">';
   $output .= '<table>';

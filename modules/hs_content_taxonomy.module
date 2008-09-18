@@ -328,6 +328,84 @@ function hs_content_taxonomy_widget($op, &$node, $field, &$node_field) {
   }
 }
 
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function hs_content_taxonomy_field_formatter_info() {
+  return array(
+    'hierarchical_text' => array(
+      'label' => 'As hierarchical text',
+      'field types' => array('content_taxonomy'),
+    ),
+    'hierarchical_links' => array(
+      'label' => 'As hierarchical links',
+      'field types' => array('content_taxonomy'),
+    ),
+  );
+}
+
+/**
+ * Implemenation of hook_field_formatter().
+ */
+function hs_content_taxonomy_field_formatter($field, $item, $formatter, $node) {
+  $output = '';
+
+  if (!is_array($item)) {
+    return $output;
+  }
+
+  // Extract required field information.
+  $field_name = $field['field_name'];
+  $vid        = $field['vid'];
+  $tid        = $field['tid'];
+  $depth      = (empty($field['depth'])) ? 0 : $field['depth'];
+
+  // Get the config for this field.
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  $config_id = "content-taxonomy-$field_name";
+  $config = hierarchical_select_common_config_get($config_id);
+  $config += array(
+    'module' => 'hs_content_taxonomy',
+    'params' => array(
+      'vid'   => $vid,
+      'tid'   => $tid,
+      'depth' => $depth,
+    ),
+  );
+
+  // Generate a dropbox out of the selection. This will automatically
+  // calculate all lineages for us.
+  $selection = array_keys($item);
+  $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
+
+  // Actual formatting.
+  $separator = '›';
+  $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
+  foreach ($dropbox->lineages as $id => $lineage) {
+    if ($id > 0) {
+      $output .= '<br />';
+    }
+
+    $items = array();
+    foreach ($lineage as $level => $item) {
+      // Depending on which formatter is active, create links or use labels.
+      if ($formatter == 'hierarchical_links') {
+        $term = taxonomy_get_term($item['value']);
+        $items[] = l($term->name, taxonomy_term_path($term), array('rel' => 'tag', 'title' => $term->description));
+      }
+      else {
+        $items[] = $item['label'];
+      }
+    }
+    $output .= implode($separator_html, $items);
+  }
+
+  // Add the CSS.
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+
+  return $output;
+}
+
 
 //----------------------------------------------------------------------------
 // Hierarchical Select hooks.
