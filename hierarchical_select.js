@@ -60,6 +60,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
   var $selects = $selectsWrapper.find('select');
 
   var defaultHeight = Drupal.HierarchicalSelect.state[hsid].defaultHeight = $selects.slice(0, 1).height();
+  var defaultSize = Drupal.HierarchicalSelect.state[hsid].defaultSize = $selects.slice(0, 1).attr('size');
   var margin = Drupal.HierarchicalSelect.state[hsid].margin = parseInt($selects.slice(0, 1).css('margin-bottom').replace(/^(\d+)px$/, "$1"));
 
   // Bind the drag event.
@@ -69,7 +70,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
     if (Drupal.HierarchicalSelect.state[hsid].resizedHeight == undefined) {
       Drupal.HierarchicalSelect.state[hsid].resizedHeight = defaultHeight;
     }
-    var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.5 * defaultHeight;
+    var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.5 / defaultSize * defaultHeight;
     Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, margin);
   });
 
@@ -82,7 +83,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
 
   function performDrag(e) {
     var resizedHeight = staticOffset + e.pageY;
-    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, margin);
+    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, defaultSize, margin);
     return false;
   }
 
@@ -97,9 +98,9 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
   }
 };
 
-Drupal.HierarchicalSelect.resize = function($selects, defaultHeight, resizedHeight, margin) {
+Drupal.HierarchicalSelect.resize = function($selects, defaultHeight, resizedHeight, defaultSize, margin) {
   $selects
-  .attr('size', (resizedHeight > defaultHeight) ? 2 : 1)
+  .attr('size', (resizedHeight > defaultHeight) ? 2 : defaultSize)
   .height(Math.max(defaultHeight + margin, resizedHeight)); // Without the margin component, the height() method would allow the select to be sized to low: defaultHeight - margin.
 };
 
@@ -260,6 +261,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       $('#hierarchical-select-' + hsid + '-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context),
       Drupal.HierarchicalSelect.state[hsid].defaultHeight,
       Drupal.HierarchicalSelect.state[hsid].resizedHeight,
+      Drupal.HierarchicalSelect.state[hsid].defaultSize,
       Drupal.HierarchicalSelect.state[hsid].margin
     );
   }
