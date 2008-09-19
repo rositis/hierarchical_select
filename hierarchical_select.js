@@ -63,7 +63,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
   var margin = Drupal.HierarchicalSelect.state[hsid].margin = parseInt($selects.slice(0, 1).css('margin-bottom').replace(/^(\d+)px$/, "$1"));
 
   // Bind the drag event.
-  $('.grippie', Drupal.HierarchicalSelect.context)
+  $('.grippie', $selectsWrapper)
   .mousedown(startDrag)
   .dblclick(function() {
     if (Drupal.HierarchicalSelect.state[hsid].resizedHeight == undefined) {
