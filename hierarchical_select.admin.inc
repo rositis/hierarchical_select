@@ -240,6 +240,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    'labels' => array(\n";
   if (isset($config['level_labels']['labels'])) {
     foreach ($config['level_labels']['labels'] as $depth => $label) {
+      $label = str_replace("'", "\'", $label);
       $output .= "      $depth => '$label',\n";
     }
   }
@@ -247,7 +248,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "  ),\n";
   $output .= "  'dropbox' => array(\n";
   $output .= "    'status'    => ". $config['dropbox']['status'] .",\n";
-  $output .= "    'title'     => '". $config['dropbox']['title'] ."',\n";
+  $output .= "    'title'     => '". str_replace("'", "\'", $config['dropbox']['title']) ."',\n";
   $output .= "    'limit'     => ". $config['dropbox']['limit'] .",\n";
   $output .= "    'reset_hs'  => ". $config['dropbox']['reset_hs'] .",\n";
   $output .= "  ),\n";
@@ -256,6 +257,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    'item_types' => array(\n";
   if (isset($config['editability']['item_types'])) {
     foreach ($config['editability']['item_types'] as $depth => $item_type) {
+      $item_type = str_replace("'", "\'", $item_type);
       $output .= "      $depth => '$item_type',\n";
     }
   }
