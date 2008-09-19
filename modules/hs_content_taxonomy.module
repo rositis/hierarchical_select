@@ -17,6 +17,9 @@
  */
 
 
+define('HS_CONTENT_TAXONOMY_SEPARATOR', '<span class="hierarchical-select-item-separator">›</span>');
+
+
 //----------------------------------------------------------------------------
 // Core hooks.
 
@@ -379,8 +382,7 @@ function hs_content_taxonomy_field_formatter($field, $item, $formatter, $node) {
   $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
 
   // Actual formatting.
-  $separator = '›';
-  $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
+  $separator = HS_CONTENT_TAXONOMY_SEPARATOR;
   foreach ($dropbox->lineages as $id => $lineage) {
     if ($id > 0) {
       $output .= '<br />';
@@ -397,7 +399,7 @@ function hs_content_taxonomy_field_formatter($field, $item, $formatter, $node) {
         $items[] = $item['label'];
       }
     }
-    $output .= implode($separator_html, $items);
+    $output .= implode($separator, $items);
   }
 
   // Add the CSS.
