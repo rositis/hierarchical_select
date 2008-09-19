@@ -47,6 +47,11 @@ Drupal.HierarchicalSelect.transform = function(hsid) {
 Drupal.HierarchicalSelect.resizable = function(hsid) {
   var $selectsWrapper = $('#hierarchical-select-' + hsid + '-wrapper .hierarchical-select .selects', Drupal.HierarchicalSelect.context);
 
+  // No select wrapper present: the user is creating a new item.
+  if ($selectsWrapper.length == 0) {
+    return;
+  }
+
   // Append the drag handle ("grippie").
   $selectsWrapper.append($('<div class="grippie"></div>'));
 
