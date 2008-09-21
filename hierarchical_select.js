@@ -26,7 +26,31 @@ Drupal.HierarchicalSelect.initialize = function() {
     if (this.cache != null && this.cache.status()) {
       this.cache.load(hsid);
     }
+
+    // Do logging, if any.
+    Drupal.HierarchicalSelect.log(hsid);
   }
+};
+
+Drupal.HierarchicalSelect.log = function(hsid) {
+  if (Drupal.settings.HierarchicalSelect.initialLog[hsid] == undefined) {
+    return;
+  }
+
+  // Make sure we print the log of the last build for this Hierarchical Select.
+  if (Drupal.HierarchicalSelect.state[hsid].lastBuildNumber == undefined) {
+    Drupal.HierarchicalSelect.state[hsid].log = [];
+    Drupal.HierarchicalSelect.state[hsid].log[0] = Drupal.settings.HierarchicalSelect.initialLog[hsid];
+    Drupal.HierarchicalSelect.state[hsid].lastBuildNumber = -1;
+  }
+  var lastBuildNumber = ++Drupal.HierarchicalSelect.state[hsid].lastBuildNumber;
+
+  // Print all log messages for the last build.
+  console.log("HIERARCHICAL SELECT " + hsid);
+  for (var i = 0; i < Drupal.HierarchicalSelect.state[hsid].log[lastBuildNumber].length; i++) {
+    console.log(Drupal.HierarchicalSelect.state[hsid].log[lastBuildNumber][i]);
+  }
+  console.log(' ');
 };
 
 Drupal.HierarchicalSelect.transform = function(hsid) {
@@ -450,6 +474,9 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         if (response.cache != null && Drupal.HierarchicalSelect.cache != null && Drupal.HierarchicalSelect.cache.status()) {
           Drupal.HierarchicalSelect.cache.sync(hsid, response.cache);
         }
+
+        Drupal.HierarchicalSelect.state[hsid].log.push(response.log);
+        Drupal.HierarchicalSelect.log(hsid);
 
         Drupal.HierarchicalSelect.triggerEvents(hsid, updateType, settings);
 

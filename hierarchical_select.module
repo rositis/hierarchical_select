@@ -9,7 +9,7 @@
 
 
 // Make sure that the devel module is installed when you enable developer mode!
-define('HS_DEVELOPER_MODE', 0);
+define('HS_DEVELOPER_MODE', 1);
 
 
 //----------------------------------------------------------------------------
@@ -266,9 +266,8 @@ function hierarchical_select_json() {
   $form_id = $_POST['form_id'] = $storage['parameters'][0];
 
   if (HS_DEVELOPER_MODE) {
-    dpm("Hierarchical Select AJAX request.
-    form_id: $form_id
-    hs_form_build_id: $hs_form_build_id");
+    _hierarchical_select_log("form_id: $form_id");
+    _hierarchical_select_log("hs_form_build_id: $hs_form_build_id");
   }
 
   // Retrieve and process the form.
@@ -297,6 +296,7 @@ function hierarchical_select_json() {
   print drupal_to_js(array(
     'cache'  => $cache,
     'output' => $output,
+    'log'    => $part_of_form['log']['#value'],
   ));
   exit;
 }
@@ -368,12 +368,12 @@ function hierarchical_select_process($element) {
     }
     $config_id = (isset($config['config_id']) && is_string($config['config_id'])) ? $config['config_id'] : 'none';
     if (empty($diagnostics)) {
-      dpm("Config diagnostics (config id: $config_id): no problems found!");
+      _hierarchical_select_log("Config diagnostics (config id: $config_id): no problems found!");
     }
     else {
       $diagnostics_string = print_r($diagnostics, TRUE);
       $message = "Config diagnostics (config id: $config_id): $diagnostics_string";
-      dpm($message);
+      _hierarchical_select_log($message);
       $element['#type']= 'item';
       $element['#value'] = '<p><span style="color:red;">Fix the indicated errors in the #config property first!</span><br />'. nl2br($message) .'</p>';
       return $element;
@@ -385,10 +385,12 @@ function hierarchical_select_process($element) {
   list($hs_selection, $db_selection) = _hierarchical_select_process_calculate_selections($element);
 
   if (HS_DEVELOPER_MODE) {
-    dpm("Calculated hierarchical select selection: ". print_r($hs_selection, TRUE));
+    _hierarchical_select_log("Calculated hierarchical select selection:");
+    _hierarchical_select_log($hs_selection);
 
     if ($config['dropbox']['status']) {
-      dpm("Calculated dropbox selection: ". print_r($db_selection, TRUE));
+      _hierarchical_select_log("Calculated dropbox selection:");
+      _hierarchical_select_log($db_selection);
     }
   }
 
@@ -429,10 +431,12 @@ function hierarchical_select_process($element) {
   $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
 
   if (HS_DEVELOPER_MODE) {
-    dpm("Generated hierarchy: ". print_r($hierarchy, TRUE));
+    _hierarchical_select_log('Generated hierarchy in '. $hierarchy->build_time['total'] .' ms:');
+    _hierarchical_select_log($hierarchy);
 
     if ($config['dropbox']['status']) {
-      dpm("Generated dropbox: ". print_r($dropbox, TRUE));
+      _hierarchical_select_log('Generated dropbox in '. $dropbox->build_time .' ms: ');
+      _hierarchical_select_log($dropbox);
     }
   }
 
@@ -586,6 +590,20 @@ function hierarchical_select_process($element) {
   // - validate that the dropbox limit was not exceeded.
   // - set the return value of this form element.
   $element['#validate'] = array('_hierarchical_select_validate' => array());
+
+  if (HS_DEVELOPER_MODE) {
+    $element['log'] = array('#type' => 'value', '#value' => _hierarchical_select_log(NULL, TRUE));
+    drupal_add_js(
+      array(
+        'HierarchicalSelect' => array(
+          'initialLog' => array(
+            $hsid => $element['log']['#value'],
+          ),
+        ),
+      ),
+      'setting'
+    );
+  }
 
   return $element;
 }
@@ -1371,6 +1389,28 @@ function _hierarchical_select_form_has_hierarchical_select($form) {
   }
 }
 
+/**
+ * Append messages to Hierarchical Select's log. Used when in developer mode.
+ *
+ * @param $item
+ *   Either a message (string) or an array.
+ * @param $reset
+ *   Reset the stored log.
+ * @return
+ *   Only when the log is being reset, the stored log is returned.
+ */
+function _hierarchical_select_log($item, $reset = FALSE) {
+  static $log;
+
+  if ($reset) {
+    $copy_of_log = $log;
+    $log = array();
+    return $copy_of_log;
+  }
+
+  $log[] = $item;
+}
+
 
 //----------------------------------------------------------------------------
 // Hierarchy object generation functions.
@@ -1403,9 +1443,12 @@ function _hierarchical_select_form_has_hierarchical_select($form) {
 function _hierarchical_select_hierarchy_generate($config, $selection, $required, $dropbox = FALSE) {
   $hierarchy = new stdClass();
 
+
   //
   // Build the lineage.
   //
+
+  $start_lineage = microtime();
 
   // If save_linage is enabled, reconstruct the lineage. This is necessary
   // because e.g. the taxonomy module stores the terms by order of weight and
@@ -1484,9 +1527,14 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $config['module'], $config['params']);
   }
 
+  $end_lineage = microtime();  
+
+
   //
   // Build the levels.
   //
+
+  $start_levels = microtime();
 
   // Start building the levels, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']);
@@ -1648,8 +1696,19 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     );
   }
 
+  // Calculate the time it took to generate the levels.
+  $end_levels = microtime();
+
   // Add child information.
+  $start_childinfo = microtime();
   $hierarchy = _hierarchical_select_hierarchy_add_childinfo($hierarchy, $config);
+  $end_childinfo = microtime();
+
+  // Calculate the time it took to build the hierarchy object.
+  $hierarchy->build_time['total'] = ($end_childinfo - $start_lineage) * 1000;
+  $hierarchy->build_time['lineage'] = ($end_lineage - $start_lineage) * 1000;
+  $hierarchy->build_time['levels'] = ($end_levels - $start_levels) * 1000;
+  $hierarchy->build_time['childinfo'] = ($end_childinfo - $start_childinfo) * 1000;
 
   return $hierarchy;
 }
@@ -1776,6 +1835,7 @@ function _hierarchical_select_hierarchy_enforce_deepest($lineage, $root_level, $
  */
 function _hierarchical_select_dropbox_generate($config, $selection) {
   $dropbox = new stdClass();
+  $start = microtime();
 
   $dropbox->title = (!empty($config['dropbox']['title'])) ? $config['dropbox']['title'] : t('All selections');
   $dropbox->lineages = array();
@@ -1824,6 +1884,9 @@ function _hierarchical_select_dropbox_generate($config, $selection) {
       }
     }
   }
+
+  // Calculate the time it took to build the dropbox object.
+  $dropbox->build_time = (microtime() - $start) * 1000;
 
   return $dropbox;
 }
