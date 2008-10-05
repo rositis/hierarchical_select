@@ -25,6 +25,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
     'entity_count'    => 0,
+    'resizable'       => 1,
     'level_labels' => array(
       'status' => 0,
     ),
@@ -40,7 +41,6 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
       'allow_new_levels' => 0,
       'max_levels'       => 3,
     ),
-    'resizable' => 1,
   );
 
   // Allow new defaults to be set.

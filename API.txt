@@ -46,6 +46,7 @@ element type:
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
       'entity_count'    => 0,
+      'resizable'       => 1,
       'level_labels' => array(
         'status' => 0,
         'labels' => array(
@@ -71,10 +72,11 @@ element type:
         'allow_new_levels' => 0,
         'max_levels'       => 3,
       ),
+      // These settings cannot be configured through the UI: they can only be
+      // overridden through code.
       'animation_delay'    => 400,
       'exclusive_lineages' => array(),
       'render_flat_select' => 0,
-      'resizable'          => 1,
     ),
     '#default_value' => '83',
   ); 
