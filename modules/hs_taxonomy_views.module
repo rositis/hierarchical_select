@@ -64,8 +64,10 @@ function hs_taxonomy_views_form_alter($form_id, &$form) {
           $defaults_override = array(
             'module' => 'hs_taxonomy_views',
             'params' => array(
-              'optional' => (bool) $view->exposed_filter[$id]['optional'],
-              'vid'      => $vid,
+              'optional'    => (bool) $view->exposed_filter[$id]['optional'],
+              'vid'         => $vid,
+              'exclude_tid' => NULL,
+              'root_term'   => NULL,
             ),
             // When the **ALL** option is selected, nothing else should be.
             'exclusive_lineages' => array('**ALL**'),
@@ -226,7 +228,14 @@ function hs_taxonomy_views_config_form($view_name, $vid) {
 
   // Add the Hierarchical Select config form.
   $module = 'hs_taxonomy_views';
-  $params = array('vid' => $vid, 'optional' => (bool) $exposed_filter['optional']);
+  $params = array(
+    'optional'    => (bool) $view->exposed_filter[$id]['optional'],
+    'vid'         => $vid,
+    'exclude_tid' => NULL,
+    'root_term'   => NULL,
+  );
+    
+  
   $config_id = "taxonomy-views-$view_name-$vid";
   $vocabulary = taxonomy_get_vocabulary($vid);
   $defaults = array(
