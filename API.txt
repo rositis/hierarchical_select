@@ -39,7 +39,7 @@ element type:
     '#title' => t('Select the tag you wish to use.'),
     '#size' => 1,
     '#config' => array(
-      'module' => 'taxonomy',
+      'module' => 'hs_taxonomy',
       'params' => array(
         'vid' => $vid,
       ),
@@ -274,13 +274,17 @@ Hooks
    Returns an array with the names of all parameters that are necessary for
    this implementation to work.
 
-2) hook_hierarchical_select_root_level($params);
+2) hook_hierarchical_select_root_level($params, $dropbox = FALSE);
    Returns the root level of the hierarchy: an array of (item, label) pairs.
+   The $dropbox parameter can is optional and can even ommitted, as it's only
+   necessary if you need the dropbox to influence your hierarchy.
 
-3) hook_hierarchical_select_children($parent, $params);
+3) hook_hierarchical_select_children($parent, $params, $dropbox = FALSE);
    Gets the children of $parent ($parent is an item in the hierarchy) and
    returns them: an array of (item, label) pairs, or the empty array if the
    given $parent has no children.
+   The $dropbox parameter can is optional and can even ommitted, as it's only
+   necessary if you need the dropbox to influence your hierarchy.
 
 4) hook_hierarchical_select_lineage($item, $params);
    Calculates the lineage of $item (array of items, with $item the last) and
