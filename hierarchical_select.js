@@ -18,22 +18,23 @@ Drupal.HierarchicalSelect.initialize = function() {
   for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
     Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
     Drupal.HierarchicalSelect.state[hsid] = {};
+
     this.transform(hsid);
     if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
       this.resizable(hsid);
     }
+
     this.attachBindings(hsid);
     if (this.cache != null && this.cache.status()) {
       this.cache.load(hsid);
     }
 
-    // Do logging, if any.
     Drupal.HierarchicalSelect.log(hsid);
   }
 };
 
 Drupal.HierarchicalSelect.log = function(hsid) {
-  if (Drupal.settings.HierarchicalSelect.initialLog[hsid] == undefined) {
+  if (Drupal.settings.HierarchicalSelect.initialLog == undefined || Drupal.settings.HierarchicalSelect.initialLog[hsid] == undefined) {
     return;
   }
 
@@ -123,6 +124,10 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
 };
 
 Drupal.HierarchicalSelect.resize = function($selects, defaultHeight, resizedHeight, defaultSize, margin) {
+  if (resizedHeight == undefined) {
+    resizedHeight = defaultHeight;
+  }
+
   $selects
   .attr('size', (resizedHeight > defaultHeight) ? 2 : defaultSize)
   .height(Math.max(defaultHeight + margin, resizedHeight)); // Without the margin component, the height() method would allow the select to be sized to low: defaultHeight - margin.
@@ -475,8 +480,10 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
           Drupal.HierarchicalSelect.cache.sync(hsid, response.cache);
         }
 
-        Drupal.HierarchicalSelect.state[hsid].log.push(response.log);
-        Drupal.HierarchicalSelect.log(hsid);
+        if (response.log != undefined) {
+          Drupal.HierarchicalSelect.state[hsid].log.push(response.log);
+          Drupal.HierarchicalSelect.log(hsid);
+        }
 
         Drupal.HierarchicalSelect.triggerEvents(hsid, updateType, settings);
 
