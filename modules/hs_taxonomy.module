@@ -103,10 +103,8 @@ function hs_taxonomy_form_alter($form_id, &$form) {
 
     // Add a validate callback to override the freetagging and multiple select
     // settings if necessary.
-    if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
-      $form['#validate']['hierarchical_select_taxonomy_form_vocabulary_validate'] = array();
-      $form['#submit']['hierarchical_select_taxonomy_form_vocabulary_submit'] = array();
-    }
+    $form['#validate']['hierarchical_select_taxonomy_form_vocabulary_validate'] = array();
+    $form['#submit']['hierarchical_select_taxonomy_form_vocabulary_submit'] = array();
 
     // The original #submit callback(s) has/have to be executed afterwards.
     $form['#submit'] = array_merge($form['#submit'], $second_part['#submit']);
@@ -379,8 +377,10 @@ function hs_taxonomy_hierarchical_select_config_info() {
  * Additional validate callback for the taxonomy_form_vocabulary form.
  */
 function hierarchical_select_taxonomy_form_vocabulary_validate($form_id, $form_values, $form) {
-  // The "multiple select" setting doesn't exist for the forum vocabulary!
-  if (isset($form['multiple'])) {
+  // If Hierarchical Select is enabled, the "multiple select" setting must be
+  // managed by Hierarchical Select.
+  // TRICKY: the "multiple select" setting is absent for the forum vocabulary!
+  if ($form_values['hierarchical_select_status'] && isset($form['multiple'])) {
     // Enable Taxonomy's "multiple select" setting when:
     // - Hierarchical Select's "multiple select" setting is enabled, or:
     // - Hierarchical Select's "save term lineage" setting is enabled
