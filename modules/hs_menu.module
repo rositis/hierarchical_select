@@ -17,13 +17,17 @@ function hs_menu_form_alter($form_id, &$form) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
     unset($form['menu']['pid']['#options']);
     $form['menu']['pid']['#type'] = 'hierarchical_select';
-    _hs_menu_apply($form['menu']['pid'], NULL);
+
+    // Content authoring form settings: "Restrict parent items to" setting.
+    $parent_mid = variable_get('menu_parent_items', 0);
+
+    _hs_menu_apply($form['menu']['pid'], NULL, $parent_mid);
   }
   
   if ($form_id == 'menu_edit_item_form') {
     unset($form['pid']['#options']);
     $form['pid']['#type'] = 'hierarchical_select';
-    _hs_menu_apply($form['pid'], NULL);
+    _hs_menu_apply($form['pid'], NULL, NULL);
   }
 }
 
@@ -36,7 +40,8 @@ function hs_menu_form_alter($form_id, &$form) {
  */
 function hs_menu_hierarchical_select_params() {
   $params = array(
-    'mid', // The mid of the given item. This item and its children will be excluded from the hierarchy.
+    'mid',        // The mid of the given item. This item and its children will be excluded from the hierarchy.
+    'parent_mid', // The parent mid, if any. 0 for the entire hierarchy.
   );
   return $params;
 }
@@ -45,7 +50,8 @@ function hs_menu_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_menu_hierarchical_select_root_level($params) {
-  return hs_menu_hierarchical_select_children(0, $params);
+  $parent_mid = (is_numeric($params['parent_mid'])) ? $params['parent_mid'] : 0;
+  return hs_menu_hierarchical_select_children($parent_mid, $params);
 }
 
 /**
@@ -92,9 +98,11 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
   while (TRUE) {
     $pid = db_result(db_query("SELECT pid FROM {menu} WHERE mid = %d", $item));
 
-    // 0 is the root menu item, so if $pid == 0, the lineage is complete!
-    if ($pid == 0)
+    // 0 is the root menu item, so if $pid == 0, the lineage is complete! Or,
+    // alternatively, if parent_mid is set, that menu item is the root.
+    if ($pid == 0 || $pid == $params['parent_mid']) {
       break;
+    }
 
     array_unshift($lineage, $pid);
     $item = $pid;
@@ -144,11 +152,12 @@ function hs_menu_hierarchical_select_implementation_info() {
 //----------------------------------------------------------------------------
 // Private functions.
 
-function _hs_menu_apply(&$form, $mid) {
+function _hs_menu_apply(&$form, $mid, $parent_mid) {
   $form['#config'] = array(
     'module' => 'hs_menu',
     'params' => array(
-      'mid' => $mid,
+      'mid'        => $mid,
+      'parent_mid' => $parent_mid,
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
