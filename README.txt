@@ -73,6 +73,8 @@ Limitations
   scientifically: a directed acyclic graph) is *not* supported.
 - Not the entire scalability problem can be solved by installing this set of
   modules; read the maximum scalability section for details.
+- The child indicators only work in Firefox. This *cannot* be supported in
+  Safari or IE. See http://drupal.org/node/180691#comment-1044691.
 - The special [save-lineage-termpath] token only works if the vocabulary that
   has save_lineage enabled, is the only vocabulary. Furthermore, it does work
   with content_taxonomy fields, as long as you have the "Save option" set to
