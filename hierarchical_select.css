@@ -85,6 +85,12 @@
 }
 
 
+/* Child level indicator. */
+.hierarchical-select-wrapper .hierarchical-select option.has-children {
+  background: url(images/arrow.png) no-repeat right center;
+}
+
+
 /* Dropbox limit warning.*/
 p.hierarchical-select-dropbox-limit-warning {
   padding: 0;
