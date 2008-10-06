@@ -9,7 +9,7 @@
 
 
 // Make sure that the devel module is installed when you enable developer mode!
-define('HS_DEVELOPER_MODE', 1);
+define('HS_DEVELOPER_MODE', 0);
 
 
 //----------------------------------------------------------------------------
