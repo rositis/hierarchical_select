@@ -86,6 +86,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
 
   var defaultHeight = Drupal.HierarchicalSelect.state[hsid].defaultHeight = $selects.slice(0, 1).height();
   var defaultSize = Drupal.HierarchicalSelect.state[hsid].defaultSize = $selects.slice(0, 1).attr('size');
+  defaultSize = (defaultSize == 0) ? 1 : defaultSize;
   var margin = Drupal.HierarchicalSelect.state[hsid].margin = parseInt($selects.slice(0, 1).css('margin-bottom').replace(/^(\d+)px$/, "$1"));
 
   // Bind the drag event.
@@ -96,7 +97,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
       Drupal.HierarchicalSelect.state[hsid].resizedHeight = defaultHeight;
     }
     var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.5 / defaultSize * defaultHeight;
-    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, margin);
+    Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, defaultSize, margin);
   });
 
   function startDrag(e) {
