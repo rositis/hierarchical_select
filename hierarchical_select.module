@@ -474,7 +474,9 @@ function hierarchical_select_process($element) {
 
         // We want to override the select in which the "create_new_item"
         // option was selected and hide all selects after that, if they exist.
-        $element['hierarchical_select']['selects'] = array_slice($element['hierarchical_select']['selects'], 0, $depth + 1);
+        for ($i = $depth; $i < count($hierarchy->lineage); $i++) {
+          unset($element['hierarchical_select']['selects'][$i]);
+        }
 
         $element['hierarchical_select']['create_new_item'] = array(
           '#prefix' => '<div class="'. str_replace('_', '-', $value) .'">',
