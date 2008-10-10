@@ -377,6 +377,8 @@ function hs_taxonomy_hierarchical_select_config_info() {
  * Implementation of hook_token_values().
  */
 function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
+  static $hs_vids;
+
   $separator = variable_get('pathauto_separator', '-');
 
   $values = array();
@@ -388,17 +390,33 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       $values['save-lineage-termpath'] = $values['save-lineage-termpath-raw'] = FALSE;
 
       // If $node->taxonomy doesn't exist, these tokens cannot be created!
-      if (!isset($node->taxonomy)) {
+      if (!is_object($node) || !isset($node->taxonomy)) {
         return $values;
       }
 
       // All vocabularies present in this node's taxonomy property.
       $vids = array_keys($node->taxonomy);
 
-      // FIXME: We only support the first taxonomy. If this taxonomy is *not*
-      // the one that has a HS, then it doesn't work.
+      // Find out which vocabularies are using Hierarchical Select.
+      if (!isset($hs_vids)) {
+        $hs_vids = array();
+        $result = db_query("SELECT SUBSTR(name, 30) AS vid FROM {variable} WHERE name LIKE 'taxonomy_hierarchical_select_%' AND value LIKE 'i:1\;';");
+        while ($o = db_fetch_object($result)) {
+          $hs_vids[] = $o->vid;
+        }
+      }
+
+      // We use the terms of the first vocabulary that uses Hierarchical
+      // Select.
+      // If you've got multiple vocabularies using Hierarchical Select for the
+      // same content type, you're out of luck for now.
+      $vids = array_intersect($vids, $hs_vids);
+      if (empty($vids)) {
+        return $values;
+      }
       $vid = $vids[0];
       $selection = $node->taxonomy[$vid];
+      $selection = (is_array($selection)) ? $selection : array($selection);
 
       // Get the config for this field.
       $config = array(
@@ -411,11 +429,26 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
         ),
       );
 
+      // Validate all items in the selection, if any.
+      if (!empty($selection)) {
+        foreach ($selection as $key => $item) {
+          $valid = module_invoke($module, 'hierarchical_select_valid_item', $selection[$key], $config['params']);
+          if (!$valid) {
+            unset($selection[$key]);
+          }
+        }
+      }
+
       // Generate a dropbox out of the selection. This will automatically
       // calculate all lineages for us.
       // If the selection is empty, then the tokens will be as well.
       if (!empty($selection)) {
         $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
+
+        // If no lineages could be generated, these tokens cannot be created!
+        if (empty($dropbox->lineages)) {
+          return $values;
+        }
 
         // We pick the first lineage.
         $lineage = $dropbox->lineages[0];
