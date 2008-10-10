@@ -390,7 +390,7 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       $values['save-lineage-termpath'] = $values['save-lineage-termpath-raw'] = FALSE;
 
       // If $node->taxonomy doesn't exist, these tokens cannot be created!
-      if (!is_object($node) || !isset($node->taxonomy)) {
+      if (!is_object($node) || !isset($node->taxonomy) || !is_array($node->taxonomy)) {
         return $values;
       }
 
