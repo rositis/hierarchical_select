@@ -39,7 +39,7 @@ cfg.levelLabels = function(configId) {
 
         // If $status was unchecked previously, the entire div would have been
         // hidden!
-        if ($affected.css('display') == 'hidden') {
+        if ($affected.css('display') == 'none') {
           $affected.show(speed);
         }
       }
