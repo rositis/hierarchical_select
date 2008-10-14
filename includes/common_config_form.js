@@ -36,6 +36,12 @@ cfg.levelLabels = function(configId) {
       else {
         $affected.find('tr').slice(0, 2).show(speed); // Show header tr and root level tr.
         $affected.find('tr').slice(2).hide(speed); // Hide all other tr's.
+
+        // If $status was unchecked previously, the entire div would have been
+        // hidden!
+        if ($affected.css('display') == 'hidden') {
+          $affected.show(speed);
+        }
       }
     }
   };
