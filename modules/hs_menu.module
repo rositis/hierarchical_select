@@ -15,9 +15,6 @@
  */
 function hs_menu_form_alter($form_id, &$form) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
-    unset($form['menu']['pid']['#options']);
-    $form['menu']['pid']['#type'] = 'hierarchical_select';
-
     // Content authoring form settings: "Restrict parent items to" setting.
     $parent_mid = variable_get('menu_parent_items', 0);
 
@@ -25,9 +22,8 @@ function hs_menu_form_alter($form_id, &$form) {
   }
   
   if ($form_id == 'menu_edit_item_form') {
-    unset($form['pid']['#options']);
-    $form['pid']['#type'] = 'hierarchical_select';
-    _hs_menu_apply($form['pid'], NULL, NULL);
+    $mid = (isset($form['mid'])) ? $form['mid']['#value'] : NULL;
+    _hs_menu_apply($form['pid'], $mid, NULL);
   }
 }
 
@@ -153,6 +149,8 @@ function hs_menu_hierarchical_select_implementation_info() {
 // Private functions.
 
 function _hs_menu_apply(&$form, $mid, $parent_mid) {
+  unset($form['#options']);
+  $form['#type'] = 'hierarchical_select';
   $form['#config'] = array(
     'module' => 'hs_menu',
     'params' => array(
