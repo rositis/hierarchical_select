@@ -19,6 +19,9 @@ function hs_book_form_alter($form_id, &$form) {
     $form['parent']['#type'] = 'hierarchical_select';
     $form['parent']['#config'] = array(
       'module' => 'hs_book',
+      'params' => array(
+        'nid' => (isset($form['nid'])) ? $form['nid']['#value'] : NULL,
+      ),
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
       'resizable'       => 1,
@@ -35,7 +38,9 @@ function hs_book_form_alter($form_id, &$form) {
  * Implementation of hook_hierarchical_select_params().
  */
 function hs_book_hierarchical_select_params() {
-  $params = array();
+  $params = array(
+    'nid', // The nid of the given book page.item. This book page and its children will be excluded from the hierarchy.
+  );
   return $params;
 }
 
@@ -74,6 +79,11 @@ function hs_book_hierarchical_select_children($parent, $params) {
 
   $children = array();
   while ($node = db_fetch_object($result)) {
+    // Don't include the given book page in the hierarchy!
+    if (isset($params['nid']) && $params['nid'] == $node->nid) {
+      continue;
+    }
+
     $children[$node->nid] = $node->title;
   }
 
