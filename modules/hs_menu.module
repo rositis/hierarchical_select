@@ -46,8 +46,7 @@ function hs_menu_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_menu_hierarchical_select_root_level($params) {
-  $parent_mid = (is_numeric($params['parent_mid'])) ? $params['parent_mid'] : 0;
-  return hs_menu_hierarchical_select_children($parent_mid, $params);
+  return hs_menu_hierarchical_select_children(0, $params);
 }
 
 /**
@@ -57,6 +56,7 @@ function hs_menu_hierarchical_select_children($parent, $params) {
   $children = array();
   $mid = $params['mid'];
   $pid = $parent;
+  $parent_mid = $params['parent_mid'];
 
   if (!($parent_item = menu_get_item($pid))) {
     return $children;
@@ -82,6 +82,16 @@ function hs_menu_hierarchical_select_children($parent, $params) {
     }
   }
 
+  // If this is the root level, it might contain the menu to which menu
+  // items are restricted. If it does contain it, remove all other menus.
+  if (isset($children[$parent_mid])) {
+    foreach ($children as $child_mid => $child) {
+      if ($child_mid != $parent_mid) {
+        unset($children[$child_mid]);
+      }
+    }
+  }
+
   return $children;
 }
 
@@ -94,9 +104,8 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
   while (TRUE) {
     $pid = db_result(db_query("SELECT pid FROM {menu} WHERE mid = %d", $item));
 
-    // 0 is the root menu item, so if $pid == 0, the lineage is complete! Or,
-    // alternatively, if parent_mid is set, that menu item is the root.
-    if ($pid == 0 || $pid == $params['parent_mid']) {
+    // 0 is the root menu item, so if $pid == 0, the lineage is complete!
+    if ($pid == 0) {
       break;
     }
 
