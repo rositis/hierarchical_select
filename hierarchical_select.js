@@ -245,6 +245,13 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   // (anchors in the .dropbox-remove cells in the .dropbox table)
   .find('.dropbox .dropbox-remove a').unbind().click(function(_hsid) {
     return function() {
+      var isDisabled = $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context).attr('disabled');
+
+      // If the hierarchical select is disabled, then ignore this click.
+      if (isDisabled) {
+        return false;
+      }
+
       // Check the (hidden, because JS is enabled) checkbox that marks this
       // dropbox entry for removal. 
       $(this).parent().find('input[type=checkbox]').attr('checked', true);

@@ -607,6 +607,12 @@ function hierarchical_select_process($element) {
     );
   }
 
+  // If the form item is marked as disabled, disable all child form items as
+  // well.
+  if ($element['#disabled']) {
+    _hierarchical_select_mark_as_disabled($element);
+  }
+
   return $element;
 }
 
