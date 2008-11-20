@@ -83,10 +83,6 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
           );
           hierarchical_select_common_config_apply($form["filter$id"], "content-taxonomy-views-$view->name-$vid", $defaults_override);
 
-          // Inherit #config['dropbox']['status'] from the exposed filter
-          // settings.
-          $form["filter$id"]['#config']['dropbox']['status'] = !((bool) $view->exposed_filter[$id]['single']);
-
           // Inherit #required from the exposed filter settings.
           $form["filter$id"]['#required'] = !((bool) $view->exposed_filter[$id]['optional']);
 
@@ -104,7 +100,8 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
   }
 
   // Alter the edit view form: add a link to the Hierarchical Select
-  // configuration when appropriate.
+  // configuration when appropriate and to mark which settings are now managed
+  // by the Hierarchical Select configuration.
   if ($form_id == 'views_edit_view') {
     foreach ($form['exposed_filter'] as $filter_id => $filter) {
       // If $filter['field'] is not set, the exposed filter is being deleted.
@@ -125,40 +122,18 @@ function hs_content_taxonomy_views_form_alter($form_id, &$form) {
             $config_id = "taxonomy-views-$view->name-$vid";
             $config = hierarchical_select_common_config_get($config_id);
 
-            // … save_lineage is enabled.
+            $text = t('This setting is now managed by the<br />Hierarchical Select configuration!');
+            
+            // Exposed filter's "Force single" setting.
+            $form['exposed_filter'][$filter_id]['single']['#description'] = $text;
+
+            // Additional settings when save_lineage is enabled.
             if ($config['save_lineage']) {
-              // "Operator" must always be 'AND'.
-              $form['filter'][$filter_id]['operator']['#value'] = 'AND';
-              unset($form['filter'][$filter_id]['operator']['#options']['OR']);
-              unset($form['filter'][$filter_id]['operator']['#options']['NOR']);
-              $form['filter'][$filter_id]['operator']['#description'] = t(
-                'This setting is now managedby the<br />Hierarchical Select widget
-                configuration!'
-              );
+              // Filter's "Operator" setting.
+              $form['filter'][$filter_id]['operator']['#description'] = $text;
 
-              // And must be locked to 'AND'.
-              $form['exposed_filter'][$filter_id]['operator']['#value'] = 1;
-              $form['exposed_filter'][$filter_id]['operator']['#description'] = t(
-                'This setting is now managed by the<br />Hierarchical Select widget
-                configuration!'
-              );
-
-              // And "Force single" must be unchecked.
-              $form['exposed_filter'][$filter_id]['single']['#value'] = 0;
-              $form['exposed_filter'][$filter_id]['single']['#description'] = t(
-                'This setting is now managed by the<br />Hierarchical Select widget
-                configuration!'
-              );
-            }
-
-            // … dropbox is enabled.
-            if ($config['dropbox']['status']) {
-              // "Force single" must be unchecked.
-              $form['exposed_filter'][$filter_id]['single']['#value'] = 0;
-              $form['exposed_filter'][$filter_id]['single']['#description'] = t(
-                'This setting is now managed by the<br />Hierarchical Select widget
-                configuration!'
-              );
+              // Exposed filter's "Lock Operator" setting.
+              $form['exposed_filter'][$filter_id]['operator']['#description'] = $text;
             }
           }
         }
@@ -292,23 +267,57 @@ function hs_content_taxonomy_views_config_form($view_name, $field_name) {
   $parents = array('hierarchical_select_config');
   $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
 
-  $form['#submit']['hs_content_taxonomy_views_common_config_form_submit'] = array($view_name);
+  $form['#submit']['hs_content_taxonomy_views_common_config_form_submit'] = array($view_name, $field_name);
 
   return $form;
 }
 
 /**
  * Additional submit callback to redirect the user to the "Edit view" form.
+ * @param $form_id
+ * @param $form_values
+ * @param $view_name
+ *   Name of a view. Provides necessary context.
+ * @param $field_name
+ *   Name of a field. Provides necessary context.
  */
-function hs_content_taxonomy_views_common_config_form_submit($form_id, $form_values, $view_name) {
-  if ($form_values['hierarchical_select_config']['save_lineage'] || $form_values['hierarchical_select_config']['dropbox']['status']) {
-    if ($form_values['hierarchical_select_config']['save_lineage']) {
-      drupal_set_message(t('You have enabled the <em>Save lineage</em> setting. Please resave this view.'));
-    }
-    if ($form_values['hierarchical_select_config']['dropbox']['status']) {
-      drupal_set_message(t('You have enabled the <em>Dropbox</em> setting. Please resave this view.'));
-    }
-    drupal_goto("admin/build/views/$view_name/edit");
+function hs_content_taxonomy_views_common_config_form_submit($form_id, $form_values, $view_name, $field_name) {
+  $view_id = db_result(db_query("SELECT vid FROM {view_view} WHERE name = '%s'", $view_name));
+  $field = 'content_'. $field_name .'.'. $field_name .'_value';
+
+  $filter = db_fetch_object(db_query("SELECT operator FROM {view_filter} WHERE vid = %d AND field = '%s'", $view_id, $field));
+  $exposed_filter = db_fetch_object(db_query("SELECT operator, single FROM {view_exposed_filter} WHERE vid = %d AND field = '%s'", $view_id, $field));
+
+  // Overrides when save_lineage is enabled.
+  if ($form_values['hierarchical_select_config']['save_lineage']) {
+    // "Operator" must always be 'AND'.
+    $filter->operator = 'AND';
+
+    // The exposed filter must be locked to 'AND'.
+    $exposed_filter->operator = 1;
+
+    // "Force single" must be disabled.
+    $exposed_filter->single = 0;
+  }
+  else {
+    // "Force single" must be enabled.
+    $exposed_filter->single = 1;      
+  }
+
+  // Overrides when the dropbox is enabled.
+  if ($form_values['hierarchical_select_config']['dropbox']['status']) {
+    // "Force single" must be disabled.
+    $exposed_filter->single = 0;
+  }
+
+  if ($view_id === FALSE) {
+    drupal_set_message(t("Could not update the view because it doesn't live in the database."), 'error');
+  }
+  else {
+    db_query("UPDATE {view_filter} SET operator = '%s' WHERE vid = %d AND field = '%s'", $filter->operator, $view_id, $field);
+    db_query("UPDATE {view_exposed_filter} SET operator = %d, single = %d WHERE vid = %d AND field = '%s'", $exposed_filter->operator, $exposed_filter->single, $view_id, $field);
+    cache_clear_all('views_urls', 'cache_views');
+    drupal_set_message(t("Updated the View's exposed filter according to the settings you made."));
   }
 }
 
