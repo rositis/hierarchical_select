@@ -11,6 +11,25 @@
 // Drupal core hooks.
 
 /**
+ * Implementation of hook_menu().
+ */
+function hs_menu_menu($may_cache) {
+  $items = array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path'               => 'admin/settings/hierarchical_select/menu',
+      'title'              => t('Menu'),
+      'description'        => t('Hierarchical Select configuration for Menu'),
+      'callback'           => 'drupal_get_form',
+      'callback arguments' => array('hs_menu_admin_settings'),
+      'type'               => MENU_LOCAL_TASK,
+    );
+  }
+  return $items;
+}
+
+/**
  * Implementation of hook_form_alter().
  */
 function hs_menu_form_alter($form_id, &$form) {
@@ -25,6 +44,31 @@ function hs_menu_form_alter($form_id, &$form) {
     $mid = (isset($form['mid'])) ? $form['mid']['#value'] : NULL;
     _hs_menu_apply($form['pid'], $mid, NULL);
   }
+}
+
+//----------------------------------------------------------------------------
+// Menu callbacks.
+
+/**
+ * Form definition; admin settings.
+ */
+function hs_menu_admin_settings() {
+  $form['hs_menu_resizable'] = array(
+    '#type' => 'radios',
+    '#title' => t('Resizable'),
+    '#description' => t(
+      "When enabled, a handle appears below the Hierarchical Select to allow
+      the user to dynamically resize it. Double clicking will toggle between
+      the smallest and a sane 'big size'."
+    ),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled'),
+    ),
+    '#default_value' => variable_get('hs_menu_resizable', 1),
+  );
+
+  return system_settings_form($form);
 }
 
 
@@ -168,7 +212,7 @@ function _hs_menu_apply(&$form, $mid, $parent_mid) {
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
-    'resizable'       => 1,
+    'resizable'       => variable_get('hs_menu_resizable', 1),
     'level_labels' => array(
       'status' => 0,
     ),
