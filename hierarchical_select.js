@@ -96,7 +96,7 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
     if (Drupal.HierarchicalSelect.state[hsid].resizedHeight == undefined) {
       Drupal.HierarchicalSelect.state[hsid].resizedHeight = defaultHeight;
     }
-    var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.5 / defaultSize * defaultHeight;
+    var resizedHeight = Drupal.HierarchicalSelect.state[hsid].resizedHeight = (Drupal.HierarchicalSelect.state[hsid].resizedHeight > defaultHeight + 2) ? defaultHeight : 4.6 / defaultSize * defaultHeight;
     Drupal.HierarchicalSelect.resize($selects, defaultHeight, resizedHeight, defaultSize, margin);
   });
 
