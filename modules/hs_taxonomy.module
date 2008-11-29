@@ -378,6 +378,7 @@ function hs_taxonomy_hierarchical_select_config_info() {
  */
 function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
   static $hs_vids;
+  static $all_vids;
 
   $separator = variable_get('pathauto_separator', '-');
 
@@ -394,9 +395,6 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
         return $values;
       }
 
-      // All vocabularies present in this node's taxonomy property.
-      $vids = array_keys($node->taxonomy);
-
       // Find out which vocabularies are using Hierarchical Select.
       if (!isset($hs_vids)) {
         $hs_vids = array();
@@ -406,58 +404,33 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
         }
       }
 
-      // We use the terms of the first vocabulary that uses Hierarchical
-      // Select.
-      // If you've got multiple vocabularies using Hierarchical Select for the
-      // same content type, you're out of luck for now.
-      $vids = array_intersect($vids, $hs_vids);
-      if (empty($vids)) {
-        return $values;
-      }
-      $vid = $vids[0];
-      $selection = $node->taxonomy[$vid];
-      $selection = (is_array($selection)) ? $selection : array($selection);
-
-      // Get the config for this field.
-      $config = array(
-        'module'       => 'hs_taxonomy',
-        'save_lineage' => 1,
-        'params' => array(
-          'vid'         => $vid,
-          'exclude_tid' => NULL,
-          'root_term'   => NULL,
-        ),
-      );
-
-      // Validate all items in the selection, if any.
-      if (!empty($selection)) {
-        foreach ($selection as $key => $item) {
-          $valid = module_invoke($module, 'hierarchical_select_valid_item', $selection[$key], $config['params']);
-          if (!$valid) {
-            unset($selection[$key]);
-          }
+      // Get a list of all existent vids, so we can generate an empty token
+      // when a token is requested for a vocabulary that's not associated with
+      // the current content type.
+      if (!isset($all_vids)) {
+        $result = db_query("SELECT vid FROM {vocabulary}");
+        while ($row = db_fetch_object($result)) {
+          $all_vids[] = $row->vid;
         }
       }
 
-      // Generate a dropbox out of the selection. This will automatically
-      // calculate all lineages for us.
-      // If the selection is empty, then the tokens will be as well.
-      if (!empty($selection)) {
-        $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
-
-        // If no lineages could be generated, these tokens cannot be created!
-        if (empty($dropbox->lineages)) {
-          return $values;
-        }
-
-        // We pick the first lineage.
-        $lineage = $dropbox->lineages[0];
-
-        // Finally, we build the tokens.
+      // Generate the per-vid "save-lineage-termpath" tokens.
+      foreach ($all_vids as $vid) {
         $terms = array();
-        foreach ($lineage as $item) {
-          $terms[] = $item['label'];
+        if (in_array($vid, $hs_vids)) {
+          $selection = $node->taxonomy[$vid];
+          $terms = _hs_taxonomy_token_termpath_for_vid($selection, $vid);
         }
+
+        $values["save-lineage-termpath:$vid"] = implode($separator, array_map('check_plain', $terms));
+        $values["save-lineage-termpath-raw:$vid"] = implode($separator, $terms);
+      }
+
+      // We use the terms of the first vocabulary that uses Hierarchical
+      // Select for the default "save-lineage-termpath" tokens.
+      $vids = array_intersect(array_keys($node->taxonomy), $hs_vids);
+      if (!empty($vids)) {
+        $vid = $vids[0];
         $values['save-lineage-termpath'] = implode($separator, array_map('check_plain', $terms));
         $values['save-lineage-termpath-raw'] = implode($separator, $terms);
       }
@@ -472,11 +445,65 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
  */
 function hs_taxonomy_token_list($type = 'all') {
   if ($type == 'node' || $type == 'all') {
-    $tokens['node']['save-lineage-termpath'] = t('Only use when you have enabled the "save lineage" setting of Hierarchical Select. Will show the hierarchyits supercategories separated by /.');
+    $tokens['node']['save-lineage-termpath'] = t('Only use when you have enabled the "save lineage" setting of Hierarchical Select. Will show the term\'s parent terms separated by /.');
     $tokens['node']['save-lineage-termpath-raw'] = t('As [save-linage-termpath]. WARNING - raw user input.');
+
+    $tokens['node']['save-lineage-termpath:vid'] = t('Only has output when terms are present for the vocabulary with the specified vid. Only use when you have enabled the "save lineage" setting of Hierarchical Select. Will show the term\'s parent terms separated by /.');
+    $tokens['node']['save-lineage-termpath-raw:vid'] = t('Only has output when terms are present for the vocabulary with the specified vid. As [save-linage-termpath]. WARNING - raw user input.');
 
     return $tokens;
   }
+}
+
+/**
+ * Helper function for hs_taxonomy_token_values().
+ */
+function _hs_taxonomy_token_termpath_for_vid($selection, $vid) {
+  $terms = array();
+  $selection = (is_array($selection)) ? $selection : array($selection);
+
+  // Generate the part we'll need of the Hierarchical Select configuration.
+  $config = array(
+    'module'       => 'hs_taxonomy',
+    'save_lineage' => 1,
+    'params' => array(
+      'vid'         => $vid,
+      'exclude_tid' => NULL,
+      'root_term'   => NULL,
+    ),
+  );
+
+  // Validate all items in the selection, if any.
+  if (!empty($selection)) {
+    foreach ($selection as $key => $item) {
+      $valid = module_invoke($config['module'], 'hierarchical_select_valid_item', $selection[$key], $config['params']);
+      if (!$valid) {
+        unset($selection[$key]);
+      }
+    }
+  }
+
+  // Generate a dropbox out of the selection. This will automatically
+  // calculate all lineages for us.
+  // If the selection is empty, then the tokens will be as well.
+  if (!empty($selection)) {
+    $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
+
+    // If no lineages could be generated, these tokens cannot be created!
+    if (empty($dropbox->lineages)) {
+      return $values;
+    }
+
+    // We pick the first lineage.
+    $lineage = $dropbox->lineages[0];
+
+    // Finally, we build the tokens.
+    foreach ($lineage as $item) {
+      $terms[] = $item['label'];
+    }
+  }  
+
+  return $terms;
 }
 
 
