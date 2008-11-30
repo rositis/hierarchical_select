@@ -179,7 +179,7 @@ Drupal.HierarchicalSelect.cache.createAndUpdateSelects = function(hsid, subLevel
 
     var level = parseInt(lastUnchanged) + parseInt(depth);
 
-    $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select').append(
+    $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select:last').after(
       $rootSelect.clone()
       // Update the name attribute.
       .attr('name', $rootSelect.attr('name').replace(/(.*)\d+\]$/, "$1"+ level +"]"))

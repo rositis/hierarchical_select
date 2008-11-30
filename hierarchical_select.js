@@ -506,11 +506,13 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // Use the client-side cache to update the hierarchical select when:
   // - the hierarchical select is being updated (i.e. no add/remove), and
   // - the renderFlatSelect setting is disabled, and
+  // - the createNewItems setting is disabled, and
   // - the cache system is available, and
   // - the cache system is running.
   // Otherwise, perform a normal dynamic form submit.
   if (updateType == 'update-hierarchical-select'
       && Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false
+      && Drupal.settings.HierarchicalSelect.settings[hsid]['createNewItems'] == false
       && Drupal.HierarchicalSelect.cache != null
       && Drupal.HierarchicalSelect.cache.status())
   {
