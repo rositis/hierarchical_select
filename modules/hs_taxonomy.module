@@ -491,7 +491,7 @@ function _hs_taxonomy_token_termpath_for_vid($selection, $vid) {
 
     // If no lineages could be generated, these tokens cannot be created!
     if (empty($dropbox->lineages)) {
-      return $values;
+      return $terms;
     }
 
     // We pick the first lineage.
