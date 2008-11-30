@@ -107,6 +107,7 @@ function hierarchical_select_admin_configs() {
  * and the features they support.
  */
 function hierarchical_select_admin_implementations() {
+  $output = '';
   $header = array(t('Implementation (module)'), t('Hierarchy type'), t('Entity type'), t('Create new items'), t('Entity count'));
 
   // Retrieve all information items
@@ -131,7 +132,18 @@ function hierarchical_select_admin_implementations() {
     );
   }
 
-  return theme('table', $header, $rows, array(), t('Overview of all installed Hierarchical Select implementations.'));
+  $output .= '<p>';
+  $output .= t('
+    The table below allows you to find out <strong>which Hierarchical Select
+    features are supported</strong> by the implementations of the Hierarchical
+    Select API.<br />
+    It is <strong>not a reflection of some settings</strong>.
+  ');
+  $output .= '</p>';
+  
+  $output .= theme('table', $header, $rows, array(), t('Overview of all installed Hierarchical Select implementations.'));
+
+  return $output;
 }
 
 /**
