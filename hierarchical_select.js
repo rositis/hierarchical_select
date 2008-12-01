@@ -118,8 +118,8 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
 
     $(document).unbind("mousemove", performDrag).unbind("mouseup", endDrag);
     $selects.css('opacity', 1);
-    if (height > defaultHeight) {
-      Drupal.HierarchicalSelect.state[hsid].resizedHeight = height;
+    if (height != Drupal.HierarchicalSelect.state[hsid].resizedHeight) {
+      Drupal.HierarchicalSelect.state[hsid].resizedHeight = (height > defaultHeight) ? height : defaultHeight;
     }
   }
 };
