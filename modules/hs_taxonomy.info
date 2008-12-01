@@ -1,5 +1,7 @@
-; $I$
+; $Id$
 name = Hierarchical Select Taxonomy
 description = Use Hierarchical Select for Taxonomy.
-dependencies = hierarchical_select taxonomy
+dependencies[] = hierarchical_select
+dependencies[] = taxonomy
 package = Form Elements
+core = 6.x

@@ -164,14 +164,14 @@ function hs_content_taxonomy_config_form($content_type_name, $field_name) {
 /**
  * Additional submit callback to update the multiple values field setting.
  */
-function hs_content_taxonomy_common_config_form_submit($form_id, $form_values, $content_type_name, $field_name) {
-  $config = $form_values['hierarchical_select_config'];
+function hs_content_taxonomy_common_config_form_submit($form_id, $form_state['values'], $content_type_name, $field_name) {
+  $config = $form_state['values']['hierarchical_select_config'];
   $multiple_values = ($config['save_lineage'] | $config['dropbox']['status']);
 
   $content_type = content_types($content_type_name);
   $field = $content_type['fields'][$field_name];
 
-  $form_values = array(
+  $form_state['values'] = array(
     'widget_type' => 'content_taxonomy_hs',
     'label'       => $field['widget']['label'],
     'weight'      => $field['widget']['weight'],
@@ -191,7 +191,7 @@ function hs_content_taxonomy_common_config_form_submit($form_id, $form_values, $
     'form_id'     => '_content_admin_field',
   );
 
-  drupal_execute('_content_admin_field', $form_values, $field['type_name'], $field_name);
+  drupal_execute('_content_admin_field', $form_state['values'], $field['type_name'], $field_name);
 }
 
 

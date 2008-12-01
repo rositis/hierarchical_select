@@ -150,6 +150,8 @@ function hierarchical_select_admin_implementations() {
  * Form definition; config export form.
  */
 function hierarchical_select_admin_export($config_id) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
   $config = hierarchical_select_common_config_get($config_id);
   $code = _hierarchical_select_create_export_code($config);
 
@@ -172,6 +174,8 @@ function hierarchical_select_admin_export($config_id) {
  * Form definition; config import form.
  */
 function hierarchical_select_admin_import($config_id) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
   drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
   drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
 
@@ -199,14 +203,14 @@ function hierarchical_select_admin_import($config_id) {
 /**
  * Validate callback; config import form.
  */
-function hierarchical_select_admin_import_validate($form_id, $form_values, $form) {
+function hierarchical_select_admin_import_validate($form, &$form_state) {
   ob_start();
-  eval($form_values['config']);
+  eval($form_state['values']['config']);
   ob_end_clean();
 
-  form_set_value($form['interpreted_config'], serialize($config));
+  form_set_value($form['interpreted_config'], serialize($config), $form_state);
 
-  if (empty($form_values['config'])) {
+  if (empty($form_state['values']['config'])) {
     form_error($form['config'], t('You did not enter anything.'));
   }
   elseif ($config == NULL) {
@@ -220,8 +224,8 @@ function hierarchical_select_admin_import_validate($form_id, $form_values, $form
 /**
  * Submit callback; config import form.
  */
-function hierarchical_select_admin_import_submit($form_id, $form_values) {
-  $config = unserialize($form_values['interpreted_config']);
+function hierarchical_select_admin_import_submit($form, &$form_state) {
+  $config = unserialize($form_state['values']['interpreted_config']);
   $config_id = $config['config_id'];
   hierarchical_select_common_config_set($config_id, $config);
   drupal_set_message(t('Hierarchical Select configuration for %config_id imported!', array('%config_id' => $config_id)));

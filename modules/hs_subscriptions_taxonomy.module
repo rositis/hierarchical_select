@@ -34,7 +34,7 @@ function hs_subscriptions_taxonomy_form_alter($form_id, &$form) {
 
         // 1) Extract the tids of the selected terms.
         // 2) Make the checkboxes value form elements, to keep the form
-        // structure (and the $form_values structure) the same as the original.
+        // structure (and the $form_state['values'] structure) the same as the original.
         $selected_tids = array();
         foreach ($form[$name]['checkboxes'] as $tid => $element) {
           // Selected?
@@ -91,14 +91,14 @@ function hs_subscriptions_taxonomy_form_alter($form_id, &$form) {
 /**
  * Validate callback; per-user taxonomy subscriptions form.
  */
-function hs_subscriptions_taxonomy_validate($form_id, $form_values, $form) {
+function hs_subscriptions_taxonomy_validate($form_id, $form_state['values'], $form) {
   if ($form_id == 'subscriptions_taxonomy_taxa_form') {
-    foreach ($form_values as $vid => $element) {
+    foreach ($form_state['values'] as $vid => $element) {
       if (is_numeric($vid)) {
 
         // Collect the tids of the selected terms.
         $selected_tids = array();
-        foreach ($form_values[$vid]['select'] as $tid) {
+        foreach ($form_state['values'][$vid]['select'] as $tid) {
           $selected_tids[] = $tid;
         }
 
@@ -106,8 +106,8 @@ function hs_subscriptions_taxonomy_validate($form_id, $form_values, $form) {
         // - When it's in the set of selected tids, then set it to 1.
         // - When it's *not* in the set of selected tids, and its current value
         //   is 1, then set it to 0.
-        foreach ($form_values[$vid]['checkboxes'] as $tid => $array) {
-          if (!in_array($tid, $selected_tids) && $form_values[$vid]['checkboxes'][$tid][-1] == 1) {
+        foreach ($form_state['values'][$vid]['checkboxes'] as $tid => $array) {
+          if (!in_array($tid, $selected_tids) && $form_state['values'][$vid]['checkboxes'][$tid][-1] == 1) {
             form_set_value($form[$vid]['checkboxes'][$tid][-1], 0);
           }
           else if (in_array($tid, $selected_tids)) {

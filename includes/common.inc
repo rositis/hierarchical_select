@@ -352,100 +352,10 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
 }
 
 /**
- * Themeing function to render the level_labels settings as a table.
- */
-function theme_hierarchical_select_common_config_form_level_labels($form) {
-  // Recover the stored strings.
-  $strings = $form['#strings'];
-
-  $output = '';
-  $header = array(t('Level'), t('Label'));
-  $rows = array();
-
-  $output .= drupal_render($form['status']);
-
-  $output .= '<div class="level-labels-settings">';
-  if (count(element_children($form['labels']))) {
-    foreach (element_children($form['labels']) as $depth) {
-      $row = array();
-      $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
-      $row[]['data'] = drupal_render($form['labels'][$depth]);
-      $rows[] = $row;
-    }
-
-    // Render the table.
-    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'));
-  }
-  else {  
-    // No levels exist yet in the hierarchy!
-    $output .= '<p><strong>';
-    $output .= t('There are no levels yet in this !hierarchy!', array('!hierarchy' => $strings['hierarchy']));
-    $output .= '</strong></p>';
-  }
-  $output .= '</div>';
-
-  // Render the remaining form items.
-  $output .= drupal_render($form);
-
-  return $output;
-}
-/**
- * Themeing function to render the per-level editability settings as a table,
- * (these are the item_types and allowed_levels settings).
- */
-function theme_hierarchical_select_common_config_form_editability($form) {
-  // Recover the stored strings.
-  $strings = $form['#strings'];
-
-  $output = '';
-  $header = array(t('Level'), t('Allow'), t('!item_type', array('!item_type' => ucfirst($strings['item_type']))));
-  $rows = array();
-
-  $output .= drupal_render($form['status']);
-
-  $output .= '<div class="editability-per-level-settings">';
-  if (count(element_children($form['item_types']))) {
-    foreach (element_children($form['item_types']) as $depth) {
-      $row = array();
-      $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
-      $row[]['data'] = drupal_render($form['allowed_levels'][$depth]);
-      $row[]['data'] = drupal_render($form['item_types'][$depth]);
-      $rows[] = $row;
-    }
-
-    // Render the table and description.
-    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'), '<em>'. t('Per-level settings for creating new !items.', array('!items' => $strings['items'])));
-    $output .= '<div class="description">';
-    $output .= t(
-      'The %item_type you enter for each level is what will be used in
-      each level to replace a "&lt;create new item&gt;" option with a
-      "&lt;create new %item_type&gt;" option, which is often more
-      intuitive.',
-      array(
-        '%item_type' => $strings['item_type'],
-      )
-    );
-    $output .= '</div>';
-  }
-  else {  
-    // No levels exist yet in the hierarchy!
-    $output .= '<p><strong>';
-    $output .= t('There are no levels yet in this !hierarchy!', array('!hierarchy' => $strings['hierarchy']));
-    $output .= '</strong></p>';
-  }
-  $output .= '</div>';
-
-  // Render the remaining form items.
-  $output .= drupal_render($form);
-
-  return $output;
-}
-
-/**
  * Submit callback for the hierarchical_select_common_config_form form.
  */
-function hierarchical_select_common_config_form_submit($form_id, $form_values, $parents) {
-  $config = _hierarchical_select_get_form_item_by_parents($form_values, $parents);
+function hierarchical_select_common_config_form_submit($form, &$form_state) {
+  $config = _hierarchical_select_get_form_item_by_parents($form_state['values'], $form['#hs_common_config_form_parents']);
 
   // Don't include the value of the live preview in the config.
   unset($config['live_preview']);

@@ -32,17 +32,17 @@ function hs_menu_menu($may_cache) {
 /**
  * Implementation of hook_form_alter().
  */
-function hs_menu_form_alter($form_id, &$form) {
+function hs_menu_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
-    // Content authoring form settings: "Restrict parent items to" setting.
-    $parent_mid = variable_get('menu_parent_items', 0);
-
-    _hs_menu_apply($form['menu']['pid'], NULL, $parent_mid);
+    unset($form['menu']['parent']['#options']);
+    $form['menu']['parent']['#type'] = 'hierarchical_select';
+    _hs_menu_apply_config($form['menu']['parent'], NULL);
   }
-  
-  if ($form_id == 'menu_edit_item_form') {
-    $mid = (isset($form['mid'])) ? $form['mid']['#value'] : NULL;
-    _hs_menu_apply($form['pid'], $mid, NULL);
+
+  if ($form_id == 'menu_edit_item') {
+    unset($form['menu']['parent']['#options']);
+    $form['menu']['parent']['#type'] = 'hierarchical_select';
+    _hs_menu_apply_config($form['menu']['parent'], array($form['menu']['#item']['menu_name'], $form['menu']['#item']['mlid']));
   }
 }
 
@@ -80,9 +80,8 @@ function hs_menu_admin_settings() {
  */
 function hs_menu_hierarchical_select_params() {
   $params = array(
-    'mid',        // The mid of the given item. This item and its children will be excluded from the hierarchy.
-    'parent_mid', // The parent mid, if any. 0 for the entire hierarchy.
-  );
+    'exclude', // The menu_name and mlid (in an array) of a menu link that should be excluded from the hierarchy.
+  );  
   return $params;
 }
 
@@ -90,7 +89,14 @@ function hs_menu_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_menu_hierarchical_select_root_level($params) {
-  return hs_menu_hierarchical_select_children(0, $params);
+  $menus = array();
+
+  $result = db_query("SELECT menu_name, title FROM {menu_custom} ORDER BY title");
+  while ($menu = db_fetch_object($result)) {
+    $menus[$menu->menu_name . ':0'] = $menu->title;
+  }
+
+  return $menus;
 }
 
 /**
@@ -98,45 +104,9 @@ function hs_menu_hierarchical_select_root_level($params) {
  */
 function hs_menu_hierarchical_select_children($parent, $params) {
   $children = array();
-  $mid = $params['mid'];
-  $pid = $parent;
-  $parent_mid = $params['parent_mid'];
-
-  if (!($parent_item = menu_get_item($pid))) {
-    return $children;
-  }
-  // Stop processing if there aren't any children.
-  else if (!isset($parent_item['children'])) {
-    return $children;
-  }
-
-  foreach ($parent_item['children'] as $child_mid) {
-    // Don't include the given item in the hierarchy!
-    if ($child_mid == $params['mid']) {
-      continue;
-    }
-
-    $child = menu_get_item($child_mid);
-    if ($child['type'] & (MENU_MODIFIABLE_BY_ADMIN | MENU_IS_ROOT)) {
-      $title = $child['title'];
-      if (!($child['type'] & MENU_VISIBLE_IN_TREE)) {
-        $title .= ' ('. t('disabled') .')';
-      }
-      $children[$child_mid] = $title;
-    }
-  }
-
-  // If this is the root level, it might contain the menu to which menu
-  // items are restricted. If it does contain it, remove all other menus.
-  if (isset($children[$parent_mid])) {
-    foreach ($children as $child_mid => $child) {
-      if ($child_mid != $parent_mid) {
-        unset($children[$child_mid]);
-      }
-    }
-  }
-
-  return $children;
+  list($menu_name, $plid) = explode(':', $parent);
+  $tree = menu_tree_all_data($menu_name, NULL);
+  return _hs_menu_children($tree, $menu_name, $plid, $params['exclude']);
 }
 
 /**
@@ -145,16 +115,18 @@ function hs_menu_hierarchical_select_children($parent, $params) {
 function hs_menu_hierarchical_select_lineage($item, $params) {
   $lineage = array($item);
 
-  while (TRUE) {
-    $pid = db_result(db_query("SELECT pid FROM {menu} WHERE mid = %d", $item));
+  list($menu_name, $mlid) = explode(':', $item);
 
-    // 0 is the root menu item, so if $pid == 0, the lineage is complete!
-    if ($pid == 0) {
-      break;
+  // If the initial mlid is zero, then this is the root level, so we don't
+  // have to get the lineage.
+  if ($mlid > 0) {
+    // Prepend each parent mlid (i.e. plid) to the lineage.
+    do {
+      $plid = db_result(db_query("SELECT plid FROM {menu_links} WHERE mlid = %d", $mlid));
+      array_unshift($lineage, "$menu_name:$plid");
+      $mlid = $plid;
     }
-
-    array_unshift($lineage, $pid);
-    $item = $pid;
+    while ($plid > 0);
   }
 
   return $lineage;
@@ -164,14 +136,17 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
  * Implementation of hook_hierarchical_select_valid_item().
  */
 function hs_menu_hierarchical_select_valid_item($item, $params) {
-  if (!is_numeric($item) || $item < 1) {
-    return FALSE;
+  $parts = explode(':', $item);
+
+  $valid = TRUE;
+  for ($i = 1; $i < count($parts); $i++) {
+    $valid = $valid && is_numeric($parts[$i]);
   }
 
-  $type = db_result(db_query("SELECT type FROM {menu} WHERE mid = %d", $item));
+  // Ensure that this isn't the excluded menu link.
+  $valid = $valid && $item != $params['exclude'][0] . $params['exclude'][1];
 
-  // mid 1 corresponds to the hardcoded "Navigation" menu.
-  return (($item == 1) || ($type & (MENU_MODIFIABLE_BY_ADMIN | MENU_IS_ROOT)));
+  return $valid;
 }
 
 /**
@@ -179,9 +154,16 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
  */
 function hs_menu_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
-
-  if (!isset($labels[$item])) {
-    $labels[$item] = t(db_result(db_query("SELECT title FROM {menu} WHERE mid = %d", $item)));
+  
+  $parts = explode(':', $item);
+  if (count($parts) == 1) { // Get the menu name.
+    $menu_name = $parts[0];
+    $labels[$item] = t(db_result(db_query("SELECT title FROM {menu_custom} WHERE menu_name = '%s'", $menu_name)));
+  }
+  else { // Get the menu link title.
+    $mlid = end($parts);
+    $menu_link = menu_link_load($mlid);
+    $labels[$item] = $menu_link['title'];
   }
 
   return $labels[$item];
@@ -201,14 +183,44 @@ function hs_menu_hierarchical_select_implementation_info() {
 //----------------------------------------------------------------------------
 // Private functions.
 
-function _hs_menu_apply(&$form, $mid, $parent_mid) {
-  unset($form['#options']);
-  $form['#type'] = 'hierarchical_select';
+/**
+ * Recursive helper function for hs_menu_hierarchical_select_children().
+ */
+function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
+  global $yar;
+  $children = array();
+
+  foreach ($tree as $data) {
+    if ($data['link']['plid'] == $plid && $data['link']['hidden'] >= 0) {
+      if ($exclude && $data['link']['menu_name'] === $exclude[0] && $data['link']['mlid'] == $exclude[1]) {
+        continue;
+      }
+
+      $title = truncate_utf8($data['link']['title'], 30, TRUE, FALSE);
+      if ($data['link']['hidden']) {
+        $title .= ' ('. t('disabled') .')';
+      }
+      $children[$menu_name .':'. $data['link']['mlid']] = $title;
+      if ($data['below']) {
+        $children += _hs_menu_children($data['below'], $menu_name, $plid, $exclude);
+      }
+    }
+    elseif ($data['below']) {
+      $children += _hs_menu_children($data['below'], $menu_name, $plid, $exclude);
+    }
+  }
+
+  return $children;
+}
+
+/**
+ * Helper function to apply the HS config to a form item.
+ */
+function _hs_menu_apply_config(&$form, $exclude) {
   $form['#config'] = array(
     'module' => 'hs_menu',
     'params' => array(
-      'mid'        => $mid,
-      'parent_mid' => $parent_mid,
+      'exclude' => $exclude,
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
