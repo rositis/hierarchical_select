@@ -13,19 +13,15 @@
 /**
  * Implementation of hook_menu().
  */
-function hs_menu_menu($may_cache) {
-  $items = array();
-
-  if ($may_cache) {
-    $items[] = array(
-      'path'               => 'admin/settings/hierarchical_select/menu',
-      'title'              => t('Menu'),
-      'description'        => t('Hierarchical Select configuration for Menu'),
-      'callback'           => 'drupal_get_form',
-      'callback arguments' => array('hs_menu_admin_settings'),
-      'type'               => MENU_LOCAL_TASK,
-    );
-  }
+function hs_menu_menu() {
+  $items['admin/settings/hierarchical_select/menu'] = array(
+    'title'            => 'Menu',
+    'description'      => 'Hierarchical Select configuration for Menu',
+    'access arguments' => array('administer site configuration'),
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('hs_menu_admin_settings'),
+    'type'             => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 
