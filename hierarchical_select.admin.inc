@@ -114,7 +114,7 @@ function hierarchical_select_admin_implementations() {
   $rows = array();
   foreach (module_implements('hierarchical_select_root_level') as $module) {
     $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
-    $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+    $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
     // Try to extract the hierarchy type from the optional hook_hierarchical_select_config_info().
     $hierarchy_type = $entity_type = t('unknown');
     if (module_hook($module, 'hierarchical_select_implementation_info')) {
