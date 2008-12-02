@@ -732,7 +732,13 @@ function _hierarchical_select_validate(&$element, &$form_state) {
   // we pass a flat array of item ids. e.g. for the taxonomy module, this will
   // be an array of term ids. If a single item is selected, this will not be
   // an array.
-  // If the array is empty, set the 0 as form value, which the Forms API
+  // If the form item is disabled, set the default value as the return value,
+  // because otherwise nothing would be returned (disabled form items are not
+  // submitted, as described in the HTML standard).
+  if ($element['#disabled']) {
+    $element['#return_value'] = $element['#default_value'];
+  }
+  // If the array is empty, set 0 as the value, which the Forms API
   // detects as an empty form value.
   $value = (empty($element['#return_value'])) ? 0 : $element['#return_value'];
   $element['#value'] = $value;
