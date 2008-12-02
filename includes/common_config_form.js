@@ -23,25 +23,29 @@ cfg.levelLabels = function(configId) {
       $affected.hide(speed);
     }
     else {
+      // For showing/hiding rows, I'm relying on setting the style
+      // "display: none" and removing it again. jQuery's show()/hide() leave
+      // "display: block" behind and are thereby messing up the table layout.
       if ($enforceDeepest.slice(1, 2).is(':checked')) {
-        $affected
-        .find('tr').slice(2) // Make sure all tr's are shown.
-        .add($affected) // The entire table should be shown.
-        .show(speed, function() {
-          // jQuery leaves style="display:block;" behind, which causes badly
-          // displayed tr's.
-          $(this).removeAttr('style');
-        });
+        $affected.find('tr').removeAttr('style');
       }
       else {
-        $affected.find('tr').slice(0, 2).show(speed); // Show header tr and root level tr.
-        $affected.find('tr').slice(2).hide(speed); // Hide all other tr's.
-
-        // If $status was unchecked previously, the entire div would have been
-        // hidden!
-        if ($affected.css('display') == 'none') {
-          $affected.show(speed);
+        // We need to take special measures if sticky headers are enabled, so
+        // handle the show/hide separately when it's enabled.
+        if ($affected.find('table.sticky-header').length == 0) {
+          $affected.find('tr').slice(0, 2).removeAttr('style'); // Show header tr and root level tr.
+          $affected.find('tr').slice(2).attr('display: none'); // Hide all other tr's.
         }
+        else {
+          $affected.find('table').show(speed);
+          $affected.find('table').slice(1).find('tr').slice(2).attr('style', 'display: none');
+        }
+      }
+
+      // If $status was unchecked previously, the entire div would have been
+      // hidden!
+      if ($affected.css('display') == 'none') {
+        $affected.show(speed);
       }
     }
   };
