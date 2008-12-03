@@ -14,21 +14,15 @@ choose a site-wide animation delay, and so on. You can even create new items
 and levels through Hierarchical Select!
 
 
-Dependencies
-------------
-* jQuery Update 2.x, NOT 1.x! (http://drupal.org/project/jquery_update)
-
-
 Integrates with
 ---------------
-* Book (Drupal core)
+* Book (Drupal core) – NOT YET PORTED TO DRUPAL 6
 * Forum (Drupal core)
 * Menu (Drupal core)
 * Taxonomy (Drupal core)
-* Content Taxonomy (http://drupal.org/project/content_taxonomy)
-* Taxonomy Subscriptions (http://drupal.org/project/subscriptions)
-* Views 5.x-1.x-dev tarball of May 11, 2008 or later (http://drupal.org/project/views)
-  or apply this patch: http://drupal.org/files/issues/hs_compatibility.patch
+* Content Taxonomy (http://drupal.org/project/content_taxonomy) – NOT YET PORTED TO DRUPAL 6
+* Taxonomy Subscriptions (http://drupal.org/project/subscriptions) – NOT YET PORTED TO DRUPAL 6
+* Views – NOT YET PORTED TO DRUPAL 6
 
 
 Installation
@@ -38,12 +32,9 @@ Installation
 folder, since that will cause problems and is bad practice in general. If
 "sites/all/modules" doesn't exist yet, just create it.
 
-2) Install the modules it depends on. Don't forget to copy the jquery.js file
-included in the jQuery Update module to the "misc" directory!
+2) Enable the module.
 
-3) Enable the module.
-
-4) If you want to use it for one or more of your vocabularies, go to
+3) If you want to use it for one or more of your vocabularies, go to
 admin/content/taxonomy and click the "edit" link for a vocabulary. Now scroll
 down and you'll find a whole range of Hierarchical Select settings. All
 settings are explained there as well.
@@ -55,7 +46,6 @@ If you ever have problems, make sure to go through these steps:
 
 1) Go to admin/logs/status (i.e. the Status Report). Ensure that the status
    of the following modules is ok:
-   - jQuery Update
    - Hierarchical Select
    - Hierarchical Select Taxonomy Views (if installed)
    - Hierarchical Select Content Taxonomy Views (if installed)
@@ -149,8 +139,9 @@ Author
 ------
 Wim Leers
 
-* mail: work@wimleers.com
-* website: http://wimleers.com/work
+* website: http://wimleers.com/
+* contact: http://wimleers.com/contact
 
-The author can be contacted for paid customizations of this module as well as
-Drupal consulting and development.
+The author can be contacted for paid development on this module. This can vary
+from new features to Hierarchical Select itself, to new implementations (i.e.
+support for new kinds of hierarchies).
