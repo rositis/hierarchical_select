@@ -34,11 +34,11 @@ cfg.levelLabels = function(configId) {
         // handle the show/hide separately when it's enabled.
         if ($affected.find('table.sticky-header').length == 0) {
           $affected.find('tr').slice(0, 2).removeAttr('style'); // Show header tr and root level tr.
-          $affected.find('tr').slice(2).attr('display: none'); // Hide all other tr's.
+          $affected.find('tr').slice(2).attr('style', 'display: none'); // Hide all other tr's.
         }
         else {
-          $affected.find('table').show(speed);
-          $affected.find('table').slice(1).find('tr').slice(2).attr('style', 'display: none');
+          $affected.find('table').show(speed); // Show both tables (the one with the sticky headers and the one with the actual content).
+          $affected.find('table').slice(1).find('tr').slice(2).attr('style', 'display: none'); // Show all tr's after the header tr and root level tr of the 2nd table (the one with the actual content).
         }
       }
 
