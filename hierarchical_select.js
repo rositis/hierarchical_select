@@ -2,6 +2,14 @@
 
 (function($) {
 
+Drupal.behaviors.HierarchicalSelect = function (context) {
+  $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
+  .addClass('hierarchical-select-wrapper-processed').each(function() {
+    var hsid = $(this).attr('id').replace(/^hierarchical-select-(\d+)-wrapper$/, "$1");
+    Drupal.HierarchicalSelect.attachBindings(hsid);
+  });
+};
+
 Drupal.HierarchicalSelect = {};
 
 Drupal.HierarchicalSelect.state = [];
@@ -24,7 +32,6 @@ Drupal.HierarchicalSelect.initialize = function() {
       this.resizable(hsid);
     }
 
-    this.attachBindings(hsid);
     if (this.cache != null && this.cache.status()) {
       this.cache.load(hsid);
     }
@@ -190,7 +197,7 @@ Drupal.HierarchicalSelect.throwError = function(hsid, message) {
     }
   }
   Drupal.HierarchicalSelect.enableForm(hsid);
-}
+};
 
 Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
   // Remove the name attributes of all form elements that end up in GET,
@@ -235,7 +242,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   // "update-hierarchical-select" event
   .find('.hierarchical-select .selects select').unbind().change(function(_hsid) {
     return function() {
-      if (Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled']) {
+      if (Drupal.settings.HierarchicalSelect.settings[_hsid]['updatesEnabled']) {
         Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
       }
     };
@@ -500,6 +507,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
       // Replace the old HTML with the (relevant part of) retrieved HTML.
       $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+      .removeClass('hierarchical-select-wrapper-processed')
       .html($('.hierarchical-select-wrapper > *', $(response.output)));
 
       // Transform the hierarchical select and/or dropbox to the JS variant,
@@ -511,8 +519,8 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       Drupal.HierarchicalSelect.enableForm(hsid);
 
       Drupal.HierarchicalSelect.postUpdateAnimations(hsid, updateType, lastUnchanged, function() {
-        // Reattach the bindings.
-        Drupal.HierarchicalSelect.attachBindings(hsid);
+        // Attach behaviors.
+        Drupal.attachBehaviors(Drupal.HierarchicalSelect.context);
 
         // Update the client-side cache when:
         // - information for in the cache is provided in the response, and
@@ -554,22 +562,20 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   }
   else {
     Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
-      $.ajax(ajaxOptions); 
+      $.ajax(ajaxOptions);
     });
   }
 };
 
-if (Drupal.jsEnabled) {
-  $(document).ready(function() {
-    // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
-    // and as such, Hierarchical Select won't initialize its Javascript! It
-    // will seem as if your browser had Javascript disabled.
-    if (undefined != Drupal.settings.HierarchicalSelect.pretendNoJS) {
-      return false;
-    }
-    
-    Drupal.HierarchicalSelect.initialize();
-  });
-}
+$(document).ready(function() {
+  // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
+  // and as such, Hierarchical Select won't initialize its Javascript! It
+  // will seem as if your browser had Javascript disabled.
+  if (undefined != Drupal.settings.HierarchicalSelect.pretendNoJS) {
+    return false;
+  }
+  
+  Drupal.HierarchicalSelect.initialize();
+});
 
 })(jQuery);
