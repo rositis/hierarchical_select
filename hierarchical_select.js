@@ -152,13 +152,13 @@ Drupal.HierarchicalSelect.disableForm = function(hsid) {
 Drupal.HierarchicalSelect.enableForm = function(hsid) {
   // This method undoes everything the disableForm() method did.
 
-  $e = $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]')
-  .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input');
+  $e = $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]');  
+  $e = $e.add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input[type!=submit]');
 
   // Don't enable the selects again if they've been disabled because the
   // dropbox limit was exceeded.
   if ($('#hierarchical-select-' + hsid +'-wrapper hierarchical-select-dropbox-limit-warning').length == 0) {
-    $e.add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select');
+    $e = $e.add($('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select'));
   }
 
   $e.attr('disabled', false);
@@ -167,6 +167,30 @@ Drupal.HierarchicalSelect.enableForm = function(hsid) {
 
   $('body').css('cursor', 'auto');
 };
+
+Drupal.HierarchicalSelect.throwError = function(hsid, message) {
+  // Show the error to the user.
+  alert(message);
+
+  // Log the error.
+  Drupal.HierarchicalSelect.state[hsid].log.push([ message ]);
+  Drupal.HierarchicalSelect.log(hsid);
+
+  // Re-enable the form to allow the user to retry, but reset the selection to
+  // the level label if possible, otherwise the "<none>" option if possible.
+  var $select = $('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select:first');
+  var levelLabelOption = $('option[value^=label_]', $select).val();
+  if (levelLabelOption !== undefined) {
+    $select.val(levelLabelOption);
+  }
+  else {
+    var noneOption = $('option[value=none]', $select).val();
+    if (noneOption !== undefined) {
+      $select.val(noneOption);
+    }
+  }
+  Drupal.HierarchicalSelect.enableForm(hsid);
+}
 
 Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
   // Remove the name attributes of all form elements that end up in GET,
@@ -463,7 +487,17 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       Drupal.HierarchicalSelect.triggerEvents(hsid, 'before-' + updateType, settings);
       Drupal.HierarchicalSelect.disableForm(hsid); 
     },
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+      // When invalid HTML is received in Safari, jQuery calls this function.
+      Drupal.HierarchicalSelect.throwError(hsid, Drupal.t('Received an invalid response from the server.'));
+    },
     success:    function(response) {
+      // When invalid HTML is received in Firefox, jQuery calls this function.
+      if ($('.hierarchical-select-wrapper > *', $(response.output)).length == 0) {
+        Drupal.HierarchicalSelect.throwError(hsid, Drupal.t('Received an invalid response from the server.'));
+        return;
+      }
+
       // Replace the old HTML with the (relevant part of) retrieved HTML.
       $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
       .html($('.hierarchical-select-wrapper > *', $(response.output)));
