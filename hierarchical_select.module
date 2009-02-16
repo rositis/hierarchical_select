@@ -382,13 +382,16 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
   if (HS_DEVELOPER_MODE) {
     $diagnostics = array();
     if (!isset($config['module']) || empty($config['module'])) {
-      $diagnostics[] = "'module is not set!";
+      $diagnostics[] = t("'module is not set!");
     }
+    elseif (!module_exists($config['module'])) {
+      $diagnostics[] = t('the module that should be used (module) is not installed!', array('%module' => $config['module']));
+    }    
     else {
       $required_params = module_invoke($config['module'], 'hierarchical_select_params');
       $missing_params = array_diff($required_params, array_keys($config['params']));
       if (!empty($missing_params)) {
-        $diagnostics[] = "'params' is missing values for: ". implode(', ', $missing_params) .'.';
+        $diagnostics[] = t("'params' is missing values for: "). implode(', ', $missing_params) .'.';
       }
     }
     $config_id = (isset($config['config_id']) && is_string($config['config_id'])) ? $config['config_id'] : 'none';
