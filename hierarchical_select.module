@@ -662,7 +662,7 @@ function hierarchical_select_after_build($form, &$form_state) {
       'parameters' => $parameters,
       // … determine which part of $form should be rendered.
       '#names'     => $names,
-      // … include the file in which the form function lives.
+      // … include the file in which the form function lives.
       'file'       => $menu_item['file'],
     );
 
@@ -1655,6 +1655,12 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       // Level label: set an empty level label if they've been disabled.
       $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
       $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth];
+    }
+
+    // If the root level label is empty and the none option is present, remove
+    // the root level label because it's conceptually identical.
+    if ($hierarchy->levels[0]['label_0'] == '' && isset($hierarchy->levels[0]['none'])) {
+      unset($hierarchy->levels[0]['label_0']);
     }
 
     // Add one more level if appropriate.
