@@ -79,6 +79,13 @@ that includes Drupal core modules). Simply move the changes from the
 hook_form_alter() implementations into the corresponding form definitions.
 
 
+Using the dropbox in Views exposed filters
+------------------------------------------
+This can be very tricky, due to a combination of the respective limitations of
+Taxonomy and Views exposed filters.
+See http://drupal.org/node/346033.
+
+
 Addressing Views exposed filters display issues
 -----------------------------------------------
 When using Hierarchical Select to alter an exposed Views filter (i.e. an 
