@@ -1661,6 +1661,11 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // the root level label because it's conceptually identical.
     if ($hierarchy->levels[0]['label_0'] == '' && isset($hierarchy->levels[0]['none'])) {
       unset($hierarchy->levels[0]['label_0']);
+      // Update the selected lineage when necessary to prevent an item that
+      // doesn't exist from being "selected" internally.
+      if ($hierarchy->lineage[0] == 'label_0') {
+        $hierarchy->lineage[0] = 'none';
+      }
     }
 
     // Add one more level if appropriate.
