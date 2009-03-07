@@ -438,13 +438,13 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
       // Don't do anything (also no callback to the server!) when the selected
       // item is:
-      // - the '<none>' option, or
+      // - the '<none>' option and the renderFlatSelect setting is disabled, or
       // - a level label, or
       // - an option of class 'has-no-children', and
       //   (the renderFlatSelect setting is disabled or the dropbox is enabled)
       //   and
       //   (the createNewLevels setting is disabled).
-      if (value == 'none'
+      if ((value == 'none' && Drupal.settings.HierarchicalSelect.settings[hsid]['renderFlatSelect'] == false)
           || value.match(/^label_\d+$/)
           || (optionClass == 'has-no-children'
              &&
