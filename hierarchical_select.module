@@ -251,14 +251,8 @@ function hierarchical_select_theme() {
  * Wildcard loader for Hierarchical Select config ID's.
  */
 function hierarchical_select_config_id_load($config_id) {
-  if (empty($config_id)) {
-    return FALSE;
-  }
-
-  // E.g.: extract "content_taxonomy" from "content-taxonomy_field_somefield".
-  $parts = explode('_', $config_id);
-  $module = str_replace(array('-'), array('_'), $parts[0]);
-  return in_array($config_id, array_keys(module_invoke($module, 'hierarchical_select_config_info')));
+  $config = variable_get('hs_config_'. $config_id, FALSE);
+  return ($config !== FALSE) ? $config['config_id'] : FALSE; 
 }
 
 /**

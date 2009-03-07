@@ -149,7 +149,7 @@ function hierarchical_select_admin_implementations() {
 /**
  * Form definition; config export form.
  */
-function hierarchical_select_admin_export($config_id) {
+function hierarchical_select_admin_export(&$form_state, $config_id) {
   require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
 
   $config = hierarchical_select_common_config_get($config_id);
