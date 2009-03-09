@@ -7,205 +7,289 @@
  */
 
 
+variable_set('taxonomy_override_selector', TRUE);
+
+
 //----------------------------------------------------------------------------
 // Drupal core hooks.
+
+// Add per-vocabulary settings for Hierarchical Select.
+function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
+  $vid = $form['vid']['#value'];
+
+  if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
+    $form['tags']['#attributes']['disabled'] = TRUE;
+    $form['tags']['#description'] = t(
+      "This setting is irrelevant when you're using Hierarchical Select.
+      <br />Use Hierarchical Select's %editability-settings instead.",
+      array('%editability-settings' => t('Editability settings'))
+    );
+    $form['multiple']['#attributes']['disabled'] = TRUE;
+    $form['multiple']['#description'] = t(
+      "This setting is managed by the Hierarchical Select configuration, by
+      the %enable-dropbox setting.",
+      array('%enable-dropbox' => t('Enable the dropbox'))
+    );
+  }
+
+  $split = array_search('weight', array_keys($form)) + 1;
+  $first_part = array_slice($form, 0, $split);
+  $second_part = array_slice($form, $split);
+  $form = $first_part;
+
+  $form['hierarchical_select_status'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Use the Hierarchical Select form element for this vocabulary.') .'</strong>',
+    '#default_value' => variable_get("taxonomy_hierarchical_select_$vid", 0),
+    '#description' => t(
+      'When checked, the %free_tagging and %multiple_values settings will
+      be managed by the Hierarchical Select configuration.',
+      array(
+        '%free_tagging' => t('Free tagging'),
+        '%multiple_values' => t('Multiple values'),
+      )
+    ),
+  );
+
+  // Add the Hierarchical Select config form.
+  $module = 'hs_taxonomy';
+  $params = array(
+    'vid'         => $vid,
+    'exclude_tid' => NULL,
+    'root_term'   => NULL,
+  );
+  $config_id = "taxonomy-$vid";
+  $vocabulary = taxonomy_vocabulary_load($vid);
+  $defaults = array(
+    // Enable the save_lineage setting by default if the multiple parents
+    // vocabulary option is enabled.
+    'save_lineage' => (int) ($vocabulary->hierarchy == 2),
+    'editability' => array(
+      'max_levels' => _hs_taxonomy_hierarchical_select_get_depth($vid),
+    ),
+  );
+  $strings = array(
+    'hierarchy'   => t('vocabulary'),
+    'hierarchies' => t('vocabularies'),
+    'item'        => t('term'),
+    'items'       => t('terms'),
+    'item_type'   => t('term type'),
+    'entity'      => t('node'),
+    'entities'    => t('nodes'),
+  );
+  $max_hierarchy_depth = _hs_taxonomy_hierarchical_select_get_depth($vid);
+  $preview_is_required = $vocabulary->required;
+  $form['hierarchical_select'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
+
+  // The forum selection requires that only the deepest term is saved!
+  // See http://drupal.org/node/241766#comment-808464.
+  if ($vid == variable_get('forum_nav_vocabulary', 0)) {
+    $form['hierarchical_select']['save_lineage']['#value'] = 0;
+    $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
+    $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
+      'This is the vocabulary that will be used for forum navigation and it
+      <strong>always</strong> requires the %dont_save_lineage setting to be
+      set!',
+      array('%dont_save_lineage' => t('Save only the deepest term'))
+    );
+  }
+
+  // Add the the submit handler for the Hierarchical Select config form.
+  $parents = array('hierarchical_select');
+  $form['#submit'][] = 'hierarchical_select_common_config_form_submit';
+  $form['#hs_common_config_form_parents'] = $parents;
+
+  // Add a validate callback to override the freetagging and multiple select
+  // settings if necessary.
+  $form['#validate'][] = 'hierarchical_select_taxonomy_form_vocabulary_validate';
+  $form['#submit'][]   = 'hierarchical_select_taxonomy_form_vocabulary_submit';
+
+  // The original #submit callback(s) has/have to be executed afterwards.
+  $form['#submit'] = array_merge($form['#submit'], $second_part['#submit']);
+
+  $form += $second_part;
+}
+
+// The taxonomy term form.
+function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
+  // Build an appropriate config, that inherits the level_labels settings
+  // from the vocabulary's Hierarchical Select config.
+  $vid = $form['#vocabulary']['vid'];
+  $vocabulary_config = hierarchical_select_common_config_get("taxonomy-$vid");
+  $config = array(
+    'module' => 'hs_taxonomy',
+    'params' => array(
+      'vid'         => $vid,
+      'exclude_tid' => $form['#term']['tid'],
+    ),
+    'enforce_deepest' => 0,
+    'save_lineage'    => 0,
+    'level_labels' => $vocabulary_config['level_labels'],
+    'dropbox' => array(
+      'status'   => 1,
+    ),
+    'params' => array(
+      'vid'         => $form['vid']['#value'],
+      'exclude_tid' => $form['tid']['#value'],
+      'root_term'   => TRUE,
+    ),
+  );
+
+  // Use Hierarchical Select for selecting the parent term(s).
+  unset($form['advanced']['parent']['#options']);
+  unset($form['advanced']['parent']['#theme']);
+  unset($form['advanced']['parent']['#size']);
+  $form['advanced']['parent']['#type'] = 'hierarchical_select';
+  $form['advanced']['parent']['#config'] = $config;
+  $form['advanced']['parent']['#config']['dropbox']['title'] = t('All parent terms');
+
+  // Use Hierarchical Select for selecting the related term(s).
+  unset($form['advanced']['relations']['#options']);
+  unset($form['advanced']['relations']['#theme']);
+  unset($form['advanced']['relations']['#size']);
+  $form['advanced']['relations']['#type'] = 'hierarchical_select';
+  $form['advanced']['relations']['#config'] = $config;
+  $form['advanced']['relations']['#config']['dropbox']['title'] = t('All related terms');
+
+  // When 'multiple parents' are enabled, we should support that as well!
+  if ($form['parent']['#multiple']) {
+    unset($form['parent']['#size']);
+    $form['parent']['#config']['dropbox']['status'] = 1;
+  }
+}
+
+// The forum 'container' form.
+function hs_taxonomy_form_forum_form_container_alter(&$form, &$form_state) {
+  unset($form['parent'][0]['#options']);
+  unset($form['parent'][0]['#theme']);
+  unset($form['parent'][0]['#required']);
+  $form['parent'][0]['#type'] = 'hierarchical_select';
+  $form['parent'][0]['#config'] = array(
+    'module'          => 'hs_taxonomy',
+    'enforce_deepest' => 0,
+    'save_lineage'    => 0,
+    'params' => array(
+      'vid'         => $form['vid']['#value'],
+      'exclude_tid' => $form['tid']['#value'],
+      'root_term'   => TRUE,
+    ),
+  );
+}
+
+// The forum 'forum' form.
+function hs_taxonomy_form_forum_form_forum_alter(&$form, &$form_state) {
+  forum_form_container($form, $form_state);
+}
+
+function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
+  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+
+  $vocabulary = taxonomy_vocabulary_load($vid);
+  $title = check_plain($vocabulary->name);
+  $description = ($help) ? $help : $vocabulary->help;
+
+  $form_item = array(
+    '#type'          => 'hierarchical_select',
+    '#config'        => array(
+      'module' => 'hs_taxonomy',
+      'params' => array(
+        'vid'         => $vid,
+        'exclude_tid' => NULL,
+        'root_term'   => NULL,
+      ),      
+    ),
+    '#title'         => $title,
+    '#default_value' => $value,
+    '#options'       => $options,
+    '#description'   => $description,
+    '#weight'        => -15,
+  );
+
+  hierarchical_select_common_config_apply($form_item, "taxonomy-$vid");
+
+  return $form_item;
+}
 
 /**
  * Implementation of hook_form_alter().
  */
 function hs_taxonomy_form_alter(&$form, &$form_state, $form_id) {
-  // Add per-vocabulary settings for Hierarchical Select.
-  if ($form_id == 'taxonomy_form_vocabulary') {
-    require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-
-    $vid = $form['vid']['#value'];
-
-    if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
-      $form['tags']['#attributes']['disabled'] = TRUE;
-      $form['tags']['#description'] = t(
-        "This setting is irrelevant when you're using Hierarchical Select.
-        <br />Use Hierarchical Select's %editability-settings instead.",
-        array('%editability-settings' => t('Editability settings'))
-      );
-      $form['multiple']['#attributes']['disabled'] = TRUE;
-      $form['multiple']['#description'] = t(
-        "This setting is managed by the Hierarchical Select configuration, by
-        the %enable-dropbox setting.",
-        array('%enable-dropbox' => t('Enable the dropbox'))
-      );
-    }
-
-    $split = array_search('weight', array_keys($form)) + 1;
-    $first_part = array_slice($form, 0, $split);
-    $second_part = array_slice($form, $split);
-    $form = $first_part;
-
-    $form['hierarchical_select_status'] = array(
-      '#type' => 'checkbox',
-      '#title' => '<strong>'. t('Use the Hierarchical Select form element for this vocabulary.') .'</strong>',
-      '#default_value' => variable_get("taxonomy_hierarchical_select_$vid", 0),
-      '#description' => t(
-        'When checked, the %free_tagging and %multiple_values settings will
-        be managed by the Hierarchical Select configuration.',
-        array(
-          '%free_tagging' => t('Free tagging'),
-          '%multiple_values' => t('Multiple values'),
-        )
-      ),
-    );
-
-    // Add the Hierarchical Select config form.
-    $module = 'hs_taxonomy';
-    $params = array(
-      'vid'         => $vid,
-      'exclude_tid' => NULL,
-      'root_term'   => NULL,
-    );
-    $config_id = "taxonomy-$vid";
-    $vocabulary = taxonomy_vocabulary_load($vid);
-    $defaults = array(
-      // Enable the save_lineage setting by default if the multiple parents
-      // vocabulary option is enabled.
-      'save_lineage' => (int) ($vocabulary->hierarchy == 2),
-      'editability' => array(
-        'max_levels' => _hs_taxonomy_hierarchical_select_get_depth($vid),
-      ),
-    );
-    $strings = array(
-      'hierarchy'   => t('vocabulary'),
-      'hierarchies' => t('vocabularies'),
-      'item'        => t('term'),
-      'items'       => t('terms'),
-      'item_type'   => t('term type'),
-      'entity'      => t('node'),
-      'entities'    => t('nodes'),
-    );
-    $max_hierarchy_depth = _hs_taxonomy_hierarchical_select_get_depth($vid);
-    $preview_is_required = $vocabulary->required;
-    $form['hierarchical_select'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
-
-    // The forum selection requires that only the deepest term is saved!
-    // See http://drupal.org/node/241766#comment-808464.
-    if ($vid == variable_get('forum_nav_vocabulary', 0)) {
-      $form['hierarchical_select']['save_lineage']['#value'] = 0;
-      $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
-      $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
-        'This is the vocabulary that will be used for forum navigation and it
-        <strong>always</strong> requires the %dont_save_lineage setting to be
-        set!',
-        array('%dont_save_lineage' => t('Save only the deepest term'))
-      );
-    }
-
-    // Add the the submit handler for the Hierarchical Select config form.
-    $parents = array('hierarchical_select');
-    $form['#submit'][] = 'hierarchical_select_common_config_form_submit';
-    $form['#hs_common_config_form_parents'] = $parents;
-
-    // Add a validate callback to override the freetagging and multiple select
-    // settings if necessary.
-    $form['#validate'][] = 'hierarchical_select_taxonomy_form_vocabulary_validate';
-    $form['#submit'][]   = 'hierarchical_select_taxonomy_form_vocabulary_submit';
-
-    // The original #submit callback(s) has/have to be executed afterwards.
-    $form['#submit'] = array_merge($form['#submit'], $second_part['#submit']);
-
-    $form += $second_part;
-  }
-
   // Change the term selection of nodes. Only affects hierarchical
   // vocabularies.
-  else if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && is_array($form['taxonomy'])) {
-    foreach ($form['taxonomy'] as $vid => $form_item) {
+  if (isset($form['type']) && isset($form['#node']) && (variable_get('taxonomy_override_selector', FALSE)) && $form['type']['#value'] .'_node_form' == $form_id) {
+    $node = $form['#node'];
 
-      // Only apply Hierarchical Select if it's enabled for this vocabulary.
-      if (is_numeric($vid) && variable_get("taxonomy_hierarchical_select_$vid", 0)) {
-        require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-        
-        // #size is set as soon as save_lineage or the dropbox is enabled,
-        // because then "multiple select" is enabled. Unset #size.
-        unset($form['taxonomy'][$vid]['#size']);
+    if (!isset($node->taxonomy)) {
+      $terms = empty($node->nid) ? array() : taxonomy_node_get_terms($node);
+    }
+    else {
+      // After preview the terms must be converted to objects.
+      if (isset($form_state['node_preview'])) {
+        $node->taxonomy = taxonomy_preview_terms($node);
+      }
+      $terms = $node->taxonomy;
+    }
 
-        $form['taxonomy'][$vid]['#type'] = 'hierarchical_select';
-        $form['taxonomy'][$vid]['#config'] = array(
-          'module' => 'hs_taxonomy',
-          'params' => array(
-            'vid'         => $vid,
-            'exclude_tid' => NULL,
-            'root_term'   => NULL,
-          ),
+    $c = db_query(db_rewrite_sql("SELECT v.* FROM {vocabulary} v INNER JOIN {vocabulary_node_types} n ON v.vid = n.vid WHERE n.type = '%s' ORDER BY v.weight, v.name", 'v', 'vid'), $node->type);
+
+    while ($vocabulary = db_fetch_object($c)) {
+      if ($vocabulary->tags) {
+        if (isset($form_state['node_preview'])) {
+          // Typed string can be changed by the user before preview,
+          // so we just insert the tags directly as provided in the form.
+          $typed_string = $node->taxonomy['tags'][$vocabulary->vid];
+        }
+        else {
+          $typed_string = taxonomy_implode_tags($terms, $vocabulary->vid) . (array_key_exists('tags', $terms) ? $terms['tags'][$vocabulary->vid] : NULL);
+        }
+        if ($vocabulary->help) {
+          $help = $vocabulary->help;
+        }
+        else {
+          $help = t('A comma-separated list of terms describing this content. Example: funny, bungee jumping, "Company, Inc.".');
+        }
+        $form['taxonomy']['tags'][$vocabulary->vid] = array('#type' => 'textfield',
+          '#title' => $vocabulary->name,
+          '#description' => $help,
+          '#required' => $vocabulary->required,
+          '#default_value' => $typed_string,
+          '#autocomplete_path' => 'taxonomy/autocomplete/'. $vocabulary->vid,
+          '#weight' => $vocabulary->weight,
+          '#maxlength' => 255,
         );
-        hs_taxonomy_hierarchical_select_update_form_item($form['taxonomy'][$vid], $vid);
+      }
+      else {
+        // Extract terms belonging to the vocabulary in question.
+        $default_terms = array();
+        foreach ($terms as $term) {
+          // Free tagging has no default terms and also no vid after preview.
+          if (isset($term->vid) && $term->vid == $vocabulary->vid) {
+            $default_terms[$term->tid] = $term;
+          }
+        }
+        $form_function = variable_get("taxonomy_hierarchical_select_$vocabulary->vid", 0) ? 'hs_taxonomy_form' : 'taxonomy_form';
+        $form['taxonomy'][$vocabulary->vid] = $form_function($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
+        $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
+        $form['taxonomy'][$vocabulary->vid]['#required'] = $vocabulary->required;
       }
     }
-  }
-
-  // The taxonomy term form.
-  else if ($form_id == 'taxonomy_form_term') {
-    require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
-
-    // Build an appropriate config, that inherits the level_labels settings
-    // from the vocabulary's Hierarchical Select config.
-    $vid = $form['#vocabulary']['vid'];
-    $vocabulary_config = hierarchical_select_common_config_get("taxonomy-$vid");
-    $config = array(
-      'module' => 'hs_taxonomy',
-      'params' => array(
-        'vid'         => $vid,
-        'exclude_tid' => $form['#term']['tid'],
-      ),
-      'enforce_deepest' => 0,
-      'save_lineage'    => 0,
-      'level_labels' => $vocabulary_config['level_labels'],
-      'dropbox' => array(
-        'status'   => 1,
-      ),
-      'params' => array(
-        'vid'         => $form['vid']['#value'],
-        'exclude_tid' => $form['tid']['#value'],
-        'root_term'   => TRUE,
-      ),
-    );
-
-    // Use Hierarchical Select for selecting the parent term(s).
-    unset($form['advanced']['parent']['#options']);
-    unset($form['advanced']['parent']['#theme']);
-    unset($form['advanced']['parent']['#size']);
-    $form['advanced']['parent']['#type'] = 'hierarchical_select';
-    $form['advanced']['parent']['#config'] = $config;
-    $form['advanced']['parent']['#config']['dropbox']['title'] = t('All parent terms');
-
-    // Use Hierarchical Select for selecting the related term(s).
-    unset($form['advanced']['relations']['#options']);
-    unset($form['advanced']['relations']['#theme']);
-    unset($form['advanced']['relations']['#size']);
-    $form['advanced']['relations']['#type'] = 'hierarchical_select';
-    $form['advanced']['relations']['#config'] = $config;
-    $form['advanced']['relations']['#config']['dropbox']['title'] = t('All related terms');
-
-    // When 'multiple parents' are enabled, we should support that as well!
-    if ($form['parent']['#multiple']) {
-      unset($form['parent']['#size']);
-      $form['parent']['#config']['dropbox']['status'] = 1;
+    if (!empty($form['taxonomy']) && is_array($form['taxonomy'])) {
+      if (count($form['taxonomy']) > 1) {
+        // Add fieldset only if form has more than 1 element.
+        $form['taxonomy'] += array(
+          '#type' => 'fieldset',
+          '#title' => t('Vocabularies'),
+          '#collapsible' => TRUE,
+          '#collapsed' => FALSE,
+        );
+      }
+      $form['taxonomy']['#weight'] = -3;
+      $form['taxonomy']['#tree'] = TRUE;
     }
-  }
-
-  // The forum 'container' and 'forum' forms.
-  else if ($form_id == 'forum_form_forum' || $form_id == 'forum_form_container') {
-    unset($form['parent'][0]['#options']);
-    unset($form['parent'][0]['#theme']);
-    unset($form['parent'][0]['#required']);
-    $form['parent'][0]['#type'] = 'hierarchical_select';
-    $form['parent'][0]['#config'] = array(
-      'module'          => 'hs_taxonomy',
-      'enforce_deepest' => 0,
-      'save_lineage'    => 0,
-      'params' => array(
-        'vid'         => $form['vid']['#value'],
-        'exclude_tid' => $form['tid']['#value'],
-        'root_term'   => TRUE,
-      ),
-    );
   }
 }
 
@@ -677,19 +761,4 @@ function _hs_taxonomy_hierarchical_select_get_depth($vid) {
     }
   }
   return $depth;
-}
-
-/**
- * Update a taxonomy select to become a hierarchical_select type form item.
- *
- * @param $form_item
- *   The form item to update.
- * @param $vid
- *   The id of the vocabulary of which the configuration should be applied.
- */
-function hs_taxonomy_hierarchical_select_update_form_item(&$form_item, $vid) {
-  unset($form_item['#options']); // Unset to prevent passing around of possibly huge HTML.
-  unset($form_item['#theme']);   // Unset to prevent theme_taxonomy_term_select() from running.
-
-  hierarchical_select_common_config_apply($form_item, "taxonomy-$vid");
 }

@@ -71,9 +71,11 @@ Limitations
 
 Maximum scalability
 -------------------
-While the hs_taxonomy, hs_book, hs_menu and hs_subscriptions modules override
-existing form items, those form items are *still* being generated. This can
-cause scalability issues.
+hs_taxonomy takes advantage of the taxonomy_override_selector variable to
+improve scalability: the whole tree is no longer loaded by Drupal core.
+While the hs_book, hs_menu and hs_subscriptions modules override existing form
+items, those form items are *still* being generated. This can cause scalability
+issues.
 If you want to fix this, you *will* have to modify the original modules (so
 that includes Drupal core modules). Simply move the changes from the
 hook_form_alter() implementations into the corresponding form definitions.
