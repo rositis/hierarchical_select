@@ -148,7 +148,7 @@ function hierarchical_select_requirements($phase) {
     foreach ($core_overriding_modules as $module) {
       $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
       if (strpos($filename, 'modules/') === 0) {
-        $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+        $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
         $path_errors[] = t('!module', array('!module' => $module_info['name']));
       }
     }
@@ -157,7 +157,7 @@ function hierarchical_select_requirements($phase) {
       $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = '%s'", $module));
       if (!($hierarchical_select_weight > $weight)) {
         $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
-        $module_info = _module_parse_info_file(dirname($filename) ."/$module.info");
+        $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
         $weight_errors[] = t('!module (!weight)', array('!module' => $module_info['name'], '!weight' => $weight));
       }
     }
