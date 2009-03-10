@@ -46,7 +46,7 @@ function hs_smallhierarchy_hierarchical_select_root_level($params) {
 function hs_smallhierarchy_hierarchical_select_children($parent, $params) {
   $hierarchy = _hs_smallhierarchy_transform($params['hierarchy'], $params['id'], $params['separator']);
 
-  $children = $hierarchy[$parent]['children'];
+  $children = (isset($hierarchy[$parent]['children'])) ? $hierarchy[$parent]['children'] : array();
 
   $level = array();
   foreach ($children as $item) {
