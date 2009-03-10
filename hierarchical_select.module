@@ -243,6 +243,15 @@ function hierarchical_select_theme() {
   );
 }
 
+/**
+ * Implementation of hook_simpletest().
+ */
+function hierarchical_select_simpletest() {
+  $dir = drupal_get_path('module', 'hierarchical_select') .'/tests';
+  $tests = file_scan_directory($dir, '\.test$');
+  return array_keys($tests);
+}
+
 
 //----------------------------------------------------------------------------
 // Menu system callbacks.
