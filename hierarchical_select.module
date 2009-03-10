@@ -224,6 +224,10 @@ function hierarchical_select_theme() {
       'file'      => 'includes/theme.inc',
       'arguments' => array('element' => NULL),
     ),
+    'hierarchical_select_special_option' => array(
+      'file'      => 'includes/theme.inc',
+      'arguments' => array('option' => NULL),
+    ),
     'hierarchical_select_textfield' => array(
       'file'      => 'includes/theme.inc',
       'arguments' => array('element' => NULL),
@@ -1593,7 +1597,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   ) {
     $item_type = t($config['editability']['item_types'][0]);
     $item_type = (!empty($item_type)) ? $item_type : t('item');
-    $hierarchy->levels[0] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[0];
+    $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
+    $hierarchy->levels[0] = array('create_new_item' => $option) + $hierarchy->levels[0];
   }
 
   // Prepend a "<none>" option to the root level when:
@@ -1605,7 +1610,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   $second_case = $config['enforce_deepest'];
   $third_case  = $dropbox && count($dropbox->lineages) > 0;
   if ($first_case || $second_case || $third_case) {
-    $hierarchy->levels[0] = array('none' => '<'. t('none') .'>') + $hierarchy->levels[0];
+    $option = theme('hierarchical_select_special_option', t('none'));
+    $hierarchy->levels[0] = array('none' => $option) + $hierarchy->levels[0];
   }
 
   // Calculate the lineage's depth (starting from 0).
@@ -1629,7 +1635,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $item_type = t($config['editability']['item_types'][$depth]);
         $item_type = (!empty($item_type)) ? $item_type : t('item');
-        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[$depth];
+        $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
+        $hierarchy->levels[$depth] = array('create_new_item' => $option) + $hierarchy->levels[$depth];
       }
     }
 
@@ -1653,7 +1660,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       ) {
         $item_type = t($config['editability']['item_types'][$depth]);
         $item_type = (!empty($item_type)) ? $item_type : t('item');
-        $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>') + $hierarchy->levels[$depth];
+        $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
+        $hierarchy->levels[$depth] = array('create_new_item' => $option) + $hierarchy->levels[$depth];
       }
       // Level label: set an empty level label if they've been disabled.
       $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
@@ -1691,7 +1699,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         ) {
           $item_type = t($config['editability']['item_types'][$depth]);
           $item_type = (!empty($item_type)) ? $item_type : t('item');
-          $hierarchy->levels[$depth] = array('create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>');
+          $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
+          $hierarchy->levels[$depth] = array('create_new_item' => $option);
         }
 
         // Level label: set an empty level label if they've been disabled.
@@ -1740,9 +1749,10 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $item_type = (!empty($item_type)) ? $item_type : t('item');
 
     // The new level with only a level label and a "<create new item>" option.
+    $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
     $hierarchy->levels[$depth] = array(
       'label_'. $depth  => $label,
-      'create_new_item' => '<'. t('create new !item_type', array('!item_type' => $item_type)) .'>',
+      'create_new_item' => $option,
     );
   }
 

@@ -67,6 +67,21 @@ function theme_hierarchical_select_select($element) {
 }
 
 /**
+ * Format a special option in a Hierarchical Select select. For example the
+ * "none" option or the "create new item" option. This theme function allows
+ * you to change how a special option is indicated textually.
+ *
+ * @param $option
+ *   A special option.
+ * @return
+ *   A textually indicated special option.
+ */
+function theme_hierarchical_select_special_option($option) {
+  return '<' . $option . '>';
+}
+
+
+/**
  * Format a textfield in the .hierarchial-select div: prevent it from being
  * wrapped in a div. This simplifies the CSS and JS code.
  *
