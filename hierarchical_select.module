@@ -1559,7 +1559,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // If enforce_deepest is enabled, ensure that the lineage goes as deep as
   // possible: append values of items that will be selected by default.
   if ($config['enforce_deepest'] && !in_array($hierarchy->lineage[0], array('none', 'label_0'))) {
-    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $hierarchy->levels[0], $config['module'], $config['params']);
+    $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $config['module'], $config['params']);
   }
 
   $end_lineage = microtime();  
@@ -1828,8 +1828,6 @@ function _hierarchical_select_hierarchy_validate($selection, $module, $params) {
  *
  * @param $lineage
  *   The lineage up to the deepest selection the user has made so far.
- * @param $root_level
- *   The items in the root level.
  * @param $module
  *   The module that should be used for HS hooks.
  * @param $params
@@ -1837,7 +1835,7 @@ function _hierarchical_select_hierarchy_validate($selection, $module, $params) {
  * @return
  *   The updated lineage.
  */
-function _hierarchical_select_hierarchy_enforce_deepest($lineage, $root_level, $module, $params) {
+function _hierarchical_select_hierarchy_enforce_deepest($lineage, $module, $params) {
   // Use the deepest item as the first parent. Then apply this algorithm:
   // 1) get the parent's children, stop if no children
   // 2) choose the first child as the option that is selected by default, by
