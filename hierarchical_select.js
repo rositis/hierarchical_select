@@ -6,7 +6,7 @@ Drupal.behaviors.HierarchicalSelect = function (context) {
   $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
   .addClass('hierarchical-select-wrapper-processed').each(function() {
     var hsid = $(this).attr('id').replace(/^hierarchical-select-(\d+)-wrapper$/, "$1");
-    Drupal.HierarchicalSelect.attachBindings(hsid);
+    Drupal.HierarchicalSelect.initialize(hsid);
   });
 };
 
@@ -18,26 +18,32 @@ Drupal.HierarchicalSelect.context = function() {
   return $("form .hierarchical-select-wrapper");
 };
 
-Drupal.HierarchicalSelect.initialize = function() {
+Drupal.HierarchicalSelect.initialize = function(hsid) {
+  // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
+  // and as such, Hierarchical Select won't initialize its Javascript! It
+  // will seem as if your browser had Javascript disabled.
+  if (undefined != Drupal.settings.HierarchicalSelect.pretendNoJS) {
+    return false;
+  }
+
   if (this.cache != null) {
     this.cache.initialize();
   }
 
-  for (var hsid in Drupal.settings.HierarchicalSelect.settings) {
-    Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
-    Drupal.HierarchicalSelect.state[hsid] = {};
+  Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
+  Drupal.HierarchicalSelect.state[hsid] = {};
 
-    this.transform(hsid);
-    if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
-      this.resizable(hsid);
-    }
-
-    if (this.cache != null && this.cache.status()) {
-      this.cache.load(hsid);
-    }
-
-    Drupal.HierarchicalSelect.log(hsid);
+  this.transform(hsid);
+  if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
+    this.resizable(hsid);
   }
+  Drupal.HierarchicalSelect.attachBindings(hsid);
+
+  if (this.cache != null && this.cache.status()) {
+    this.cache.load(hsid);
+  }
+
+  Drupal.HierarchicalSelect.log(hsid);
 };
 
 Drupal.HierarchicalSelect.log = function(hsid) {
@@ -512,10 +518,6 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
       // Transform the hierarchical select and/or dropbox to the JS variant,
       // make it resizable again and re-enable the disabled form items.
-      Drupal.HierarchicalSelect.transform(hsid);
-      if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
-        Drupal.HierarchicalSelect.resizable(hsid);
-      }
       Drupal.HierarchicalSelect.enableForm(hsid);
 
       Drupal.HierarchicalSelect.postUpdateAnimations(hsid, updateType, lastUnchanged, function() {
@@ -566,16 +568,5 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     });
   }
 };
-
-$(document).ready(function() {
-  // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
-  // and as such, Hierarchical Select won't initialize its Javascript! It
-  // will seem as if your browser had Javascript disabled.
-  if (undefined != Drupal.settings.HierarchicalSelect.pretendNoJS) {
-    return false;
-  }
-  
-  Drupal.HierarchicalSelect.initialize();
-});
 
 })(jQuery);
