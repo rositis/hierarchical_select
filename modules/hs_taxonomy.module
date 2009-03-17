@@ -114,6 +114,11 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
 
 // The taxonomy term form.
 function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
+  // Don't alter the form when it's in confirmation mode.
+  if (isset($form_state['confirm_delete']) || isset($form_state['confirm_parents'])) {
+    return;
+  }
+
   require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
 
   // Build an appropriate config, that inherits the level_labels settings
