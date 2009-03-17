@@ -145,26 +145,29 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
   );
 
   // Use Hierarchical Select for selecting the parent term(s).
-  unset($form['advanced']['parent']['#options']);
-  unset($form['advanced']['parent']['#theme']);
-  unset($form['advanced']['parent']['#size']);
-  $form['advanced']['parent']['#type'] = 'hierarchical_select';
-  $form['advanced']['parent']['#config'] = $config;
+  $parent = array_keys(taxonomy_get_parents($form['tid']['#value']));
+  $form['advanced']['parent'] = array(
+    '#type'   => 'hierarchical_select',
+    '#config' => $config,
+    // Copied from core.
+    '#title'         => t('Parents'), 
+    '#description'   => t('Parent terms') .'.',
+    '#weight'        => -15,
+    '#default_value' => $parent,
+  );
   $form['advanced']['parent']['#config']['dropbox']['title'] = t('All parent terms');
 
   // Use Hierarchical Select for selecting the related term(s).
-  unset($form['advanced']['relations']['#options']);
-  unset($form['advanced']['relations']['#theme']);
-  unset($form['advanced']['relations']['#size']);
-  $form['advanced']['relations']['#type'] = 'hierarchical_select';
-  $form['advanced']['relations']['#config'] = $config;
+  $related = array_keys(taxonomy_get_related($form['tid']['#value']));
+  $form['advanced']['relations'] = array(
+    '#type'   => 'hierarchical_select',
+    '#config' => $config,
+    // Copied from core.
+    '#title'         => t('Related terms'), 
+    '#weight'        => -15,
+    '#default_value' => $related,
+  );
   $form['advanced']['relations']['#config']['dropbox']['title'] = t('All related terms');
-
-  // When 'multiple parents' are enabled, we should support that as well!
-  if ($form['parent']['#multiple']) {
-    unset($form['parent']['#size']);
-    $form['parent']['#config']['dropbox']['status'] = 1;
-  }
 }
 
 // The forum 'container' form.
