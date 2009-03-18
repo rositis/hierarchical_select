@@ -516,14 +516,15 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       .removeClass('hierarchical-select-wrapper-processed')
       .html($('.hierarchical-select-wrapper > *', $(response.output)));
 
+      // Attach behaviors. This is just after the HTML has been updated, so
+      // it's as soon as we can.
+      Drupal.attachBehaviors(Drupal.HierarchicalSelect.context);
+
       // Transform the hierarchical select and/or dropbox to the JS variant,
       // make it resizable again and re-enable the disabled form items.
       Drupal.HierarchicalSelect.enableForm(hsid);
 
       Drupal.HierarchicalSelect.postUpdateAnimations(hsid, updateType, lastUnchanged, function() {
-        // Attach behaviors.
-        Drupal.attachBehaviors(Drupal.HierarchicalSelect.context);
-
         // Update the client-side cache when:
         // - information for in the cache is provided in the response, and
         // - the cache system is available, and
