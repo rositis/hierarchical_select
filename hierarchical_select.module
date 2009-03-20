@@ -364,26 +364,24 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
   $config = $element['#config'];
-  if (!isset($_POST['form_build_id'])) {
-    _hierarchical_select_setup_js();
-    drupal_add_js(
-      array(
-        'HierarchicalSelect' => array(
-          'settings' => array(
-            $hsid => array(
-              'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
-              'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
-              'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
-              'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
-              'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
-              'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
-            ),
+  _hierarchical_select_setup_js();
+  drupal_add_js(
+    array(
+      'HierarchicalSelect' => array(
+        'settings' => array(
+          $hsid => array(
+            'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
+            'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
+            'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
+            'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
+            'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
+            'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
           ),
-        )
-      ),
-      'setting'
-    );
-  }
+        ),
+      )
+    ),
+    'setting'
+  );
 
   // Basic config validation and diagnostics.
   if (HS_DEVELOPER_MODE) {
