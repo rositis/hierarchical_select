@@ -77,7 +77,7 @@ Drupal.HierarchicalSelect.transform = function(hsid) {
   .find('.dropbox .dropbox-remove')
   // Hide the children of these table cells. We're not removing them because
   // we want to continue to use the "Remove" checkboxes.
-  .find('*').hide().end()
+  .find('*').css('display', 'none').end() // We can't use .hide() because of collapse.js: http://drupal.org/node/351458#comment-1258303.
   // Put a "Remove" link there instead.
   .append('<a href="">'+ removeString +'</a>');  
 };
