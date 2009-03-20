@@ -614,8 +614,7 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
   // is set to 'label_0' after an "Add" operation. When $element['#post'] is
   // NOT unset, the corresponding value in $element['#post'] will be used
   // instead of the default value that was set. This is undesired behavior.
-  // TODO: find a work-around for this in D6.
-//  unset($element['#post']);
+  unset($element['#post']);
 
   // Finally, calculate the return value of this hierarchical_select form
   // element. This will be set in _hierarchical_select_validate(). (If we'd
