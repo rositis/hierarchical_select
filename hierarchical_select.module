@@ -670,12 +670,14 @@ function hierarchical_select_after_build($form, &$form_state) {
       'file'       => $menu_item['file'],
     );
 
+    // 6 hours cache life time for forms should be plenty.
+    $expire = 21600;
+
     // Store the information needed for dynamic form updates in the cache, so
     // we can retrieve this in our JSON callbacks (to be able to rebuild and
     // render part of the form).
-    $expire = max(ini_get('session.cookie_lifetime'), 86400);
     $hs_form_build_id = 'hs_form_'. md5(mt_rand());
-    cache_set($hs_form_build_id, $storage, 'cache', $expire);
+    cache_set($hs_form_build_id, $storage, 'cache', time() + $expire);
   }
   elseif (isset($_POST['hs_form_build_id'])) {
     // Don't generate a new hs_form_build_id if this is a re-rendering of the
