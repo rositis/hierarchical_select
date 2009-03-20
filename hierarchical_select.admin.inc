@@ -50,7 +50,7 @@ function hierarchical_select_admin_settings() {
     '#description' => t(
       'This feature only works in browsers that support the
       <a href="!spec-url">HTML 5 client-side database storage specification
-      </a> will be able to take advantage of this feature.</br>
+      </a>.</br>
       After enabling this, you will notice (in supporting browsers) that
       refreshing the hierarchical select will not require a request to the
       server when a part is being requested that has been requested before.',
