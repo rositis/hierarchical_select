@@ -7,9 +7,6 @@
  */
 
 
-variable_set('taxonomy_override_selector', TRUE);
-
-
 //----------------------------------------------------------------------------
 // Drupal core hooks.
 
