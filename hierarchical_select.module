@@ -1421,7 +1421,7 @@ function _hierarchical_select_store_name($form_item = NULL, $hsid = NULL, $reset
  *   otherwise.
  */
 function _hierarchical_select_form_has_hierarchical_select($form) {
-  if ($form['#type'] == 'hierarchical_select') {
+  if (isset($form['#type']) && $form['#type'] == 'hierarchical_select') {
     return TRUE;
   }
   else {
