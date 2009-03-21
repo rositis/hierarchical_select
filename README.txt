@@ -21,7 +21,6 @@ Integrates with
 * Menu (Drupal core)
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy) – NOT YET PORTED TO DRUPAL 6
-* Taxonomy Subscriptions (http://drupal.org/project/subscriptions) – NOT YET PORTED TO DRUPAL 6
 * Views – NOT YET PORTED TO DRUPAL 6
 
 
@@ -126,6 +125,18 @@ function zen_views_filters($form) {
   return $output;
 }
 ?>
+
+
+Setting a fixed size
+--------------------
+When you don't want users to be able to resize a hierarchical select
+themselves, you can set a fixed size in advance yourself
+Setting #size to >1 does *not* generate #multiple = TRUE selects! And the
+opposite is also true. #multiple sets the "multiple" HTML attribute. This
+enables the user to select multiple options of a select. #size just controls
+the "size" HTML attribute. This increases the vertical size of selects,
+thereby showing more options.
+See http://www.w3.org/TR/html401/interact/forms.html#adef-size-SELECT.
 
 
 Sponsors
