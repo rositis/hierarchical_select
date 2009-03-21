@@ -1,5 +1,12 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ * This file contains the unit tests of the internals.
+ */
+
+
 //file_put_contents('test.html', print_r(array($hierarchy, $reference), TRUE));
 define('SEP', '|');
 define('EURO', 'europe');
@@ -33,8 +40,8 @@ define('LINEAGE_ASIA_JP', implode(SEP, array(ASIA, ASIA_JP)));
 define('LINEAGE_ASIA_JP_TOK', implode(SEP, array(ASIA, ASIA_JP, ASIA_JP_TOK)));
 
 
-class HierarchicalSelectInternals extends DrupalWebTestCase {  
-  private $smallHierarchy = array(
+class HierarchicalSelectInternals extends DrupalWebTestCase {
+  private $small_hierarchy = array(
     EURO => array(
       'label' => LABEL_EURO,
       'children' => array(
@@ -100,7 +107,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       '#config' => array(
         'module' => 'hs_smallhierarchy',
         'params' => array(
-          'hierarchy' => $this->smallHierarchy,
+          'hierarchy' => $this->small_hierarchy,
           'id'        => 'driverpack_platforms',
           'separator' => '|',
         ),
@@ -191,7 +198,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       'label_2'            => '',
       LINEAGE_EURO_BE_BRU => LABEL_EURO_BE_BRU,
       LINEAGE_EURO_BE_HAS => LABEL_EURO_BE_HAS,
-    );    
+    );
     $reference->childinfo[1] = array(
       LINEAGE_EURO_BE => 2,
       LINEAGE_EURO_FR => 0,
@@ -246,7 +253,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       '#config' => array(
         'module' => 'hs_smallhierarchy',
         'params' => array(
-          'hierarchy' => $this->smallHierarchy,
+          'hierarchy' => $this->small_hierarchy,
           'id'        => 'driverpack_platforms',
           'separator' => '|',
         ),
@@ -345,7 +352,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     $reference->levels[2] = array(
       LINEAGE_EURO_BE_BRU => LABEL_EURO_BE_BRU,
       LINEAGE_EURO_BE_HAS => LABEL_EURO_BE_HAS,
-    );    
+    );
     $reference->childinfo[1] = array(
       LINEAGE_EURO_BE => 2,
       LINEAGE_EURO_FR => 0,
@@ -396,7 +403,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
 
   private function generate($element, $hs_selection, $db_selection, $op = 'Update') {
     $config = $element['#config'];
-    
+
     // Generate the $hierarchy and $dropbox objects using the selections that
     // were just calculated.
     $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);

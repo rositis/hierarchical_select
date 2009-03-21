@@ -176,7 +176,7 @@ function hierarchical_select_requirements($phase) {
         installed in either the <code>sites/all/modules</code> directory or a
         <code>sites/yoursite.com/modules</code> directory"
       ) .':'. theme('item_list', $path_errors);
-      $severity = REQUIREMENT_ERROR;      
+      $severity = REQUIREMENT_ERROR;
     }
     elseif ($weight_errors) {
       $value = t('Module weight incorrectly configured!');
@@ -269,7 +269,7 @@ function hierarchical_select_simpletest() {
  */
 function hierarchical_select_config_id_load($config_id) {
   $config = variable_get('hs_config_'. $config_id, FALSE);
-  return ($config !== FALSE) ? $config['config_id'] : FALSE; 
+  return ($config !== FALSE) ? $config['config_id'] : FALSE;
 }
 
 /**
@@ -395,12 +395,12 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
     }
     elseif (!module_exists($config['module'])) {
       $diagnostics[] = t('the module that should be used (module) is not installed!', array('%module' => $config['module']));
-    }    
+    }
     else {
       $required_params = module_invoke($config['module'], 'hierarchical_select_params');
       $missing_params = array_diff($required_params, array_keys($config['params']));
       if (!empty($missing_params)) {
-        $diagnostics[] = t("'params' is missing values for: "). implode(', ', $missing_params) .'.';
+        $diagnostics[] = t("'params' is missing values for: ") . implode(', ', $missing_params) .'.';
       }
     }
     $config_id = (isset($config['config_id']) && is_string($config['config_id'])) ? $config['config_id'] : 'none';
@@ -1213,7 +1213,7 @@ function _hierarchical_select_process_calculate_return_value($hierarchy, $dropbo
  */
 function _hierarchical_select_setup_js() {
   static $ran_once;
-  
+
   $jquery_ui_components = array(
     'effects.core',
     'effects.drop',
@@ -1241,7 +1241,7 @@ function _hierarchical_select_setup_js() {
     }
     if (!module_exists('jquery_ui')) {
       foreach ($jquery_ui_components as $component) {
-        drupal_add_js(drupal_get_path('module', 'hierarchical_select') . "/js/jquery.ui/$component.js");
+        drupal_add_js(drupal_get_path('module', 'hierarchical_select') ."/js/jquery.ui/$component.js");
       }
     }
     else {
@@ -1577,7 +1577,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $hierarchy->lineage = _hierarchical_select_hierarchy_enforce_deepest($hierarchy->lineage, $config['module'], $config['params']);
   }
 
-  $end_lineage = microtime();  
+  $end_lineage = microtime();
 
 
   //

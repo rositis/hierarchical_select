@@ -13,39 +13,39 @@
  */
 
 /**
-* Format a hierarchical select.
-*
-* @param $element
-*   An associative array containing the properties of the element.
-* @return
-*   A themed HTML string representing the form element.
-*/
+ * Format a hierarchical select.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ * @return
+ *   A themed HTML string representing the form element.
+ */
 function theme_hierarchical_select($element) {
- $output = '';
+  $output = '';
 
- // Update $element['#attributes']['class'].
- $hsid = $element['hsid']['#value'];
- $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
- $classes = array(
-  'hierarchical-select-wrapper',
-  "hierarchical-select-level-labels-style-$level_labels_style",
- );
- $element['#attributes']['class'] .= ' '. implode(' ', $classes);
- $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
+  // Update $element['#attributes']['class'].
+  $hsid = $element['hsid']['#value'];
+  $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
+  $classes = array(
+   'hierarchical-select-wrapper',
+   "hierarchical-select-level-labels-style-$level_labels_style",
+  );
+  $element['#attributes']['class'] .= ' '. implode(' ', $classes);
+  $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
 
- $output .= theme(
-   'form_element',
-   array(
-     '#title' => $element['#title'],
-     '#description' => $element['#description'],
-     '#id' => $element['#id'],
-     '#required' => $element['#required'],
-     '#error' => $element['#error'],
-   ),
-   '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
- );
+  $output .= theme(
+    'form_element',
+    array(
+      '#title' => $element['#title'],
+      '#description' => $element['#description'],
+      '#id' => $element['#id'],
+      '#required' => $element['#required'],
+      '#error' => $element['#error'],
+    ),
+    '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
+  );
 
- return $output;
+  return $output;
 }
 
 /**
@@ -93,7 +93,7 @@ function theme_hierarchical_select_select($element) {
  *   A textually indicated special option.
  */
 function theme_hierarchical_select_special_option($option) {
-  return '<' . $option . '>';
+  return '<'. $option .'>';
 }
 
 
@@ -222,7 +222,7 @@ function theme_hierarchical_select_common_config_form_level_labels($form) {
     // Render the table.
     $output .= theme('table', $header, $rows, array('style' => 'width: auto;'));
   }
-  else {  
+  else {
     // No levels exist yet in the hierarchy!
     $output .= '<p><strong>';
     $output .= t('There are no levels yet in this !hierarchy!', array('!hierarchy' => $strings['hierarchy']));
@@ -246,7 +246,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
   $strings = $form['#strings'];
 
   $output = '';
-  $header = array(t('Level'), t('Allow'), t('!item_type', array('!item_type' => ucfirst($strings['item_type']))));
+  $header = array(t('Level'), t('Allow'), t('!item_type', array('!item_type' => drupal_ucfirst($strings['item_type']))));
   $rows = array();
 
   $output .= drupal_render($form['status']);
@@ -275,7 +275,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
     );
     $output .= '</div>';
   }
-  else {  
+  else {
     // No levels exist yet in the hierarchy!
     $output .= '<p><strong>';
     $output .= t('There are no levels yet in this !hierarchy!', array('!hierarchy' => $strings['hierarchy']));
@@ -333,7 +333,7 @@ function _hierarchical_select_options($element) {
     else {
       $class = ($element['#childinfo'][$key] == 0) ? 'has-no-children' : 'has-children';
     }
-    
+
     $options .= '<option value="'. check_plain($key) .'" class="'. $class .'"'. $selected .'>'. check_plain($choice) .'</option>';
   }
   return $options;

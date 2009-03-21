@@ -140,7 +140,7 @@ function hierarchical_select_admin_implementations() {
     It is <strong>not a reflection of some settings</strong>.
   ');
   $output .= '</p>';
-  
+
   $output .= theme('table', $header, $rows, array(), t('Overview of all installed Hierarchical Select implementations.'));
 
   return $output;
@@ -283,7 +283,7 @@ function _hierarchical_select_create_export_code($config) {
   if (isset($config['editability']['allowed_levels'])) {
     foreach ($config['editability']['allowed_levels'] as $depth => $allowed_level) {
       $output .= "      $depth => $allowed_level,\n";
-    }    
+    }
   }
   $output .= "    ),\n";
   $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
