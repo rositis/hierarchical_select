@@ -49,6 +49,22 @@ function theme_hierarchical_select($element) {
 }
 
 /**
+ * Format the container for all selects in the hierarchical select.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ * @return
+ *   A themed HTML string representing the form element.
+ */
+function theme_hierarchical_select_selects_container($element) {
+  $output = '';
+  $output .= '<div class="hierarchical-select clear-block">';
+  $output .= drupal_render($element);
+  $output .= '</div>';
+  return $output;
+}
+
+/**
  * Format a select in the .hierarchial-select div: prevent it from being
  * wrapped in a div. This simplifies the CSS and JS code.
  *

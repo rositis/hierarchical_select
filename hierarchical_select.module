@@ -220,6 +220,10 @@ function hierarchical_select_theme() {
       'file'      => 'includes/theme.inc',
       'arguments' => array('element' => NULL),
     ),
+    'hierarchical_select_selects_container' => array(
+      'file'      => 'includes/theme.inc',
+      'arguments' => array('element' => NULL),
+    ),
     'hierarchical_select_select' => array(
       'file'      => 'includes/theme.inc',
       'arguments' => array('element' => NULL),
@@ -488,8 +492,7 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
 
   // Render the hierarchical select.
   $element['hierarchical_select'] = array(
-    '#prefix' => '<div class="hierarchical-select clear-block">',
-    '#suffix' => '</div>',
+    '#theme' => 'hierarchical_select_selects_container',
   );
   $element['hierarchical_select']['selects'] = _hierarchical_select_process_render_hs_selects($hsid, $hierarchy);
 
