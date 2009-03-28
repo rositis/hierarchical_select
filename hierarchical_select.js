@@ -47,13 +47,13 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
 };
 
 Drupal.HierarchicalSelect.log = function(hsid) {
+  Drupal.HierarchicalSelect.state[hsid].log = [];
   if (Drupal.settings.HierarchicalSelect.initialLog == undefined || Drupal.settings.HierarchicalSelect.initialLog[hsid] == undefined) {
     return;
   }
 
   // Make sure we print the log of the last build for this Hierarchical Select.
   if (Drupal.HierarchicalSelect.state[hsid].lastBuildNumber == undefined) {
-    Drupal.HierarchicalSelect.state[hsid].log = [];
     Drupal.HierarchicalSelect.state[hsid].log[0] = Drupal.settings.HierarchicalSelect.initialLog[hsid];
     Drupal.HierarchicalSelect.state[hsid].lastBuildNumber = -1;
   }
