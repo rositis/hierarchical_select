@@ -700,9 +700,12 @@ function hierarchical_select_after_build($form, &$form_state) {
   $form['hs_form_build_id'] = form_builder($form['form_id']['#value'], $form_element, $form_state);
 
   // Pass the hs_form_build_id to a custom submit function that will clear
-  // the associated values from the cache.
+  // the associated values from the cache. The _hierarchical_select_submit()
+  // must be the first submit callback to ensure that it's executed: if a
+  // submit callback before it performs a drupal_goto(), it won't be called!
   $form_state['hs_form_build_id'] = $_POST['hs_form_build_id'];
-  $form['#submit'][] = '_hierarchical_select_submit';
+  $form['#submit'] = (is_array($form['#submit'])) ? $form['#submit'] : array();
+  $form['#submit'] = array_merge(array('_hierarchical_select_submit'), $form['#submit']);
 
   return $form;
 }
