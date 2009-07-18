@@ -183,7 +183,6 @@ function hs_menu_hierarchical_select_implementation_info() {
  * Recursive helper function for hs_menu_hierarchical_select_children().
  */
 function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
-  global $yar;
   $children = array();
 
   foreach ($tree as $data) {
