@@ -66,6 +66,21 @@ Limitations
   Safari or IE. See http://drupal.org/node/180691#comment-1044691.
 - The special [save-lineage-termpath] token only works with content_taxonomy
   fields as long as you have the "Save option" set to either "Tag" or "Both".
+- In hierarchies where items can have multiple parent items and where you have
+  enabled Hierarchical Select's "save lineage" setting, it is impossible to
+  remember individual hierarchies, unless the underlying module supports it.
+  So far, no module supports this. Hierarchical Select is just a form element,
+  not a system for storing hierarchies.
+  For example, if you have created a multiple parent vocabulary through the
+  Taxonomy module, and you have terms like this:
+   A -> C
+   A -> D
+   B -> C
+   B -> D
+   If you then save any two lineages in which all four terms exist, all four
+   lineages will be rendered by Hierarchical Select, because only the four
+   terms are stored and thus there is no way to recover the originally
+   selected two lineages.
 
 
 Maximum scalability
