@@ -82,7 +82,7 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
 
   // The forum selection requires that only the deepest term is saved!
   // See http://drupal.org/node/241766#comment-808464.
-  if ($vid == variable_get('forum_nav_vocabulary', 0)) {
+  if ($vid == variable_get('forum_nav_vocabulary', -1)) {
     $form['hierarchical_select']['save_lineage']['#value'] = 0;
     $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
     $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
