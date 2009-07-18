@@ -19,7 +19,18 @@ function hierarchical_select_install() {
   // Also ensure the Hierarchical Select module runs after the i18ntaxonomy
   // module.
   $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
-  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight + 1, 'hierarchical_select');
+  // Also ensure the Hierarchical Select module runs after the og_vocab module.
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'og_vocab'")));
+  // If none of these modules was already enabled, the weight will still be
+  // incorrect. Therefore, let's make the minimum weight of Hierarchical
+  // Select 15.
+  $weight = max($weight, 15);
+
+  // Set the weight one higher than the highest weight we've encountered, so
+  // that Hierarchical Select will run after it.
+  $weight++;
+
+  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight, 'hierarchical_select');
 }
 
 
@@ -182,6 +193,34 @@ function hierarchical_select_update_7() {
       db_query("UPDATE {variable} SET value = '%s' WHERE name = '%s'", serialize($config), $config_id);
     }
   }
+
+  return $ret;
+}
+
+// Update module weight again, this time for og_vocab compatibility.
+function hierarchical_select_update_8() {
+  $ret = array();
+
+  // Ensure the Hierarchical Select module runs after the Taxonomy and Content
+  // Taxonomy modules! This should not be necessary to do, but apparently some
+  // idiot module developer is changing the weight of the Taxonomy module...
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  // Also ensure the Hierarchical Select module runs after the i18ntaxonomy
+  // module.
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
+  // Also ensure the Hierarchical Select module runs after the og_vocab module.
+  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'og_vocab'")));
+  // If none of these modules was already enabled, the weight will still be
+  // incorrect. Therefore, let's make the minimum weight of Hierarchical
+  // Select 15.
+  $weight = max($weight, 15);
+
+  // Set the weight one higher than the highest weight we've encountered, so
+  // that Hierarchical Select will run after it.
+  $weight++;
+
+  $ret[] =  update_sql("UPDATE {system} SET weight = $weight  WHERE name  = 'hierarchical_select'");
 
   return $ret;
 }
