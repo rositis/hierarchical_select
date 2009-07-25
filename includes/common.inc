@@ -25,6 +25,7 @@ function hierarchical_select_common_config_get($config_id, $defaults_override = 
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
     'entity_count'    => 0,
+    'require_entity'  => 0,
     'resizable'       => 1,
     'level_labels' => array(
       'status' => 0,
@@ -98,6 +99,14 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
   }
 
   $config = hierarchical_select_common_config_get($config_id, $defaults_override);
+  $args = array(
+    '!item' => $strings['item'],
+    '!items' => $strings['items'],
+    '!entity' => $strings['entity'],
+    '!entities' => $strings['entities'],
+    '!hierarchy' => $strings['hierarchy'],
+    '!hierarchies' => $strings['hierarchies']
+  );
 
   $form = array(
     '#tree' => TRUE,
@@ -135,14 +144,14 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#type' => 'radios',
     '#title' => t('Save lineage'),
     '#options' => array(
-      1 => t('Save !item lineage', array('!item' => $strings['item'])),
-      0 => t('Save only the deepest !item', array('!item' => $strings['item'])),
+      1 => t('Save !item lineage', $args),
+      0 => t('Save only the deepest !item', $args),
     ),
     '#default_value' => $config['save_lineage'],
     '#description' => t(
       'Saving the !item lineage means saving the <em>the !item itself and all
       its ancestors</em>.',
-      array('!item' => $strings['item'], '!hierarchy' => $strings['hierarchy'])
+      $args
     ),
   );
 
@@ -150,14 +159,14 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#type' => 'radios',
     '#title' => t('Level choice'),
     '#options' => array(
-      1 => t('Force the user to choose a !item from a <em>deepest level</em>', array('!item' => $strings['item'])),
-      0 => t('Allow the user to choose a !item from <em>any level</em>', array('!item' => $strings['item'])),
+      1 => t('Force the user to choose a !item from a <em>deepest level</em>', $args),
+      0 => t('Allow the user to choose a !item from <em>any level</em>', $args),
     ),
     '#default_value' => $config['enforce_deepest'],
     '#description' => t(
       'This setting determines from which level in the !hierarchy tree a
       user can select a !item.',
-      array('!item' => $strings['item'], '!hierarchy' => $strings['hierarchy'])
+      $args
     ),
     '#attributes' => array('class' => 'enforce-deepest'),
   );
@@ -165,11 +174,11 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
   if (module_hook($module, 'hierarchical_select_entity_count')) {
     $form['entity_count'] = array(
       '#type' => 'radios',
-      '#title' => t('Display the !entity count', array('!entity' => $strings['entity'])),
+      '#title' => t('Display the !entity count', $args),
       '#description' => t(
         'When enabled, the user will see the number of !entities that match
         the current !item listed between brackets.',
-        array('!entities' => $strings['entities'], '!item' => $strings['item'])
+        $args
       ),
       '#options' => array(
         0 => t('Disabled'),
@@ -177,6 +186,23 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       ),
       '#default_value' => $config['entity_count'],
       '#attributes' => array('class' => 'entity-count'),
+    );
+
+    $form['require_entity'] = array(
+      '#type' => 'radios',
+      '#title' => t('Require associated !entity', $args),
+      '#description' => t(
+        'When enabled, !items will only be displayed when they are associated
+        with at least one !entity, or if one of their child !items are
+        associated with at least one !entity.',
+        $args
+      ),
+      '#options' => array(
+        0 => t('Disabled'),
+        1 => t('Enabled'),
+      ),
+      '#default_value' => $config['require_entity'],
+      '#attributes' => array('class' => 'require-entity'),
     );
   }
 
@@ -207,7 +233,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       However, when the user is only allowed to choose a !item from the
       deepest level, then you can only enter a label for the <em>root</em>
       level.',
-      array('!item' => $strings['item'])
+      $args
     ),
     '#collapsible' => TRUE,
   );
@@ -258,7 +284,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       Note: the "Save !item lineage" option has no effect on this, even if
       a lineage consists of 3 !items, this will count as only one selection
       in the dropbox.',
-      array('!item' => $strings['item'], '!items' => $strings['items'])
+      $args
     ),
     '#size' => 5,
     '#maxlength' => 5,
@@ -287,13 +313,13 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#description' => t(
         'You can allow the user to <strong>add new !items to this
         !hierarchy</strong> <em>through</em> Hierarchical Select.',
-        array('!hierarchy' => $strings['hierarchy'], '!items' => $strings['items'])
+        $args
       ),
       '#collapsible' => TRUE,
     );
     $form['editability']['status'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Allow creation of new !items', array('!items' => $strings['items'])),
+      '#title' => t('Allow creation of new !items', $args),
       '#options' => array(
         0 => t('Disabled'),
         1 => t('Enabled'),
@@ -323,7 +349,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#description' => t(
         'Allow the user to create child !items for !items that do not yet have
         children.',
-        array('!items' => $strings['items'])
+        $args
       ),
       '#attributes' => array('class' => 'editability-allow-new-levels'),
     );
@@ -337,7 +363,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#description' => t(
         'When the user is allowed to create new levels, this option prevents
         the user from creating extremely deep !hierarchies.',
-        array('!hierarchies' => $strings['hierarchies'])
+        $args
       ),
       '#attributes' => array('class' => 'editability-max-levels'),
     );

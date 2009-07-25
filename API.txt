@@ -14,6 +14,8 @@ Terminology
          An example: in the case of taxonomy, this is the actual term.
 - item type: a per-level, human-readable name that describes what kind of
              items that level contains.
+- entity: an item is often associated with an entity. E.g. a term is usually
+          associated with a node.
 - form element: a form element allows the developer to assign a new value to
                 a #type property in a form item. Examples of form elements
                 supported by Drupal core are: select, checkboxes, textfield.
@@ -46,6 +48,7 @@ element type:
       'save_lineage'    => 0,
       'enforce_deepest' => 0,
       'entity_count'    => 0,
+      'require_entity'  => 0,
       'resizable'       => 1,
       'level_labels' => array(
         'status' => 0,
@@ -107,9 +110,13 @@ array. These are the items it can contain:
    selection will always be a single value.
 
  - entity_count (optional, defaults to 0)
-   Enables the display of entity (most of the time the entity type is 'node')
-   counts, between parentheses, for each item in the hierarchy.
+   Enables the display of entity counts, between parentheses, for each item in
+   the hierarchy.
 
+ - require_entity (optional, defaults to 0)
+   Whether an item should only be displayed if it has at least one associated
+   entity.
+ 
  - level_labels['status'] (optional, defaults to 0)
    Whether level labels should be enabled or not. When save_lineage is
    enabled, this will result in *empty* level labels.
@@ -323,9 +330,11 @@ Hooks
 
 8) hook_hierarchical_select_entity_count($item, $params);
    Given a item, get the number of entities (most of the time the entity type
-   is 'node') that are related to the given item.
+   is 'node') that are related to the given item. Used for the entity_count
+   and require_entity settings.
    Optional hook. When this hook is not implemented, this functionality will
-   never be used, even when you configure it that way.
+   never be used, even when you configure it that way (i.e. when you enable
+   the entity_count and require_entity settings).
 
 9) hook_hierarchical_select_implementation_info();
    Return metadata about this implementation.

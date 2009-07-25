@@ -251,6 +251,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "  'save_lineage'    => ". $config['save_lineage'] .",\n";
   $output .= "  'enforce_deepest' => ". $config['enforce_deepest'] .",\n";
   $output .= "  'entity_count'    => ". $config['entity_count'] .",\n";
+  $output .= "  'require_entity'  => ". $config['require_entity'] .",\n";
   $output .= "  'resizable'       => ". $config['resizable'] .",\n";
   $output .= "  'level_labels' => array(\n";
   $output .= "    'status' => ". $config['level_labels']['status'] .",\n";

@@ -1591,6 +1591,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
 
   // Start building the levels, initialize with the root level.
   $hierarchy->levels[0] = module_invoke($config['module'], 'hierarchical_select_root_level', $config['params']);
+  $hierarchy->levels[0] = _hierarchical_select_apply_entity_settings($hierarchy->levels[0], $config);
 
   // Prepend a "<create new item>" option to the root level when:
   // - the editability setting is enabled, and
@@ -1625,6 +1626,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // Build all sublevels, based on the lineage.
   for ($depth = 1; $depth <= $max_depth; $depth++) {
     $hierarchy->levels[$depth] = module_invoke($config['module'], 'hierarchical_select_children', $hierarchy->lineage[$depth - 1], $config['params']);
+    $hierarchy->levels[$depth] = _hierarchical_select_apply_entity_settings($hierarchy->levels[$depth], $config);
   }
 
   if ($config['enforce_deepest']) {
@@ -1712,20 +1714,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         $hierarchy->lineage[$depth] = 'label_'. $depth;
         $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
         $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth] + $children;
-      }
-    }
-  }
 
-  // If the entity_count setting is enabled, add entity counts.
-  // NOTE: this is an optional hook, so we also check if it's implemented.
-  if ($config['entity_count'] && module_hook($config['module'], 'hierarchical_select_entity_count')) {
-    foreach (array_keys($hierarchy->levels) as $depth) {
-      foreach ($hierarchy->levels[$depth] as $value => $label) {
-        $is_valid_item = module_invoke($config['module'], 'hierarchical_select_valid_item', $value, $config['params']);
-        if ($is_valid_item) {
-          $entity_count = module_invoke($config['module'], 'hierarchical_select_entity_count', $value, $config['params']);
-          $hierarchy->levels[$depth][$value] = "$label ($entity_count)";
-        }
+        $hierarchy->levels[$depth] = _hierarchical_select_apply_entity_settings($hierarchy->levels[$depth], $config);
       }
     }
   }
@@ -1776,6 +1766,49 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   $hierarchy->build_time['childinfo'] = ($end_childinfo - $start_childinfo) * 1000;
 
   return $hierarchy;
+}
+
+/**
+ * Given a level, apply the entity_count and require_entity settings.
+ *
+ * @param $level
+ *   A level in the hierarchy.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - params
+ *   - entity_count
+ *   - require_entity
+ * @return
+ *   The updated level
+ */
+function _hierarchical_select_apply_entity_settings($level, $config) {
+  // Only do something when the entity_count or the require_entity (or both)
+  // settings are enabled.
+  // NOTE: this uses the optional "hierarchical_selectentity_count" hook, so
+  // we also check if it's implemented.
+  if (($config['entity_count'] || $config['require_entity']) && module_hook($config['module'], 'hierarchical_select_entity_count')) {
+    foreach ($level as $item => $label) {
+      // We don't want to alter special items.
+      if (!preg_match('/(none|label_\d+|create_new_item)/', $item)) {
+        $entity_count = module_invoke($config['module'], 'hierarchical_select_entity_count', $item, $config['params']);
+
+        // When the require_entity setting is enabled and the entity count is
+        // zero, then remove the item from the level.
+        // When the item is not removed from the level due to the above and
+        // the entity_count setting is enabled, update the label of the item
+        // to include the entity count.
+        if ($config['require_entity'] && $entity_count == 0) {
+          unset($level[$item]);
+        }
+        elseif ($config['entity_count']) {
+          $level[$item] = "$label ($entity_count)";
+        }
+      }
+    }
+  }
+
+  return $level;
 }
 
 /**

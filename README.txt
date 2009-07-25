@@ -168,6 +168,8 @@ Sponsors
    Mr Bidster Inc.
 * Ability to create new items/levels:
    The Worx Company, http://www.worxco.com.
+* Ability to only show items that are associated with at least one entity:
+   Merge, http://merge.nl.
 
 
 Author
