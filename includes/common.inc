@@ -18,39 +18,7 @@
  */
 function hierarchical_select_common_config_get($config_id, $defaults_override = array()) {
   $config = variable_get('hs_config_'. $config_id, array());
-
-  // Set defaults for unconfigured settings.
-  $defaults = array(
-    'config_id' => $config_id,
-    'save_lineage'    => 0,
-    'enforce_deepest' => 0,
-    'entity_count'    => 0,
-    'require_entity'  => 0,
-    'resizable'       => 1,
-    'level_labels' => array(
-      'status' => 0,
-    ),
-    'dropbox' => array(
-      'status'   => 0,
-      'limit'    => 0,
-      'reset_hs' => 1,
-    ),
-    'editability' => array(
-      'status'           => 0,
-      'item_types'       => array(),
-      'allowed_levels'   => array(),
-      'allow_new_levels' => 0,
-      'max_levels'       => 3,
-    ),
-  );
-
-  // Allow new defaults to be set.
-  $defaults = array_smart_merge($defaults, $defaults_override);
-
-  // Set defaults for settings not yet set in the configuration.
-  $config = array_smart_merge($defaults, $config);
-
-  return $config;
+  return _hierarchical_select_inherit_default_config($config, $defaults_override);
 }
 
 /**
@@ -419,23 +387,4 @@ function _hierarchical_select_get_form_item_by_parents($form, $parents) {
   else {
     return $form;
   }
-}
-
-/**
- * Smarter version of array_merge_recursive: overwrites scalar values.
- *
- * From: http://www.php.net/manual/en/function.array-merge-recursive.php#82976.
- */
-function array_smart_merge($array, $override) {
-  if (is_array($array) && is_array($override)) {
-    foreach ($override as $k => $v) {
-      if (isset($array[$k]) && is_array($v) && is_array($array[$k])) {
-        $array[$k] = array_smart_merge($array[$k], $v);
-      }
-      else {
-        $array[$k] = $v;
-      }
-    }
-  }
-  return $array;
 }
