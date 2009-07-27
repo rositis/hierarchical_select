@@ -26,6 +26,14 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
     return false;
   }
 
+  // Turn off Firefox' autocomplete feature. This causes Hierarchical Select
+  // form items to be disabled after a hard refresh.
+  // See http://drupal.org/node/453048 and
+  // http://www.ryancramer.com/journal/entries/radio_buttons_firefox/
+  if ($.browser.mozilla) {
+    $('#hierarchical-select-'+ hsid +'-wrapper').parents('form').attr('autocomplete', 'off');
+  }
+
   if (this.cache != null) {
     this.cache.initialize();
   }
