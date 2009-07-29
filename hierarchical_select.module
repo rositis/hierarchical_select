@@ -354,14 +354,22 @@ function hierarchical_select_json() {
  * Hierarchical select form element type #process callback.
  */
 function hierarchical_select_process($element, $edit, $form_state, $form) {
-  static $hsid;
-
-  if (!isset($hsid)) {
-    $hsid = 0;
+  // The HSID is stored in the session, to allow for multiple Hierarchical
+  // Select form items on the same page of which at least one is added through
+  // AHAH. A normal static variable won't do in this case, because then at
+  // least two Hierarchical Select form items will have HSID 0, because they
+  // are generated in different requests, both of which will have a first HSID
+  // of 0. This will then cause problems on the page. 
+  if (!isset($_SESSION['hsid'])) {
+    $_SESSION['hsid'] = 0;
   }
   else {
-    $hsid++;
+    // Let the HSID go from 0 to 99, then start over. Larger numbers are
+    // pointless: who's going to use more than a hundred Hierarchical Select
+    // form items on the same page?
+    $_SESSION['hsid'] = ($_SESSION['hsid'] + 1) % 100;
   }
+  $hsid = $_SESSION['hsid'];
   $element['hsid'] = array('#type' => 'value', '#value' => $hsid);
 
   // A hierarchical_select form element expands to multiple items. For example
