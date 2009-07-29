@@ -670,6 +670,12 @@ function hierarchical_select_process($element, $edit, $form_state, $form) {
   * Hierarchical select form element type #after_build callback.
   */
 function hierarchical_select_after_build($form, &$form_state) {
+  // TRICKY: Pageroute compatibility: avoid that the body of this #after_build
+  // callback is executed twice.
+  if (isset($form['hs_form_build_id'])) {
+    return $form;
+  }
+
   $names = _hierarchical_select_store_name(NULL, NULL, TRUE);
 
   if (!isset($_POST['hs_form_build_id']) && count($names)) {
