@@ -498,7 +498,7 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
   static $hs_vids;
   static $all_vids;
 
-  $separator = variable_get('pathauto_separator', '-');
+  $separator = variable_get('hs_taxonomy_separator', variable_get('pathauto_separator', '-'));
 
   $values = array();
   switch ($type) {

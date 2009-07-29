@@ -95,6 +95,20 @@ that includes Drupal core modules). Simply move the changes from the
 hook_form_alter() implementations into the corresponding form definitions.
 
 
+Hierarchical Select Taxonomy: using the [save-lineage-termpath] token
+---------------------------------------------------------------------
+When you're using the Token module, and likely the Pathauto module, and you've
+configured your Hierarchical Select to save the lineage, you may want to show
+the saved lineage (or the first lineage in case you've also enabled the
+dropbox) in your URL. That's possible through the [save-lineage-termpath]
+token (and other similar tokens). However, by default it uses the separator
+you've configured Pathauto to use (if you aren't using Pathauto then it will
+default to a dash). You can override this by setting the hs_taxonomy_separator
+variable. Also, when you're using Pathauto and it seems to be stripping the
+separator you've configured, then you may want to configure that character in
+Pathauto's Punctuation settings to "No action (do not replace)".
+
+
 Using the dropbox in Views exposed filters
 ------------------------------------------
 This can be very tricky, due to a combination of the respective limitations of
