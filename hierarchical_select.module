@@ -297,11 +297,23 @@ function hierarchical_select_json() {
     _hierarchical_select_log("hs_form_build_id: $hs_form_build_id");
   }
 
-  // Retrieve and process the form.
   $form_state = &$storage['parameters'][1];
+
+  // Include the file in which the form definition function lives.
   if (!empty($storage['file'])) {
     require_once($storage['file']);
   }
+
+  // Also include files set in $form_state['form_load_files']. Set by CTools
+  // Delegator, which is used by Panels (i.e. this is necessary for Panels
+  // compatibility).
+  if (isset($form_state['form_load_files'])) {
+    foreach ($form_state['form_load_files'] as $file) {
+      require_once './' . $file;
+    }
+  }
+
+  // Retrieve and process the form.
   $form = call_user_func_array('drupal_retrieve_form', $storage['parameters']);
   drupal_prepare_form($form_id, $form, $form_state);
   $form['#post'] = $_POST;
