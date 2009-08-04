@@ -34,6 +34,17 @@ function hierarchical_select_common_config_set($config_id, $config) {
 }
 
 /**
+ * Delete a config.
+ *
+ * @param $config_id
+ *   The config id to delete.
+ */
+function hierarchical_select_common_config_del($config_id) {
+  variable_del('hs_config_'. $config_id);
+}
+
+
+/**
  * Apply a config to a form item.
  *
  * @param $form_item
@@ -106,7 +117,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     // Skip all validation.
     '#validated' => TRUE,
   );
-  hierarchical_select_common_config_apply($form['live_preview']['example'], $config_id, array('module' => $module, 'params' => $params));
+  hierarchical_select_common_config_apply($form['live_preview']['example'], $config_id, array_merge($defaults_override, array('module' => $module, 'params' => $params)));
 
   $form['save_lineage'] = array(
     '#type' => 'radios',
@@ -220,6 +231,8 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'level-label'),
     );
   }
+  $form['level_labels']['#theme'] = 'hierarchical_select_common_config_form_level_labels';
+  $form['level_labels']['#strings'] = $strings;
 
   $form['dropbox'] = array(
     '#type' => 'fieldset',
@@ -336,8 +349,6 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'editability-max-levels'),
     );
 
-    $form['level_labels']['#theme'] = 'hierarchical_select_common_config_form_level_labels';
-    $form['level_labels']['#strings'] = $strings;
     $form['editability']['#theme'] = 'hierarchical_select_common_config_form_editability';
     $form['editability']['#strings'] = $strings;
   }
