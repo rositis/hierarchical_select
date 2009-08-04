@@ -290,6 +290,47 @@ function theme_hierarchical_select_common_config_form_editability($form) {
 }
 
 /**
+ * Themeing function to render a selection (of items) according to a given
+ * Hierarchical Select configuration as one or more lineages.
+ *
+ * @param $selection
+ *   A selection of items of a hierarchy.
+ * @param $config
+ *   A config array with at least the following settings:
+ *   - module
+ *   - save_lineage
+ *   - params
+ */
+function theme_hierarchical_select_selection_as_lineages($selection, $config) {
+  $output = '';
+
+  $selection = (!is_array($selection)) ? array($selection) : $selection;
+
+  // Generate a dropbox out of the selection. This will automatically
+  // calculate all lineages for us.
+  $selection = array_keys($selection);
+  $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
+
+  // Actual formatting.
+  foreach ($dropbox->lineages as $id => $lineage) {
+    if ($id > 0) {
+      $output .= '<br />';
+    }
+
+    $items = array();
+    foreach ($lineage as $level => $item) {
+      $items[] = $item['label'];
+    }
+    $output .= implode('<span class="hierarchical-select-item-separator">›</span>', $items);
+  }
+
+  // Add the CSS.
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+
+  return $output;
+}
+
+/**
  * @} End of "ingroup themeable".
  */
 

@@ -116,6 +116,53 @@ Taxonomy and Views exposed filters.
 See http://drupal.org/node/346033.
 
 
+Rendering hierarchy lineages when viewing content
+-------------------------------------------------
+Hierarchical Select is obviously only used for input. Hence it is only used on
+the create/edit forms of content.
+Combine that with the fact that Hierarchical Select is the only module capable
+of restoring the lineage of saved items (e.g. Taxonomy terms). None of the
+Drupal core modules is capable of storing the lineage, but Hierarchical Select
+can reconstruct it relatively efficiently. However, this lineage is only
+visible when creating/editing content, not when viewing it.
+To allow you to display the lineages of stored items, I have provided a
+theming function that you can call from within e.g. your node.tpl.php file:
+the theme_hierarchical_select_selection_as_lineages($selection, $config)
+function.
+
+Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
+  <?php if ($taxonomy):
+    require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+    $vid = 2;                                                    // Vocabulary ID. CHANGE THIS!
+    $config_id = "taxonomy-$vid";                                // Generate the config ID.
+    $config = hierarchical_select_common_config_get($config_id); // Get the Hierarchical Select configuration through the config ID.
+    $config['module'] = 'hs_taxonomy';                           // Set the module.
+    $config['params']['vid'] = $vid;                             // Set the parameters.
+  ?>
+    <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
+  <?php endif; ?>
+
+This will automatically render all lineages for vocabulary 2 (meaning that if
+you want to render the lineages of multiple vocabularies, you'll have to clone
+this piece of code once for every vocabulary). It will also automatically get
+the current Hierarchical Select configuration for that vocabulary.
+
+Alternatively, you could provide the $config array yourself. Only three keys
+are required: 1) module, 2) params, 3) save_lineage. For example:
+  <?php if ($taxonomy):
+    $vid = 2;                          // Vocabulary ID. CHANGE THIS!
+    $config['module'] = 'hs_taxonomy'; // Set the module.
+    $config['params']['vid'] = $vid;   // Set the parameters.
+    $config['save_lineage'] = 1;       // save_lineage setting is enabled. CHANGE THIS!
+  ?>
+    <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
+  <?php endif; ?>
+
+If you don't like how the lineage is displayed, simply override the
+theme_hierarchical_select_selection_as_lineages() function from within your
+theme, create e.g. garland_hierarchical_select_selection_as_lineages().
+
+
 Addressing Views exposed filters display issues
 -----------------------------------------------
 When using Hierarchical Select to alter an exposed Views filter (i.e. an 

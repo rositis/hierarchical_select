@@ -248,6 +248,13 @@ function hierarchical_select_theme() {
       'file'      => 'includes/theme.inc',
       'arguments' => array('form' => NULL),
     ),
+    'hierarchical_select_selection_as_lineages' => array(
+      'file'      => 'includes/theme.inc',
+      'arguments' => array(
+        'selection' => NULL,
+        'config'    => NULL,
+      ),
+    ),
   );
 }
 
