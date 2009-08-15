@@ -501,11 +501,22 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       break;
   }
 
+  // Construct the URL the request should be made to. GET arguments may not be
+  // forgotten.
+  var url = Drupal.settings.HierarchicalSelect.basePath + Drupal.settings.HierarchicalSelect.settings[hsid]['path'];
+  var i = 0;
+  for (var key in Drupal.settings.HierarchicalSelect.getArguments) {
+    url += (i == 0) ? '?' : '&';
+    url += key;
+    url += '=';
+    url += Drupal.settings.HierarchicalSelect.getArguments[key];
+  }
+
   // Construct the object that contains the options for a callback to the
   // server. If a client-side cache is found however, it's possible that this
   // won't be used.
   var ajaxOptions = {
-    url:        Drupal.settings.HierarchicalSelect.basePath + Drupal.settings.HierarchicalSelect.settings[hsid]['path'],
+    url:        url,
     type:       'POST',
     dataType:   'json',
     data:       post,

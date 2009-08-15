@@ -1316,7 +1316,12 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
   if (!$js_settings_added && isset($form_state)) {
     $url = base_path();
     $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
-    _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url)), $form_state);
+
+    $get_arguments = $_GET;
+    unset($get_arguments['q']);
+
+    _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => $get_arguments)), $form_state);
+
     $js_settings_added = TRUE;
   }
 
