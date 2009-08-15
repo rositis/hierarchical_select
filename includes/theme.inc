@@ -32,6 +32,7 @@ function theme_hierarchical_select($element) {
   );
   $element['#attributes']['class'] .= ' '. implode(' ', $classes);
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
+  $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
   $output .= theme(
     'form_element',
