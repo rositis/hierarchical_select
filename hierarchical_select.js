@@ -19,6 +19,11 @@ Drupal.HierarchicalSelect.context = function() {
 };
 
 Drupal.HierarchicalSelect.initialize = function(hsid) {
+  // Prevent JS errors when Hierarchical Select is loaded dynamically.
+  if (undefined == Drupal.settings.HierarchicalSelect || undefined == Drupal.settings.HierarchicalSelect.settings[hsid]) {
+    return false;
+  }
+
   // If you set Drupal.settings.HierarchicalSelect.pretendNoJS to *anything*,
   // and as such, Hierarchical Select won't initialize its Javascript! It
   // will seem as if your browser had Javascript disabled.
@@ -500,7 +505,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // server. If a client-side cache is found however, it's possible that this
   // won't be used.
   var ajaxOptions = {
-    url:        Drupal.settings.HierarchicalSelect.url,
+    url:        Drupal.settings.HierarchicalSelect.basePath + Drupal.settings.HierarchicalSelect.settings[hsid]['path'],
     type:       'POST',
     dataType:   'json',
     data:       post,

@@ -43,7 +43,6 @@ function hierarchical_select_common_config_del($config_id) {
   variable_del('hs_config_'. $config_id);
 }
 
-
 /**
  * Apply a config to a form item.
  *
@@ -184,6 +183,8 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'require-entity'),
     );
   }
+  $form['level_labels']['#theme'] = 'hierarchical_select_common_config_form_level_labels';
+  $form['level_labels']['#strings'] = $strings;
 
   $form['resizable'] = array(
     '#type' => 'radios',
@@ -369,10 +370,10 @@ function hierarchical_select_common_config_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function that adds the JS to reposition the exposed filters of a
- * View just once.
+ * Helper function that adds the JS to make Hierarchical Select work when used
+ * as a Views exposed filter.
  */
-function hierarchical_select_common_views_exposed_filters_reposition() {
+function hierarchical_select_common_add_views_js() {
   static $js_added;
 
   if (!isset($js_added)) {

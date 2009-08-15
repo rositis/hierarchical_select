@@ -15,14 +15,14 @@
 
 if (Drupal.jsEnabled) {
   $(document).ready(function(){
-    $('form#views-filters, form#views-filterblock').submit(function() {
+    $('.view-filters form').submit(function() {
       // Remove the Hierarchical Select form build id and the form id, to
       // prevent them from ending up in the GET URL.
-      $('#edit-hs-form-build-id, #edit-views-filters, #edit-views-filterblock').remove();
+      $('#edit-hs-form-build-id').remove();
 
       // Prepare the hierarchical select form elements that are used as
       // exposed filters for a GET submit.
-      $('form#views-filters, form#views-filterblock')
+      $('.view-filters form')
       .find('.hierarchical-select-wrapper')
       .trigger('prepare-GET-submit');
     });

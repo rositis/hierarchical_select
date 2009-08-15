@@ -78,8 +78,9 @@ element type:
       // These settings cannot be configured through the UI: they can only be
       // overridden through code.
       'animation_delay'    => 400,
-      'exclusive_lineages' => array(),
+      'special_items'      => array(),
       'render_flat_select' => 0,
+      'path'               => 'hierarchical_select_json',
     ),
     '#default_value' => '83',
   ); 
@@ -116,7 +117,10 @@ array. These are the items it can contain:
  - require_entity (optional, defaults to 0)
    Whether an item should only be displayed if it has at least one associated
    entity.
- 
+
+ - resizable (optional, defaults to 1)
+   Makes the hierarchical select resizable.
+
  - level_labels['status'] (optional, defaults to 0)
    Whether level labels should be enabled or not. When save_lineage is
    enabled, this will result in *empty* level labels.
@@ -180,10 +184,35 @@ array. These are the items it can contain:
  - animation_delay (optional, defaults to 400)
    The delay of each animation (the drop in left and right animations), in ms.
 
- - exclusive_lineages (optional, defaults to the empty array)
-   Sometimes, it's desirable to have exclusive lineages. When one of these
-   lineages is selected, the user should not be able to select anything else.
-   e.g. the **ALL** option in Views exposed filters.
+ - special_items (optional, defaults to the empty array)
+   Through this setting, you can mark each item with special properties it
+   possesses. There currently are two special properties: 'exclusive' and
+   'none'.
+   Note: you should include these items in the hierarchy as if it were a
+   normal item and then you can mark them as special through this property.
+   * 'exclusive': Sometimes it's desirable to have exclusive lineages. When
+                  such an option is selected, the user should not be able to
+                  select anything else. This also means that  nothing else in
+                  the dropbox can be selected: if the dropbox contains
+                  anything, it will be reset.
+                  Can be applied to multiple items.
+                  e.g. an 'entire_tree' item:
+                    'special_items' => array(
+                      'entire_tree' => array('exclusive'),
+                    )
+   * 'none': Sometimes you want to replace the default '<none>' option by
+             something else. This replacement should of course also exist in
+             the root level.
+             Can be applied to only one item.
+             e.g. an 'any' item (used in hs_taxonomy_views):
+               'special_items' => array(
+                 'any' => array('none', 'exclusive'),
+               )
+   And a final example for a better overview:
+    'special_items' => array(
+      'entire_tree' => array('exclusive'),
+      'any'         => array('none', 'exclusive'),
+    )
 
  - render_flat_select (optional, defaults to 0)
    Because the hierarchical_select form element consists of multiple form
@@ -194,8 +223,12 @@ array. These are the items it can contain:
    see the JavaScript events section for details) and you have a work-around
    (which, admittedly, only works when JS is enabled).
 
- - resizable (optional, defaults to 1)
-   Makes the hierarchical select resizable.
+ - path (optional, defaults to 'hierarchical_select_json')
+   The Drupal path at which a JSON object with Hierarchical Select update
+   information is available. In 99% of the cases, this will remain unchanged,
+   but for advanced use cases, e.g. Views, where an object is referenced by
+   the form in which Hierarchical Select is present and must this exist before
+   the form is rendered, this can be a work-around.
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 
@@ -391,7 +424,8 @@ An example:
 
   // Add the the submit handler for the Hierarchical Select config form.
   $parents = array('foobar_hierarchical_select_config');
-  $form['#submit']['hierarchical_select_common_config_form_submit'] = array($parents);
+  $form['#submit'][] = 'hierarchical_select_common_config_form_submit';
+  $form['#hs_common_config_form_parents'] = $parents;
 
 
 Configuration management

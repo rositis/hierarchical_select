@@ -344,7 +344,6 @@ function theme_hierarchical_select_selection_as_lineages($selection, $config) {
  * allow for level label styles.
  * TODO: rename to _hierarchical_select_select_options().
  */
-// TODO: check if this has changed in D6.
 function _hierarchical_select_options($element) {
   if (!isset($choices)) {
     $choices = $element['#options'];

@@ -21,7 +21,7 @@ Integrates with
 * Menu (Drupal core)
 * Taxonomy (Drupal core)
 * Content Taxonomy (http://drupal.org/project/content_taxonomy) – NOT YET PORTED TO DRUPAL 6
-* Views – NOT YET PORTED TO DRUPAL 6
+* Views
 
 
 Installation
@@ -163,46 +163,6 @@ theme_hierarchical_select_selection_as_lineages() function from within your
 theme, create e.g. garland_hierarchical_select_selection_as_lineages().
 
 
-Addressing Views exposed filters display issues
------------------------------------------------
-When using Hierarchical Select to alter an exposed Views filter (i.e. an 
-exposed taxonomy filter), you may run into display issues due to the Views
-method theme_views_filters(), which renders filters as columns within a table.
-This results in behavior where the select boxes within the Hierarchical Select
-widget may split onto multiple lines or be too cramped together. The following
-theme override sample, written for the Zen theme, renders the filters as rows 
-within a table, leaving much more room for the Hierarchical Select widget. To
-use, follow the instructions for overriding theme functions described at 
-http://drupal.org/node/55126.
-
-<?php
-function zen_views_filters($form) {
-  $view = $form['view']['#value'];
-  $rows = array();
-  $form['submit']['#value'] = t('Search');
-  if (isset($view->exposed_filter)) {
-    foreach ($view->exposed_filter as $count => $expose) {
-      $rows[] = array(
-        array('data' => $expose['label'], 'header' => TRUE),
-        drupal_render($form["op$count"]) . drupal_render($form["filter$count"]),
-      );
-    }
-  }
-  $rows[] = array(
-    array('data' => '', 'header' => TRUE),
-    drupal_render($form['submit'])
-  );
-  if (count($rows) > 1) {
-    $output = drupal_render($form['q']) . theme('table', array(), $rows) . drupal_render($form);
-  }
-  else {
-    $output = drupal_render($form);
-  }
-  return $output;
-}
-?>
-
-
 Setting a fixed size
 --------------------
 When you don't want users to be able to resize a hierarchical select
@@ -230,6 +190,8 @@ Sponsors
 * Ability to create new items/levels:
    The Worx Company, http://www.worxco.com.
 * Ability to only show items that are associated with at least one entity:
+   Merge, http://merge.nl.
+* Views 2 support:
    Merge, http://merge.nl.
 
 
