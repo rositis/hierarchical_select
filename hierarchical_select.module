@@ -783,6 +783,7 @@ function _hierarchical_select_validate(&$element, &$form_state) {
             )
           )
         );
+        _hierarchical_select_form_set_error_class($element);
       }
     }
   }
@@ -806,6 +807,7 @@ function _hierarchical_select_validate(&$element, &$form_state) {
   // form.inc, so it works in an identical way.
   if ($element['#required'] && (!count($element['#value']) || (is_string($element['#value']) && strlen(trim($element['#value'])) == 0))) {
     form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
+    _hierarchical_select_form_set_error_class($element);
   }
 }
 
@@ -1537,6 +1539,26 @@ function _hierarchical_select_form_has_hierarchical_select($form) {
       }
     }
     return $has_hierarchical_select;
+  }
+}
+
+/**
+ * Set the 'error' class on the appropriate part of Hierarchical Select,
+ * depending on its configuration.
+ *
+ * @param $element
+ *   A Hierarchical Select form item.
+ */
+function _hierarchical_select_form_set_error_class(&$element) {
+  $config = _hierarchical_select_inherit_default_config($element['#config']);
+
+  if ($config['dropbox']['status']) {
+    form_error($element['dropbox']['visible']);
+  }
+  else {
+    for ($i = 0; $i < count(element_children($element['hierarchical_select']['selects'])); $i++) {
+      form_error($element['hierarchical_select']['selects'][$i]);
+    }
   }
 }
 

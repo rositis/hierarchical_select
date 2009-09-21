@@ -74,11 +74,14 @@ function theme_hierarchical_select_selects_container($element) {
  * @return
  *   A themed HTML string representing the form element.
  */
-// TODO: check if this has changed in D6.
 function theme_hierarchical_select_select($element) {
   $select = '';
   $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
-  _form_set_class($element, array('form-select'));
+  $class = array('form-select');
+  if (form_get_error($element) === '') {
+    $class = array_merge($class, array('error'));
+  }
+  _form_set_class($element, $class);
   $multiple = isset($element['#multiple']) && $element['#multiple'];
   return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. _hierarchical_select_options($element) .'</select>';
 }
@@ -145,6 +148,10 @@ function theme_hierarchical_select_textfield($element) {
 function theme_hierarchical_select_dropbox_table($element) {
   $output = '';
 
+  $class = 'dropbox';
+  if (form_get_error($element) === '') {
+    $class .= ' error';
+  }
 
   $title     = $element['title']['#value'];
   $separator = $element['separator']['#value'];
@@ -152,7 +159,7 @@ function theme_hierarchical_select_dropbox_table($element) {
 
   $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
 
-  $output .= '<div class="dropbox">';
+  $output .= '<div class="' . $class . '">';
   $output .= '<table>';
   $output .= '<caption class="dropbox-title">'. $title .'</caption>';
   $output .= '<tbody>';
