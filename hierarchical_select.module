@@ -362,7 +362,7 @@ function hierarchical_select_json() {
  * Hierarchical select form element type #process callback.
  */
 function hierarchical_select_process($element, $edit, &$form_state, $form) {
-  if (!isset($element['#post']['hsid'])) {
+  if (!isset($element['#value']['hsid'])) {
     // The HSID is stored in the session, to allow for multiple Hierarchical
     // Select form items on the same page of which at least one is added through
     // AHAH. A normal static variable won't do in this case, because then at
@@ -381,9 +381,9 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     $hsid = $_SESSION['hsid'];
   }
   else {
-    $hsid = $element['#post']['hsid'];
+    $hsid = $element['#value']['hsid'];
   }
-  $element['hsid'] = array('#type' => 'value', '#value' => $hsid);
+  $element['hsid'] = array('#type' => 'hidden', '#value' => $hsid);
   // A hierarchical_select form element expands to multiple items. For example
   // $element['hsid'] got set just above. If #value is not an array, then
   // form_set_value(), which is called by form_builder() will fail, because it
