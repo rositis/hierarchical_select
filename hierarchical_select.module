@@ -1317,10 +1317,7 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
     $url = base_path();
     $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
 
-    $get_arguments = $_GET;
-    unset($get_arguments['q']);
-
-    _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => $get_arguments)), $form_state);
+    _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => drupal_query_string_encode($_GET, array('q')))), $form_state);
 
     $js_settings_added = TRUE;
   }
