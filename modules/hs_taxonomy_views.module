@@ -513,9 +513,10 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
           $values .= ', \''. $value .'\'';
         }
       }
+
+      // Use the same sneaky string replace trick once more.
+      $count_query = str_replace("WHERE", 'WHERE node.type IN (' . $values . ') AND', $count_query);
     }
-    // Use the same sneaky string replace trick once more.
-    $count_query = str_replace("WHERE", 'WHERE node.type IN (' . $values . ') AND', $count_query);
 
     // Apply the same query transformations as view::execute() does.
     $count_query = db_rewrite_sql($count_query, $temp_view->base_table, $temp_view->base_field, array('view' => &$temp_view));
