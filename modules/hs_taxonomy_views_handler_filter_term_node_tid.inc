@@ -108,10 +108,10 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
            'exclude_tid' => NULL,
            'root_term'   => NULL,
          ),
-         // When the 'All' option is selected, nothing else should be and it
+         // When the 'Any' option is selected, nothing else should be and it
          // should replace the '<none>' option.
          'special_items' => array(
-           HS_TAXONOMY_VIEWS_ALL_OPTION => array('none', 'exclusive'),
+           HS_TAXONOMY_VIEWS_ANY_OPTION => array('none', 'exclusive'),
          ),
          // This is a GET form, so also render the flat select.
          'render_flat_select' => 1,
@@ -188,10 +188,17 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
       $identifier = $this->options['expose']['identifier'];
       $input = $form_state['values'][$identifier];
 
-      // If the HS_TAXONOMY_VIEWS_ALL_OPTION option is selected, then the
+      // If the HS_TAXONOMY_VIEWS_ANY_OPTION option is selected, then the
       // results should not be filtered at all.
-      if ($input != HS_TAXONOMY_VIEWS_ALL_OPTION) {
-        $this->validated_exposed_input = $input;
+      if (!is_array($input)) { // When filtering by multiple terms.
+        if ($input != HS_TAXONOMY_VIEWS_ANY_OPTION) {
+          $this->validated_exposed_input = $input;
+        }
+      }
+      else { // When filtering by a single term.
+        if (!in_array(HS_TAXONOMY_VIEWS_ANY_OPTION, $input)) {
+          $this->validated_exposed_input = $input;
+        }
       }
     }
   }

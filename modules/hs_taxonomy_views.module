@@ -8,7 +8,7 @@
  */
 
 
-define('HS_TAXONOMY_VIEWS_ALL_OPTION', 'All');
+define('HS_TAXONOMY_VIEWS_ANY_OPTION', 'Any');
 
 
 //----------------------------------------------------------------------------
@@ -281,10 +281,10 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
     ),
     // Use our custom callback.
     'path' => "hs_taxonomy_views_json/$view->name/$display_id",
-    // When the 'All' option is selected, nothing else should be and it
+    // When the 'Any' option is selected, nothing else should be and it
     // should replace the '<none>' option.
     'special_items' => array(
-      HS_TAXONOMY_VIEWS_ALL_OPTION => array('none', 'exclusive'),
+      HS_TAXONOMY_VIEWS_ANY_OPTION => array('none', 'exclusive'),
     ),
   );
   $strings = array(
@@ -377,7 +377,7 @@ function hs_taxonomy_views_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_taxonomy_views_hierarchical_select_root_level($params) {
-  $root_level =  ($params['optional']) ? array(HS_TAXONOMY_VIEWS_ALL_OPTION => '<'. t('Any') .'>') : array();
+  $root_level =  ($params['optional']) ? array(HS_TAXONOMY_VIEWS_ANY_OPTION => '<'. t('Any') .'>') : array();
   $root_level += hs_taxonomy_hierarchical_select_root_level($params);
   return $root_level;
 }
@@ -386,28 +386,28 @@ function hs_taxonomy_views_hierarchical_select_root_level($params) {
  * Implementation of hook_hierarchical_select_children().
  */
 function hs_taxonomy_views_hierarchical_select_children($parent, $params) {
-  return ($parent == HS_TAXONOMY_VIEWS_ALL_OPTION) ? array() : hs_taxonomy_hierarchical_select_children($parent, $params);
+  return ($parent == HS_TAXONOMY_VIEWS_ANY_OPTION) ? array() : hs_taxonomy_hierarchical_select_children($parent, $params);
 }
 
 /**
  * Implementation of hook_hierarchical_select_lineage().
  */
 function hs_taxonomy_views_hierarchical_select_lineage($item, $params) {
-  return ($item == HS_TAXONOMY_VIEWS_ALL_OPTION) ? array($item) : hs_taxonomy_hierarchical_select_lineage($item, $params);
+  return ($item == HS_TAXONOMY_VIEWS_ANY_OPTION) ? array($item) : hs_taxonomy_hierarchical_select_lineage($item, $params);
 }
 
 /**
  * Implementation of hook_hierarchical_select_valid_item().
  */
 function hs_taxonomy_views_hierarchical_select_valid_item($item, $params) {
-  return ($item == HS_TAXONOMY_VIEWS_ALL_OPTION || hs_taxonomy_hierarchical_select_valid_item($item, $params));
+  return ($item == HS_TAXONOMY_VIEWS_ANY_OPTION || hs_taxonomy_hierarchical_select_valid_item($item, $params));
 }
 
 /**
  * Implementation of hook_hierarchical_select_item_get_label().
  */
 function hs_taxonomy_views_hierarchical_select_item_get_label($item, $params) {
-  return ($item == HS_TAXONOMY_VIEWS_ALL_OPTION) ? '<'. t('Any') .'>' : hs_taxonomy_hierarchical_select_item_get_label($item, $params);
+  return ($item == HS_TAXONOMY_VIEWS_ANY_OPTION) ? '<'. t('Any') .'>' : hs_taxonomy_hierarchical_select_item_get_label($item, $params);
 }
 
 /**
@@ -438,7 +438,7 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
     $temp_view->display_handler->has_exposed = 0;
 
     // Dynamically add an additional filter when
-    if ($item != HS_TAXONOMY_VIEWS_ALL_OPTION) {
+    if ($item != HS_TAXONOMY_VIEWS_ANY_OPTION) {
       // Get an array with all tids: the tid of the currently selected term and
       // all child terms.
       $term = taxonomy_get_term($item);
