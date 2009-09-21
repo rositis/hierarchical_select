@@ -501,6 +501,22 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
     // Due to the above: sneak DISTINCT() in through a string replace ...
     $count_query = str_replace("SELECT node.nid AS nid", "SELECT DISTINCT(node.nid) AS nid", $count_query);
 
+    // Filter by node type if such a filter is configured in the view.
+    $node_types = $current_view->filter['type']->value;
+    if (isset($node_types)) {
+      $values = '';
+      foreach ($node_types as $key => $value) {
+        if (empty($values)) {
+          $values = '\''. $value .'\'';
+        }
+        else {
+          $values .= ', \''. $value .'\'';
+        }
+      }
+    }
+    // Use the same sneaky string replace trick once more.
+    $count_query = str_replace("WHERE", 'WHERE node.type IN (' . $values . ') AND', $count_query);
+
     // Apply the same query transformations as view::execute() does.
     $count_query = db_rewrite_sql($count_query, $temp_view->base_table, $temp_view->base_field, array('view' => &$temp_view));
     $count_query = 'SELECT COUNT(*) FROM (' . $count_query . ') count_alias';
