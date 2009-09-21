@@ -543,6 +543,7 @@ function hs_taxonomy_views_hierarchical_select_implementation_info() {
  * Implementation of hook_hierarchical_select_config_info().
  */
 function hs_taxonomy_views_hierarchical_select_config_info() {
+  $config_info = array();
   $views = views_get_all_views();
 
   foreach ($views as $view) {
