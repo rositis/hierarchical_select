@@ -183,8 +183,6 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => 'require-entity'),
     );
   }
-  $form['level_labels']['#theme'] = 'hierarchical_select_common_config_form_level_labels';
-  $form['level_labels']['#strings'] = $strings;
 
   $form['resizable'] = array(
     '#type' => 'radios',
