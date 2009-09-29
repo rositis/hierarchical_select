@@ -194,8 +194,14 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
   require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
 
   $vocabulary = taxonomy_vocabulary_load($vid);
-  $title = check_plain($vocabulary->name);
-  $description = ($help) ? $help : $vocabulary->help;
+  if (module_exists('i18ntaxonomy')) {
+    $title = check_plain(tt("taxonomy:vocabulary:$vid:name", $vocabulary->name));
+    $description = ($help) ? $help : tt("taxonomy:vocabulary:$vid:help", $vocabulary->help);
+  }
+  else {
+    $title = check_plain($vocabulary->name);
+    $description = ($help) ? $help : $vocabulary->help;
+  }
 
   $form_item = array(
     '#type'          => 'hierarchical_select',
@@ -396,7 +402,12 @@ function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
   if (!isset($labels[$item])) {
     $term = taxonomy_get_term($item);
     // Use the translated term when available!
-    $labels[$item] = t($term->name);
+    if (module_exists('i18ntaxonomy') && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
+      $labels[$item] = tt("taxonomy:term:$term->tid:name", $term->name);
+    }
+    else {
+      $labels[$item] = t($term->name);
+    }
   }
 
   return $labels[$item];
@@ -745,7 +756,12 @@ function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
   $options = array();
   foreach ($terms as $key => $term) {
     // Use the translated term when available!
-    $options[$term->tid] = t($term->name);
+    if (module_exists('i18ntaxonomy') && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
+      $options[$term->tid] = tt("taxonomy:term:$term->tid:name", $term->name);
+    }
+    else {
+      $options[$term->tid] = t($term->name);
+    }
   }
   return $options;
 }

@@ -1318,6 +1318,9 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
   if (!$js_settings_added && isset($form_state)) {
     $url = base_path();
     $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
+	if (module_exists('i18n') && i18n_get_lang() != i18n_default_language() && variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != "3") {
+       $url .= i18n_get_lang() .'/';
+    }
 
     _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => drupal_query_string_encode($_GET, array('q')))), $form_state);
 
