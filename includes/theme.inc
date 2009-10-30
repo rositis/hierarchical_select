@@ -29,6 +29,11 @@ function theme_hierarchical_select($element) {
   $classes = array(
    'hierarchical-select-wrapper',
    "hierarchical-select-level-labels-style-$level_labels_style",
+   // Classes that make it possible to override the styling of specific
+   // instances of Hierarchical Select, based on either the ID of the form
+   // element or the config that it uses.
+   'hierarchical-select-wrapper-for-name-' . $element['#id'],
+   (isset($element['#config']['config_id'])) ? 'hierarchical-select-wrapper-for-config-' . $element['#config']['config_id'] : NULL,
   );
   $element['#attributes']['class'] .= ' '. implode(' ', $classes);
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
