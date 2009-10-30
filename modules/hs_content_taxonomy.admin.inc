@@ -61,7 +61,7 @@ function hs_content_taxonomy_config_form($form_state, $content_type_name, $field
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
-    '#value' => l('Back to the field configuration', 'admin/content/node-type/'. $content_type['type'] .'/fields/'. $field_name),
+    '#value' => l('Back to the field configuration', 'admin/content/node-type/'. str_replace('_', '-', $content_type['type']) .'/fields/'. $field_name),
     '#prefix' => '<div class="cck-hierarchical-select-back-link">',
     '#suffix' => '</div>',
     '#weight' => -5,
