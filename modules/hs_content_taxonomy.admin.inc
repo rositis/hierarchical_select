@@ -21,7 +21,7 @@ function hs_content_taxonomy_config_form($form_state, $content_type_name, $field
 
   // Extract the necessary context from the $field array.
   $vid = $field['vid'];
-  $tid = $field['tid'];
+  $tid = (isset($field['tid'])) ? $field['tid'] : NULL;
   $depth = (empty($field['depth'])) ? 0 : $field['depth'];
 
   // Add the Hierarchical Select config form.

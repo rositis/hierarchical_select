@@ -1081,7 +1081,7 @@ function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
       '#theme' => 'hierarchical_select_select',
       // Add child information. When a child has no children, its
       // corresponding "option" element will be marked as such.
-      '#childinfo' => $hierarchy->childinfo[$depth],
+      '#childinfo' => (isset($hierarchy->childinfo[$depth])) ? $hierarchy->childinfo[$depth] : NULL,
     );
   }
   return $form;
