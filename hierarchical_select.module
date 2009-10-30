@@ -338,13 +338,15 @@ function hierarchical_select_json() {
   // If the user's browser supports the active cache system, then send the
   // currently requested hierarchy in an easy-to-manage form.
   $cache = array();
-  if ($_POST['client_supports_caching'] == 'true') {
-    $cache = _hierarchical_select_json_convert_hierarchy_to_cache($part_of_form['hierarchy']['#value']);
-  }
-  else if ($_POST['client_supports_caching'] == 'false') {
-    // This indicates that a client-side cache is installed, but not working
-    // properly.
-    // TODO: figure out a clean way to notify the administrator.
+  if (isset($_POST['client_supports_caching'])) {
+    if ($_POST['client_supports_caching'] == 'true') {
+      $cache = _hierarchical_select_json_convert_hierarchy_to_cache($part_of_form['hierarchy']['#value']);
+    }
+    else if ($_POST['client_supports_caching'] == 'false') {
+      // This indicates that a client-side cache is installed, but not working
+      // properly.
+      // TODO: figure out a clean way to notify the administrator.
+    }
   }
 
   print drupal_to_js(array(
@@ -956,11 +958,11 @@ function _hierarchical_select_process_calculate_selections(&$element) {
   $dropbox = (bool) $config['dropbox']['status'];
 
   // When:
-  // - no data was POSTed (and thus no 'op', no operation),
+  // - no data was POSTed
   // - or #value is set directly and not by a Hierarchical Select POST (and
   //   therefor set either manually or by another module),
   // then use the value of #default_value, or when available, of #value.
-  if (!isset($element['#post']['op']) || !isset($element['#value']['hierarchical_select'])) {
+  if (!isset($element['#post']) || !isset($element['#value']['hierarchical_select'])) {
     $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
     $value = (is_array($value)) ? $value : array($value);
     if ($dropbox) {
@@ -971,7 +973,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
     }
   }
   else {
-    $op = $element['#post']['op'];
+    $op = (isset($element['#post']['op'])) ? $element['#post']['op'] : NULL;
     if ($dropbox && $op == t('Add')) {
       $hs_selection = _hierarchical_select_process_get_hs_selection($element);
       $db_selection = _hierarchical_select_process_get_db_selection($element);
