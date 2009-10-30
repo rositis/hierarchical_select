@@ -29,7 +29,7 @@ function hs_menu_menu() {
  * Implementation of hook_form_alter().
  */
 function hs_menu_form_alter(&$form, &$form_state, $form_id) {
-  if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && isset($form['menu']['parent']) && $form['menu']['#access']) {
+  if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id && isset($form['menu']['parent']) && $form['menu']['#access']) {
     unset($form['menu']['parent']['#options']);
     $form['menu']['parent']['#type'] = 'hierarchical_select';
     _hs_menu_apply_config($form['menu']['parent'], NULL);

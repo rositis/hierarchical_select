@@ -135,14 +135,14 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
       'status'   => 1,
     ),
     'params' => array(
-      'vid'         => $form['vid']['#value'],
-      'exclude_tid' => $form['tid']['#value'],
+      'vid'         => isset($form['tid']['#value']) ? $form['vid']['#value'] : NULL,
+      'exclude_tid' => isset($form['tid']['#value']) ? $form['tid']['#value'] : NULL,
       'root_term'   => TRUE,
     ),
   );
 
   // Use Hierarchical Select for selecting the parent term(s).
-  $parent = array_keys(taxonomy_get_parents($form['tid']['#value']));
+  $parent = isset($form['tid']['#value']) ? array_keys(taxonomy_get_parents($form['tid']['#value'])) : array();
   $form['advanced']['parent'] = array(
     '#type'   => 'hierarchical_select',
     '#config' => $config,
@@ -155,7 +155,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
   $form['advanced']['parent']['#config']['dropbox']['title'] = t('All parent terms');
 
   // Use Hierarchical Select for selecting the related term(s).
-  $related = array_keys(taxonomy_get_related($form['tid']['#value']));
+  $related = isset($form['tid']['#value']) ? array_keys(taxonomy_get_related($form['tid']['#value'])) : array();
   $form['advanced']['relations'] = array(
     '#type'   => 'hierarchical_select',
     '#config' => $config,
@@ -215,7 +215,6 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
     ),
     '#title'         => $title,
     '#default_value' => $value,
-    '#options'       => $options,
     '#description'   => $description,
     '#weight'        => -15,
   );
@@ -327,7 +326,7 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
   $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
 
   // If the root_term parameter is enabled, then prepend a fake "<root>" term.
-  if ($params['root_term'] === TRUE) {
+  if (isset($params['root_term']) && $params['root_term'] === TRUE) {
     $root_term = new StdClass();
     $root_term->tid = 0;
     $root_term->name = '<'. t('root') .'>';
@@ -350,7 +349,7 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
  * Implementation of hook_hierarchical_select_children().
  */
 function hs_taxonomy_hierarchical_select_children($parent, $params) {
-  if ($params['root_term'] && $parent == 0) {
+  if (isset($params['root_term']) && $params['root_term'] && $parent == 0) {
     return array();
   }
 
@@ -368,7 +367,7 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
 function hs_taxonomy_hierarchical_select_lineage($item, $params) {
   $lineage = array();
 
-  if ($params['root_term'] && $item == 0) {
+  if (isset($params['root_term']) && $params['root_term'] && $item == 0) {
     return array(0);
   }
 
@@ -383,10 +382,10 @@ function hs_taxonomy_hierarchical_select_lineage($item, $params) {
  * Implementation of hook_hierarchical_select_valid_item().
  */
 function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
-  if ($params['root_term'] && $item == 0) {
+  if (isset($params['root_term']) && $params['root_term'] && $item == 0) {
     return TRUE;
   }
-  else if (!is_numeric($item) || $item < 1 || $item == $params['exclude_tid']) {
+  else if (!is_numeric($item) || $item < 1 || (isset($params['exclude_tid']) && $item == $params['exclude_tid'])) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
@@ -698,7 +697,7 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
   }
 
   $max_depth = (is_null($max_depth)) ? count($children[$vid]) : $max_depth;
-  if ($children[$vid][$parent]) {
+  if (isset($children[$vid][$parent])) {
     foreach ($children[$vid][$parent] as $child) {
       if ($max_depth > $depth) {
         $term = drupal_clone($terms[$vid][$child]);
@@ -708,14 +707,14 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
         $term->parents = $parents[$vid][$child];
         $tree[] = $term;
 
-        if ($children[$vid][$child]) {
+        if (isset($children[$vid][$child])) {
           $tree = array_merge($tree, _hs_taxonomy_hierarchical_select_get_tree($vid, $child, $depth, $max_depth));
         }
       }
     }
   }
 
-  return $tree ? $tree : array();
+  return isset($tree) ? $tree : array();
 }
 
 /**
@@ -775,6 +774,7 @@ function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
  *   The depth of the vocabulary's tree.
  */
 function _hs_taxonomy_hierarchical_select_get_depth($vid) {
+  $depth = -99999;
   $tree = _hs_taxonomy_hierarchical_select_get_tree($vid);
   foreach ($tree as $term) {
     if ($term->depth > $depth) {

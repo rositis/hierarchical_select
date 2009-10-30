@@ -56,7 +56,7 @@ function hierarchical_select_common_config_del($config_id) {
  */
 function hierarchical_select_common_config_apply(&$form_item, $config_id, $defaults_override = array()) {
   $config = hierarchical_select_common_config_get($config_id, $defaults_override);
-  $form_item['#config'] = array_merge((is_array($form_item['#config'])) ? $form_item['#config'] : array(), $config);
+  $form_item['#config'] = array_merge((isset($form_item['#config']) && is_array($form_item['#config'])) ? $form_item['#config'] : array(), $config);
 }
 
 
@@ -226,7 +226,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#type' => 'textfield',
       '#size' => 20,
       '#maxlength' => 255,
-      '#default_value' => $config['level_labels']['labels'][$depth],
+      '#default_value' => (isset($config['level_labels']['labels'][$depth])) ? $config['level_labels']['labels'][$depth] : NULL,
       '#attributes' => array('class' => 'level-label'),
     );
   }

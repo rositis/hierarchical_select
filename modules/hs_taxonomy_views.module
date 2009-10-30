@@ -272,6 +272,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
     'exclude_tid' => NULL,
     'root_term'   => NULL,
   );
+  $vocabulary = taxonomy_vocabulary_load($params['vid']);
   $defaults = array(
     // Enable the save_lineage setting by default if the multiple parents
     // vocabulary option is enabled.
@@ -297,7 +298,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
     'entities'    => t('nodes'),
   );
   $max_hierarchy_depth = _hs_taxonomy_hierarchical_select_get_depth($vocabulary->vid);
-  $preview_is_required = !(bool)$exposed_filter['expose']['optional'];
+  $preview_is_required = !(bool)$filter['expose']['optional'];
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
@@ -502,20 +503,22 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
     $count_query = str_replace("SELECT node.nid AS nid", "SELECT DISTINCT(node.nid) AS nid", $count_query);
 
     // Filter by node type if such a filter is configured in the view.
-    $node_types = $current_view->filter['type']->value;
-    if (isset($node_types)) {
-      $values = '';
-      foreach ($node_types as $key => $value) {
-        if (empty($values)) {
-          $values = '\''. $value .'\'';
+    if (isset($current_view->filter['type'])) {
+      $node_types = $current_view->filter['type']->value;
+      if (isset($node_types)) {
+        $values = '';
+        foreach ($node_types as $key => $value) {
+          if (empty($values)) {
+            $values = '\''. $value .'\'';
+          }
+          else {
+            $values .= ', \''. $value .'\'';
+          }
         }
-        else {
-          $values .= ', \''. $value .'\'';
-        }
-      }
 
-      // Use the same sneaky string replace trick once more.
-      $count_query = str_replace("WHERE", 'WHERE node.type IN (' . $values . ') AND', $count_query);
+        // Use the same sneaky string replace trick once more.
+        $count_query = str_replace("WHERE", 'WHERE node.type IN (' . $values . ') AND', $count_query);
+      }
     }
 
     // Apply the same query transformations as view::execute() does.
@@ -548,13 +551,16 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
 
   foreach ($views as $view) {
     foreach (array_keys($view->display) as $display_id) {
-      if (count($view->display[$display_id]->display_options['filters'])) {
+      if (isset($view->display[$display_id]->display_options['filters']) && count($view->display[$display_id]->display_options['filters'])) {
         foreach ($view->display[$display_id]->display_options['filters'] as $filter) {
-          if ($filter['type'] == 'hierarchical_select' && $filter['table'] == 'term_node' && $filter['field'] == 'tid') {
+          if (isset($filter['type']) && $filter['type'] == 'hierarchical_select'
+              && isset($filter['table']) && $filter['table'] == 'term_node'
+              && isset($filter['field']) && $filter['field'] == 'tid')
+          {
             $vocabulary = taxonomy_vocabulary_load($filter['vid']);
             $filter_label = (!empty($filter['expose']['label'])) ? $filter['expose']['label'] : t('Taxonomy: Term');
 
-            $config_id = "taxonomy-views-$view->name-$vocabulary->vid";
+            $config_id = "taxonomy-views-$view->name-$display_id-{$filter['id']}";
             $config_info[$config_id] = array(
               'config_id'      => $config_id,
               'hierarchy type' => t('Taxonomy'),

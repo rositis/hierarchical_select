@@ -24,6 +24,9 @@ function theme_hierarchical_select($element) {
   $output = '';
 
   // Update $element['#attributes']['class'].
+  if (!isset($element['#attributes']['class'])) {
+    $element['#attributes']['class'] = '';
+  }
   $hsid = $element['hsid']['#value'];
   $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
   $classes = array(
@@ -46,7 +49,7 @@ function theme_hierarchical_select($element) {
       '#description' => $element['#description'],
       '#id' => $element['#id'],
       '#required' => $element['#required'],
-      '#error' => $element['#error'],
+      '#error' => isset($element['#error']) ? $element['#error'] : '',
     ),
     '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
   );
