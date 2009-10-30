@@ -352,7 +352,7 @@ function hierarchical_select_json() {
   print drupal_to_js(array(
     'cache'  => $cache,
     'output' => $output,
-    'log'    => $part_of_form['log']['#value'],
+    'log'    => (isset($part_of_form['log']['#value'])) ? $part_of_form['log']['#value'] : NULL,
   ));
   exit;
 }
