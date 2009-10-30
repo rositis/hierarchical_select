@@ -59,23 +59,30 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
   Drupal.HierarchicalSelect.log(hsid);
 };
 
-Drupal.HierarchicalSelect.log = function(hsid) {
-  Drupal.HierarchicalSelect.state[hsid].log = [];
+Drupal.HierarchicalSelect.log = function(hsid, messages) {
+  // Only perform logging if logging is enabled.
   if (Drupal.settings.HierarchicalSelect.initialLog == undefined || Drupal.settings.HierarchicalSelect.initialLog[hsid] == undefined) {
     return;
   }
-
-  // Make sure we print the log of the last build for this Hierarchical Select.
-  if (Drupal.HierarchicalSelect.state[hsid].lastBuildNumber == undefined) {
-    Drupal.HierarchicalSelect.state[hsid].log[0] = Drupal.settings.HierarchicalSelect.initialLog[hsid];
-    Drupal.HierarchicalSelect.state[hsid].lastBuildNumber = -1;
+  else {
+    Drupal.HierarchicalSelect.state[hsid].log = [];
   }
-  var lastBuildNumber = ++Drupal.HierarchicalSelect.state[hsid].lastBuildNumber;
 
-  // Print all log messages for the last build.
+  // Store the log messages. The first call to this function may not contain a
+  // message: the initial log included in the initial HTML rendering should be
+  // used instead.. 
+  if (Drupal.HierarchicalSelect.state[hsid].log.length == 0) {
+    Drupal.HierarchicalSelect.state[hsid].log.push(Drupal.settings.HierarchicalSelect.initialLog[hsid]);
+  }
+  else {
+      Drupal.HierarchicalSelect.state[hsid].log.push(messages);
+  }
+
+  // Print the log messages.
   console.log("HIERARCHICAL SELECT " + hsid);
-  for (var i = 0; i < Drupal.HierarchicalSelect.state[hsid].log[lastBuildNumber].length; i++) {
-    console.log(Drupal.HierarchicalSelect.state[hsid].log[lastBuildNumber][i]);
+  var logIndex = Drupal.HierarchicalSelect.state[hsid].log.length - 1;
+  for (var i = 0; i < Drupal.HierarchicalSelect.state[hsid].log[logIndex].length; i++) {
+    console.log(Drupal.HierarchicalSelect.state[hsid].log[logIndex][i]);
   }
   console.log(' ');
 };
@@ -199,8 +206,7 @@ Drupal.HierarchicalSelect.throwError = function(hsid, message) {
   alert(message);
 
   // Log the error.
-  Drupal.HierarchicalSelect.state[hsid].log.push([ message ]);
-  Drupal.HierarchicalSelect.log(hsid);
+  Drupal.HierarchicalSelect.log(hsid, [ message ]);
 
   // Re-enable the form to allow the user to retry, but reset the selection to
   // the level label if possible, otherwise the "<none>" option if possible.
@@ -554,8 +560,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         }
 
         if (response.log != undefined) {
-          Drupal.HierarchicalSelect.state[hsid].log.push(response.log);
-          Drupal.HierarchicalSelect.log(hsid);
+          Drupal.HierarchicalSelect.log(hsid, response.log);
         }
 
         Drupal.HierarchicalSelect.triggerEvents(hsid, updateType, settings);
