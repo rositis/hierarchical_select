@@ -38,7 +38,7 @@ function hs_content_taxonomy_menu() {
  */
 function hs_content_taxonomy_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
-    if (sizeof($form['#field_info']) > 0) {
+    if (isset($form['#field_info']) && count($form['#field_info']) > 0) {
       foreach ($form['#field_info'] as $field_name => &$field_info) {
         if ($field_info['widget']['type'] == 'content_taxonomy_hs') {
           $form['#submit'][] = 'hs_content_taxonomy_form_submit';
