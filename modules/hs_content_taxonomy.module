@@ -24,7 +24,7 @@
 function hs_content_taxonomy_menu() {
   $items['admin/content/node-type/%/fields/%/hs_config'] = array(
     'title'            => t('HS config'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer content types'),
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('hs_content_taxonomy_config_form', 3, 5),
     'type'             => MENU_NORMAL_ITEM,
