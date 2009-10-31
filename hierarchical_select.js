@@ -185,16 +185,23 @@ Drupal.HierarchicalSelect.disableForm = function(hsid) {
 Drupal.HierarchicalSelect.enableForm = function(hsid) {
   // This method undoes everything the disableForm() method did.
 
-  $e = $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]');  
+  $e = $('form:has(#hierarchical-select-' + hsid +'-wrapper) input[type=submit]');
   $e = $e.add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input[type!=submit]');
 
   // Don't enable the selects again if they've been disabled because the
   // dropbox limit was exceeded.
-  if ($('#hierarchical-select-' + hsid +'-wrapper hierarchical-select-dropbox-limit-warning').length == 0) {
+  dropboxLimitExceeded = $('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select-dropbox-limit-warning').length > 0;
+  if (!dropboxLimitExceeded) {
     $e = $e.add($('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select'));
   }
-
   $e.attr('disabled', false);
+
+  // Don't enable the 'Add' button again if it's been disabled because the
+  // dropbox limit was exceeded.
+  if (dropboxLimitExceeded) {
+    $('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input[type=submit]')
+    .attr('disabled', true);
+  }
 
   $('#hierarchical-select-' + hsid +'-wrapper').removeClass('waiting');
 
