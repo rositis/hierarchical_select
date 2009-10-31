@@ -1780,15 +1780,14 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // - the editability setting is enabled, and
     // - the hook is implemented (this is an optional hook), and
     // - the allowed_levels setting allows to create new items at this level.
-    if ($config['editability']['status']
-        && module_hook($config['module'], 'hierarchical_select_create_item')
-        && _hierarchical_select_create_new_item_is_allowed($config, $depth)
-    ) {
+    if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $item_type = t($config['editability']['item_types'][$depth]);
         $item_type = (!empty($item_type)) ? $item_type : t('item');
         $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
-        $hierarchy->levels[$depth] = array('create_new_item' => $option) + $hierarchy->levels[$depth];
+        if (_hierarchical_select_create_new_item_is_allowed($config, $depth)) {
+          $hierarchy->levels[$depth] = array('create_new_item' => $option) + $hierarchy->levels[$depth];
+        }
       }
     }
 
