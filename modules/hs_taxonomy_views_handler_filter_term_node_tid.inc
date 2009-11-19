@@ -213,7 +213,11 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
     // was validated.
     // This method checks if $this->validated_exposed_input is set, and if so,
     // results are filtered by those values.
-    return parent::accept_exposed_input($input);
+    $rc = parent::accept_exposed_input($input);
+    if ($this->select_type_is_hierarchical_select() && !is_array($this->value)) {
+      $this->value = array($this->value);
+    }
+    return $rc;
   }
 
   function admin_summary() {
