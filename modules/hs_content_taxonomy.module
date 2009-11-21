@@ -164,7 +164,7 @@ function hs_content_taxonomy_widget(&$form, &$form_state, $field, $items, $delta
   $form[$field_name]['#tree'] = TRUE;
   $form[$field_name]['#weight'] = $field['widget']['weight'];
   $form[$field_name]['tids'] = array(
-    '#title' => $field['widget']['label'],
+    '#title' => t($field['widget']['label']),
     '#type' => 'hierarchical_select',
     '#weight' => $field['widget']['weight'],
     '#config' => array(
