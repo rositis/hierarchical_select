@@ -325,6 +325,13 @@ improvements.
 2) add child form items based on the user's input
 
 
+Hierarchical Select API Tutorial
+--------------------------------
+Written by Stephen Barker of Digital Frontiers Media
+(http://drupal.org/user/106070) and reviewed by Wim Leers:
+  http://drupal.org/node/532724
+
+
 Hooks
 -----
 1) hook_hierarchical_select_params();
