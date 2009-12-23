@@ -135,7 +135,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
       'status'   => 1,
     ),
     'params' => array(
-      'vid'         => isset($form['tid']['#value']) ? $form['vid']['#value'] : NULL,
+      'vid'         => isset($form['vid']['#value']) ? $form['vid']['#value'] : NULL,
       'exclude_tid' => isset($form['tid']['#value']) ? $form['tid']['#value'] : NULL,
       'root_term'   => TRUE,
     ),
