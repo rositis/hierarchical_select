@@ -1,5 +1,0 @@
-; $Id$
-name = Hierarchical Select Book
-description = Use Hierarchical Select for selecting the parent page of a book page.
-dependencies = hierarchical_select book
-package = Form Elements
