@@ -545,7 +545,7 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       // Generate the per-vid "save-lineage-termpath" tokens.
       foreach ($all_vids as $vid) {
         $terms = array();
-        if (in_array($vid, $hs_vids)) {
+        if (in_array($vid, $hs_vids) && isset($node->taxonomy[$vid])) {
           $selection = $node->taxonomy[$vid];
           $terms = _hs_taxonomy_token_termpath_for_vid($selection, $vid);
         }
