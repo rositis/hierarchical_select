@@ -962,7 +962,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
   // - or #value is set directly and not by a Hierarchical Select POST (and
   //   therefor set either manually or by another module),
   // then use the value of #default_value, or when available, of #value.
-  if (!isset($element['#post']) || !isset($element['#value']['hierarchical_select'])) {
+  if (!isset($element['#post']) || (!isset($element['#value']['hierarchical_select']) && !isset($element['#value']['dropbox']))) {
     $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
     $value = (is_array($value)) ? $value : array($value);
     if ($dropbox) {
