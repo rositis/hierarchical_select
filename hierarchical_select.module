@@ -691,6 +691,11 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     _hierarchical_select_mark_as_disabled($element);
   }
 
+  // Remove #options in case it's been added.
+  if (isset($element['#options'])) {
+    unset($element['#options']);
+  }
+
   return $element;
 }
 
