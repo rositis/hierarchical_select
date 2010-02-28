@@ -536,6 +536,7 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       // when a token is requested for a vocabulary that's not associated with
       // the current content type.
       if (!isset($all_vids)) {
+        $all_vids = array();
         $result = db_query("SELECT vid FROM {vocabulary}");
         while ($row = db_fetch_object($result)) {
           $all_vids[] = $row->vid;
