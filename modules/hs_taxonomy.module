@@ -342,6 +342,16 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
     }
   }
 
+  // If the Term Permissions module is installed, honor its settings.
+  if (function_exists('term_permissions_allowed')) {
+    global $user;
+    foreach ($terms as $key => $term) {
+      if (!term_permissions_allowed($term->tid, $user) ) {
+        unset($terms[$key]);
+      }
+    }
+  }
+
   return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
 
@@ -357,6 +367,16 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
 
   // Unset the term that's being excluded, if it is among the children.
   unset($terms[$params['exclude_tid']]);
+
+  // If the Term Permissions module is installed, honor its settings.
+  if (function_exists('term_permissions_allowed')) {
+    global $user;
+    foreach ($terms as $key => $term) {
+      if (!term_permissions_allowed($term->tid, $user) ) {
+        unset($terms[$key]);
+      }
+    }
+  }
 
   return _hs_taxonomy_hierarchical_select_terms_to_options($terms);
 }
@@ -389,6 +409,17 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
     return FALSE;
   }
   $term = taxonomy_get_term($item);
+
+  // If the Term Permissions module is installed, honor its settings.
+  if (function_exists('term_permissions_allowed')) {
+    global $user;
+    foreach ($terms as $key => $term) {
+      if (!term_permissions_allowed($term->tid, $user) ) {
+        return FALSE;
+      }
+    }
+  }
+
   return ($term->vid == $params['vid']);
 }
 
