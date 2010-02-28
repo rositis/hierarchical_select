@@ -2257,18 +2257,20 @@ function _hierarchical_select_dropbox_lineage_item_get_value($item) {
  *
  * From: http://www.php.net/manual/en/function.array-merge-recursive.php#82976.
  */
-function array_smart_merge($array, $override) {
-  if (is_array($array) && is_array($override)) {
-    foreach ($override as $k => $v) {
-      if (isset($array[$k]) && is_array($v) && is_array($array[$k])) {
-        $array[$k] = array_smart_merge($array[$k], $v);
-      }
-      else {
-        $array[$k] = $v;
+if (!function_exists('array_smart_merge')) {
+  function array_smart_merge($array, $override) {
+    if (is_array($array) && is_array($override)) {
+      foreach ($override as $k => $v) {
+        if (isset($array[$k]) && is_array($v) && is_array($array[$k])) {
+          $array[$k] = array_smart_merge($array[$k], $v);
+        }
+        else {
+          $array[$k] = $v;
+        }
       }
     }
+    return $array;
   }
-  return $array;
 }
 
 /**
