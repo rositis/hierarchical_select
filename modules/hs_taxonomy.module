@@ -273,6 +273,12 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
         );
       }
       else {
+        // Just looking at $vocabulary->required is not sufficient: the forum
+        // module does not correctly set $vocabulary->required and hence the
+        // forum vocabulary does not have it set. It's made required through
+        // some hardcoded piece of Forms API logic. Therefore we have to do
+        // more extensive checks to decide to make the form item required.
+        $required = (isset($form['taxonomy'][$vocabulary->vid]['#required'])) ? $form['taxonomy'][$vocabulary->vid]['#required'] : $vocabulary->required;
         // Extract terms belonging to the vocabulary in question.
         $default_terms = array();
         foreach ($terms as $term) {
@@ -284,7 +290,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
         $form_function = variable_get("taxonomy_hierarchical_select_$vocabulary->vid", 0) ? 'hs_taxonomy_form' : 'taxonomy_form';
         $form['taxonomy'][$vocabulary->vid] = $form_function($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
         $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
-        $form['taxonomy'][$vocabulary->vid]['#required'] = $vocabulary->required;
+        $form['taxonomy'][$vocabulary->vid]['#required'] = $required;
       }
     }
     if (!empty($form['taxonomy']) && is_array($form['taxonomy'])) {
