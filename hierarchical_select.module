@@ -1332,7 +1332,8 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
     $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
     // Prefix URL with language path when i18n is enabled and when path-based
     // negotiation is being used.
-    if (module_exists('i18n') && ($language->prefix != '') && variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) != "3") {
+    $negotiation = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
+    if (module_exists('i18n') && ($language->prefix != '') && ($negotiation == LANGUAGE_NEGOTIATION_PATH_DEFAULT || $negotiation == LANGUAGE_NEGOTIATION_PATH)) {
        $url .= $language->prefix . '/';
     }
 
