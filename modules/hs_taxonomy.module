@@ -437,10 +437,8 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
   // If the Term Permissions module is installed, honor its settings.
   if (function_exists('term_permissions_allowed')) {
     global $user;
-    foreach ($terms as $key => $term) {
-      if (!term_permissions_allowed($term->tid, $user) ) {
+    if (!term_permissions_allowed($term->tid, $user) ) {
         return FALSE;
-      }
     }
   }
 
