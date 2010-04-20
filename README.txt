@@ -49,7 +49,11 @@ If you ever have problems, make sure to go through these steps:
    CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the
    browser to reload everything, preventing it from using its cache.
 
-3) When Hierarchical Select seems to be misbehaving in a certain use case in
+3) When you're getting a JS alert with the following message: "Received an
+   invalid response from the server.", ensure that the page (of which this
+   form is a part) is *not* being cached.
+
+4) When Hierarchical Select seems to be misbehaving in a certain use case in
    which terms with multiple parents are being used, make sure to enable the
    "Save term lineage" setting.
    Note: you may have to repeat this for every configuration in which the
