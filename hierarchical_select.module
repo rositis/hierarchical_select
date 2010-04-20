@@ -1821,7 +1821,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         $hierarchy->levels[$depth] = array('create_new_item' => $option) + $hierarchy->levels[$depth];
       }
       // Level label: set an empty level label if they've been disabled.
-      $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
+      $label = ($config['level_labels']['status'] && isset($config['level_labels']['labels'][$depth])) ? t($config['level_labels']['labels'][$depth]) : '';
       $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth];
     }
 
