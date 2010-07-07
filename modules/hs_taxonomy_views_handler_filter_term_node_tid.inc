@@ -32,7 +32,21 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
   }
 
   function value_form(&$form, &$form_state) {
-    $vocabulary = taxonomy_vocabulary_load($this->options['vid']);
+    // Support limiting of vocabulary by the vocabulary's module name (this is
+    // possible when a vocabulary is exported/defined as a feature, see
+    // http://drupal.org/node/789556) or by the vocabulary's vid.
+    if ($this->options['limit_by'] == 'module') {
+      foreach (taxonomy_get_vocabularies() as $vid => $vocab) {
+        if ($vocab->module == $this->options['module']) {
+          $vocabulary = $vocab;
+          break;
+        }
+      }
+    }
+    else {
+      $vocabulary = taxonomy_vocabulary_load($this->options['vid']);
+    }
+
     $view_name  = $this->view->name;
     $filter_id  = $this->options['id'];
     $display_id = _hs_taxonomy_views_get_display_id_for_filter($this->view, $filter_id);
