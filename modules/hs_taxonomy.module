@@ -202,11 +202,11 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
   $vocabulary = taxonomy_vocabulary_load($vid);
   if (module_exists('i18ntaxonomy')) {
     $title = check_plain(tt("taxonomy:vocabulary:$vid:name", $vocabulary->name));
-    $description = ($help) ? $help : tt("taxonomy:vocabulary:$vid:help", $vocabulary->help);
+    $description = check_plain(($help) ? $help : tt("taxonomy:vocabulary:$vid:help", $vocabulary->help));
   }
   else {
     $title = check_plain($vocabulary->name);
-    $description = ($help) ? $help : $vocabulary->help;
+    $description = check_plain(($help) ? $help : $vocabulary->help);
   }
 
   $form_item = array(

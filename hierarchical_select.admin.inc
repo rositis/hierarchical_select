@@ -86,7 +86,7 @@ function hierarchical_select_admin_configs() {
 
     $rows[$id] = array(
       $item['hierarchy type'],
-      $item['hierarchy'],
+      check_plain($item['hierarchy']),
       $item['entity type'],
       $item['entity'],
       $item['context type'],

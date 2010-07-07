@@ -384,7 +384,7 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     $hsid = $_SESSION['hsid'];
   }
   else {
-    $hsid = $element['#value']['hsid'];
+    $hsid = check_plain($element['#value']['hsid']);
   }
   $element['hsid'] = array('#type' => 'hidden', '#value' => $hsid);
   // A hierarchical_select form element expands to multiple items. For example
@@ -2118,7 +2118,7 @@ function _hierarchical_select_dropbox_generate($config, $selection) {
       // We will also need the labels of each item in the rendering layer.
       foreach ($dropbox->lineages as $id => $lineage) {
         foreach ($lineage as $level => $item) {
-          $dropbox->lineages[$id][$level] = array('value' => $item, 'label' => module_invoke($config['module'], 'hierarchical_select_item_get_label', $item, $config['params']));
+          $dropbox->lineages[$id][$level] = array('value' => $item, 'label' => check_plain(module_invoke($config['module'], 'hierarchical_select_item_get_label', $item, $config['params'])));
         }
       }
     }
