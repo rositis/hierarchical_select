@@ -14,7 +14,13 @@
 function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
 
-  $vid = $form['vid']['#value'];
+  $vid = (isset($form['vid'])) ? $form['vid']['#value'] : NULL;
+
+  // Don't add the per-vocabulary settings for Hierarchical Select when the
+  // vocabulary still needs to be created.
+  if ($vid == NULL) {
+    return;
+  }
 
   if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
     $form['tags']['#attributes']['disabled'] = TRUE;
