@@ -277,6 +277,19 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
           '#weight' => $vocabulary->weight,
           '#maxlength' => 255,
         );
+
+        if (module_exists('i18ntaxonomy')) {
+          $vid = $vocabulary->$vid;
+          // Special treatment for tags, add some help texts
+          $type = i18ntaxonomy_vocabulary($vid);
+          if ($type == I18N_TAXONOMY_LOCALIZE || $type == I18N_TAXONOMY_TRANSLATE) {
+            $form['taxonomy']['tags'][$vid]['#title'] = i18nstrings_string("taxonomy:vocabulary:$vid:name", $form['taxonomy']['tags'][$vid]['#title']);
+            $form['taxonomy']['tags'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $form['taxonomy']['tags'][$vid]['#description']);    
+          }
+          if ($type == I18N_TAXONOMY_LOCALIZE) {
+            $form['taxonomy']['tags'][$vid]['#description'] .= ' '. t('This is a localizable vocabulary, so only terms in %language are allowed here.', array('%language' => language_default('name')));
+          }
+        }
       }
       else {
         // Just looking at $vocabulary->required is not sufficient: the forum
@@ -297,6 +310,31 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
         $form['taxonomy'][$vocabulary->vid] = $form_function($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
         $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
         $form['taxonomy'][$vocabulary->vid]['#required'] = $required;
+
+        if ($form_function == 'hs_taxonomy_form' && module_exists('i18ntaxonomy')) {
+          $vid = $vocabulary->$vid;
+          if (is_numeric($vid) && i18ntaxonomy_vocabulary($vid) == I18N_TAXONOMY_LOCALIZE) {
+            // Rebuild this vocabulary's form.
+            $vocabulary = taxonomy_vocabulary_load($vid);
+            // Extract terms belonging to the vocabulary in question.
+            $default_terms = array();
+            foreach ($terms as $term) {
+              if ($term->vid == $vid) {
+                $default_terms[$term->tid] = $term;
+              }
+            }
+            $form['taxonomy'][$vid] = i18ntaxonomy_vocabulary_form($vocabulary->vid, array_keys($default_terms));
+            $form['taxonomy'][$vid]['#weight'] = $vocabulary->weight;
+            $form['taxonomy'][$vid]['#required'] = $vocabulary->required;
+            $form['taxonomy'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $vocabulary->help);
+          }
+          elseif (is_numeric($vid) && i18ntaxonomy_vocabulary($vid) == I18N_TAXONOMY_TRANSLATE) {
+            // Rebuild this vocabulary's form.
+            $vocabulary = taxonomy_vocabulary_load($vid);
+            $form['taxonomy'][$vid]['#title'] = i18nstrings_string("taxonomy:vocabulary:$vid:name", $vocabulary->name);
+            $form['taxonomy'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $vocabulary->help);
+          }
+        }
       }
     }
     if (!empty($form['taxonomy']) && is_array($form['taxonomy'])) {
