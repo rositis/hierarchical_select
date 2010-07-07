@@ -227,7 +227,7 @@ function theme_hierarchical_select_common_config_form_level_labels($form) {
   $output .= drupal_render($form['status']);
 
   $output .= '<div class="level-labels-settings">';
-  if (count(element_children($form['labels']))) {
+  if (isset($form['labels']) && count(element_children($form['labels']))) {
     foreach (element_children($form['labels']) as $depth) {
       $row = array();
       $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
@@ -268,7 +268,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
   $output .= drupal_render($form['status']);
 
   $output .= '<div class="editability-per-level-settings">';
-  if (count(element_children($form['item_types']))) {
+  if (isset($form['item_types']) && count(element_children($form['item_types']))) {
     foreach (element_children($form['item_types']) as $depth) {
       $row = array();
       $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
