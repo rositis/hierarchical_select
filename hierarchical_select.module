@@ -291,6 +291,12 @@ function hierarchical_select_json() {
 
   $hs_form_build_id = $_POST['hs_form_build_id'];
 
+  // In this context, we're in a node selection mode.
+  // See http://drupal.org/node/683574#comment-3117926.
+  if (module_exists('i18n') && isset($_POST['language'])) {
+    i18n_selection_mode('node', $_POST['language']);
+  }
+
   // Collect all necessary variables.
   $cached = cache_get($hs_form_build_id, 'cache');
   $storage = $cached->data;
