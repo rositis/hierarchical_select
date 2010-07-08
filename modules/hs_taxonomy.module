@@ -279,7 +279,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
         );
 
         if (module_exists('i18ntaxonomy')) {
-          $vid = $vocabulary->$vid;
+          $vid = $vocabulary->vid;
           // Special treatment for tags, add some help texts
           $type = i18ntaxonomy_vocabulary($vid);
           if ($type == I18N_TAXONOMY_LOCALIZE || $type == I18N_TAXONOMY_TRANSLATE) {
@@ -312,7 +312,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
         $form['taxonomy'][$vocabulary->vid]['#required'] = $required;
 
         if ($form_function == 'hs_taxonomy_form' && module_exists('i18ntaxonomy')) {
-          $vid = $vocabulary->$vid;
+          $vid = $vocabulary->vid;
           if (is_numeric($vid) && i18ntaxonomy_vocabulary($vid) == I18N_TAXONOMY_LOCALIZE) {
             // Rebuild this vocabulary's form.
             $vocabulary = taxonomy_vocabulary_load($vid);
