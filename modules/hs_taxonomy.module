@@ -515,7 +515,7 @@ function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
  */
 function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
   $form_state['values'] = array(
-    'name'   => $label,
+    'name'   => html_entity_decode($label),
     'parent' => $parent,
     'vid'    => $params['vid'],
   );
