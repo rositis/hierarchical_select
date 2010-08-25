@@ -752,7 +752,7 @@ function hierarchical_select_taxonomy_form_vocabulary_validate($form, &$form_sta
   }
 
   // If Hierarchical Select is enabled, disable freetagging.
-  if ($form_state['values']['hierarchical_select']['status']) {
+  if ($form_state['values']['hierarchical_select_status']) {
     form_set_value($form['tags'], 0, $form_state);
   }
 }
