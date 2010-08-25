@@ -12,13 +12,14 @@
 
 // Add per-vocabulary settings for Hierarchical Select.
 function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  module_load_include('inc', 'hierarchical_select', 'includes/common');
 
   $vid = (isset($form['vid'])) ? $form['vid']['#value'] : NULL;
+  $vocabulary = ($vid) ? taxonomy_vocabulary_load($vid) : NULL;
 
   // Don't add the per-vocabulary settings for Hierarchical Select when the
-  // vocabulary still needs to be created.
-  if ($vid == NULL) {
+  // vocabulary still needs to be created or is a freetagging vocabulary.
+  if (!$vid || $vocabulary->tags) {
     return;
   }
 
@@ -64,7 +65,6 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
     'root_term'   => NULL,
   );
   $config_id = "taxonomy-$vid";
-  $vocabulary = taxonomy_vocabulary_load($vid);
   $defaults = array(
     // Enable the save_lineage setting by default if the multiple parents
     // vocabulary option is enabled.
@@ -153,7 +153,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     '#type'   => 'hierarchical_select',
     '#config' => $config,
     // Copied from core.
-    '#title'         => t('Parents'), 
+    '#title'         => t('Parents'),
     '#description'   => t('Parent terms') .'.',
     '#weight'        => -15,
     '#default_value' => $parent,
@@ -166,7 +166,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     '#type'   => 'hierarchical_select',
     '#config' => $config,
     // Copied from core.
-    '#title'         => t('Related terms'), 
+    '#title'         => t('Related terms'),
     '#weight'        => -15,
     '#default_value' => $related,
   );
@@ -217,7 +217,7 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
         'vid'         => $vid,
         'exclude_tid' => NULL,
         'root_term'   => NULL,
-      ),      
+      ),
     ),
     '#title'         => $title,
     '#default_value' => $value,
@@ -284,7 +284,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
           $type = i18ntaxonomy_vocabulary($vid);
           if ($type == I18N_TAXONOMY_LOCALIZE || $type == I18N_TAXONOMY_TRANSLATE) {
             $form['taxonomy']['tags'][$vid]['#title'] = i18nstrings_string("taxonomy:vocabulary:$vid:name", $form['taxonomy']['tags'][$vid]['#title']);
-            $form['taxonomy']['tags'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $form['taxonomy']['tags'][$vid]['#description']);    
+            $form['taxonomy']['tags'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $form['taxonomy']['tags'][$vid]['#description']);
           }
           if ($type == I18N_TAXONOMY_LOCALIZE) {
             $form['taxonomy']['tags'][$vid]['#description'] .= ' '. t('This is a localizable vocabulary, so only terms in %language are allowed here.', array('%language' => language_default('name')));
@@ -729,7 +729,7 @@ function _hs_taxonomy_token_termpath_for_vid($selection, $vid) {
     foreach ($lineage as $item) {
       $terms[] = $item['label'];
     }
-  }  
+  }
 
   return $terms;
 }
