@@ -298,7 +298,7 @@ function hierarchical_select_json() {
   }
 
   // Collect all necessary variables.
-  $cached = cache_get($hs_form_build_id, 'cache');
+  $cached = cache_get($hs_form_build_id, 'cache_hierarchical_select');
   $storage = $cached->data;
 
   // Ensure that the form id in the POST array is the same as the one of the
@@ -739,7 +739,7 @@ function hierarchical_select_after_build($form, &$form_state) {
     // we can retrieve this in our JSON callbacks (to be able to rebuild and
     // render part of the form).
     $hs_form_build_id = 'hs_form_'. md5(mt_rand());
-    cache_set($hs_form_build_id, $storage, 'cache', time() + $expire);
+    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', time() + $expire);
   }
   elseif (isset($_POST['hs_form_build_id'])) {
     // Don't generate a new hs_form_build_id if this is a re-rendering of the
@@ -840,7 +840,7 @@ function _hierarchical_select_submit($form, &$form_state) {
   // immediately upon finishing use of the form, but that's acceptable in the
   // end because the cache will be cleared anyway at some point.
   if (isset($form_state['hs_form_build_id']) && !isset($form_state['view'])) {
-    cache_clear_all($form_state['hs_form_build_id'], 'cache');
+    cache_clear_all($form_state['hs_form_build_id'], 'cache_hierarchical_select');
   }
 }
 
