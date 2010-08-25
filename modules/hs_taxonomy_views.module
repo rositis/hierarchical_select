@@ -378,7 +378,8 @@ function hs_taxonomy_views_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_taxonomy_views_hierarchical_select_root_level($params) {
-  $root_level =  ($params['optional']) ? array(HS_TAXONOMY_VIEWS_ANY_OPTION => '<'. t('Any') .'>') : array();
+  $any_label = variable_get('views_exposed_filter_any_label', 'old_any') === 'old_any' ? '<'. t('Any') .'>' : '- '. t('Any') .' -';
+  $root_level =  ($params['optional']) ? array(HS_TAXONOMY_VIEWS_ANY_OPTION => $any_label) : array();
   $root_level += hs_taxonomy_hierarchical_select_root_level($params);
   return $root_level;
 }
