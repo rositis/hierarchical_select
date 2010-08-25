@@ -306,10 +306,8 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
             $default_terms[$term->tid] = $term;
           }
         }
+
         $form_function = variable_get("taxonomy_hierarchical_select_$vocabulary->vid", 0) ? 'hs_taxonomy_form' : 'taxonomy_form';
-        $form['taxonomy'][$vocabulary->vid] = $form_function($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
-        $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
-        $form['taxonomy'][$vocabulary->vid]['#required'] = $required;
 
         if ($form_function == 'hs_taxonomy_form' && module_exists('i18ntaxonomy')) {
           $vid = $vocabulary->vid;
@@ -335,6 +333,10 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
             $form['taxonomy'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $vocabulary->help);
           }
         }
+
+        $form['taxonomy'][$vocabulary->vid] = $form_function($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
+        $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
+        $form['taxonomy'][$vocabulary->vid]['#required'] = $required;
       }
     }
     if (!empty($form['taxonomy']) && is_array($form['taxonomy'])) {
