@@ -1342,6 +1342,11 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
     if (module_exists('i18n') && ($language->prefix != '') && ($negotiation == LANGUAGE_NEGOTIATION_PATH_DEFAULT || $negotiation == LANGUAGE_NEGOTIATION_PATH)) {
        $url .= $language->prefix . '/';
     }
+    if (module_exists('purl')) {
+      $options = array();
+      purl_url_outbound_alter($url, $options, '');
+      $url = str_replace('//', '/', '/' . $url);
+    }
 
     _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => drupal_query_string_encode($_GET, array('q')))), $form_state);
 
