@@ -44,7 +44,9 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
   }
 
   Drupal.settings.HierarchicalSelect.settings[hsid]['updatesEnabled'] = true;
-  Drupal.HierarchicalSelect.state[hsid] = {};
+  if (undefined == Drupal.HierarchicalSelect.state[hsid]) {
+    Drupal.HierarchicalSelect.state[hsid] = {};
+  }
 
   this.transform(hsid);
   if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
