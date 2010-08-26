@@ -2327,8 +2327,8 @@ function _hierarchical_select_special_item_none($item) {
  */
 function _hierarchical_select_add_js_settings($settings, &$form_state) {
   // If we're on a Views-powered form, we must use $form_state['js settings'].
-  if (isset($form_state['view']) && !empty($form_state['ajax'])) {
-    $form_state['js settings'] = (!is_array($form_state['js settings'])) ? array() : $form_state['js settings'];
+  if (isset($form_state['view']) && isset($form_state['ajax']) && !empty($form_state['ajax'])) {
+    $form_state['js settings'] = (!isset($form_state['js settings']) || !is_array($form_state['js settings'])) ? array() : $form_state['js settings'];
     $form_state['js settings'] = array_merge_recursive($form_state['js settings'], $settings);
   }
   // Otherwise, use drupal_add_js().

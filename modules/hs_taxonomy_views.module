@@ -665,6 +665,6 @@ function _hs_taxonomy_views_config_path($view_name, $display_id, $filter_id) {
  */
 function _hs_taxonomy_views_get_display_id_for_filter($view, $filter_id) {
   $current_display = $view->current_display;
-  $current_display_filters = $view->display[$current_display]->display_options['filters'];
+  $current_display_filters = (isset($view->display[$current_display]->display_options['filters'])) ? $view->display[$current_display]->display_options['filters'] : array();
   return (isset($current_display_filters[$filter_id])) ? $current_display : 'default';
 }
