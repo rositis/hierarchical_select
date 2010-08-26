@@ -2326,6 +2326,8 @@ function _hierarchical_select_special_item_none($item) {
  *   A form state array.
  */
 function _hierarchical_select_add_js_settings($settings, &$form_state) {
+  global $views_ajax_form_js_settings;
+
   // If we're on a Views-powered form, we must use $form_state['js settings'].
   if (isset($form_state['view']) && isset($form_state['ajax']) && !empty($form_state['ajax'])) {
     $form_state['js settings'] = (!isset($form_state['js settings']) || !is_array($form_state['js settings'])) ? array() : $form_state['js settings'];
@@ -2334,5 +2336,22 @@ function _hierarchical_select_add_js_settings($settings, &$form_state) {
   // Otherwise, use drupal_add_js().
   else {
     drupal_add_js($settings, 'setting');
+
+    // Necessary for Views AJAX pager support.
+    // Also see hierarchical_select_ajax_data_alter().
+    if (isset($settings['HierarchicalSelect']['settings'])) {
+      $views_ajax_form_js_settings = $settings['HierarchicalSelect']['settings'];
+    }
   }
+}
+
+
+/**
+ * Implementation of hook_ajax_data_alter().
+ * (Necessary for Views AJAX pager support.)
+ */
+function hierarchical_select_ajax_data_alter(&$object, $module, $view) {
+  global $views_ajax_form_js_settings;
+  $object->hs_drupal_js_settings = $views_ajax_form_js_settings;
+  $object->__callbacks = array_merge(array('Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate'), $object->__callbacks);
 }

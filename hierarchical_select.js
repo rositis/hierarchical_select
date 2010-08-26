@@ -604,4 +604,9 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   }
 };
 
+Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate = function(target, response) {
+  $.extend(Drupal.settings.HierarchicalSelect.settings, response.hs_drupal_js_settings);
+  Drupal.attachBehaviors($(target));
+};
+
 })(jQuery);
