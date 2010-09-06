@@ -747,7 +747,7 @@ function hierarchical_select_taxonomy_form_vocabulary_validate($form, &$form_sta
     // Enable Taxonomy's "multiple select" setting when:
     // - Hierarchical Select's "multiple select" setting is enabled, or:
     // - Hierarchical Select's "save term lineage" setting is enabled
-    $multiple_select_enabled = ($form_state['values']['hierarchical_select']['dropbox']['status'] || $form_state['values']['hierarchical_select']['save_lineage']);
+    $multiple_select_enabled = ((isset($form_state['values']['hierarchical_select']['dropbox']['status']) && $form_state['values']['hierarchical_select']['dropbox']['status']) || $form_state['values']['hierarchical_select']['save_lineage']);
     form_set_value($form['multiple'], (int) $multiple_select_enabled, $form_state);
   }
 
@@ -855,7 +855,7 @@ function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
   $options = array();
   foreach ($terms as $key => $term) {
     // Use the translated term when available!
-    if (module_exists('i18ntaxonomy') && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
+    if (module_exists('i18ntaxonomy') && isset($term->vid) && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
       $options[$term->tid] = tt("taxonomy:term:$term->tid:name", $term->name);
     }
     else {

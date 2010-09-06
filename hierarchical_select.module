@@ -1006,7 +1006,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
       // TODO: http://drupal.org/node/253869
 
       $label = trim($element['#value']['hierarchical_select']['create_new_item']['input']);
-      $selects = $element['#value']['hierarchical_select']['selects'];
+      $selects = isset($element['#value']['hierarchical_select']['selects']) ? $element['#value']['hierarchical_select']['selects'] : array();
       $depth = count($selects);
       $parent = ($depth > 0) ? end($selects) : 0;
 
@@ -1760,7 +1760,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       && module_hook($config['module'], 'hierarchical_select_create_item')
       && _hierarchical_select_create_new_item_is_allowed($config, 0)
   ) {
-    $item_type = t($config['editability']['item_types'][0]);
+    $item_type = isset($config['editability']['item_types'][0]) ? t($config['editability']['item_types'][0]) : '';
     $item_type = (!empty($item_type)) ? $item_type : t('item');
     $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
     $hierarchy->levels[0] = array('create_new_item' => $option) + $hierarchy->levels[0];
