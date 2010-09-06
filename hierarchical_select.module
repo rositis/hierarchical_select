@@ -218,6 +218,10 @@ function hierarchical_select_requirements($phase) {
  */
 function hierarchical_select_theme() {
   return array(
+    'hierarchical_select_form_element' => array(
+      'file'      => 'includes/theme.inc',
+      'arguments' => array('element' => NULL, 'value' => NULL),
+    ),
     'hierarchical_select' => array(
       'file'      => 'includes/theme.inc',
       'arguments' => array('element' => NULL),

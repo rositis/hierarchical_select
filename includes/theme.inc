@@ -13,6 +13,48 @@
  */
 
 /**
+ * Return a themed Hierarchical Select form element.
+ *
+ * @param element
+ *   An associative array containing the properties of the element.
+ *   Properties used: title, description, id, required
+ * @param $value
+ *   The form element's data.
+ * @return
+ *   A string representing the form element.
+ *
+ * @ingroup themeable
+ */
+function theme_hierarchical_select_form_element($element, $value) {
+  $output = '<div class="form-item hierarchical-select-wrapper-wrapper"';
+  if (!empty($element['#id'])) {
+    $output .= ' id="'. $element['#id'] .'-wrapper"';
+  }
+  $output .= ">\n";
+  $required = !empty($element['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
+
+  if (!empty($element['#title'])) {
+    $title = $element['#title'];
+    if (!empty($element['#id'])) {
+      $output .= ' <label for="'. $element['#id'] .'">'. t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) ."</label>\n";
+    }
+    else {
+      $output .= ' <label>'. t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) ."</label>\n";
+    }
+  }
+
+  $output .= " $value\n";
+
+  if (!empty($element['#description'])) {
+    $output .= ' <div class="description">'. $element['#description'] ."</div>\n";
+  }
+
+  $output .= "</div>\n";
+
+  return $output;
+}
+
+/**
  * Format a hierarchical select.
  *
  * @param $element
@@ -43,7 +85,7 @@ function theme_hierarchical_select($element) {
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
   $output .= theme(
-    'form_element',
+    'hierarchical_select_form_element',
     array(
       '#title' => $element['#title'],
       '#description' => $element['#description'],
