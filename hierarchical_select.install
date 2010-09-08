@@ -40,6 +40,7 @@ function hierarchical_select_install() {
  */
 function hierarchical_select_uninstall() {
   drupal_uninstall_schema('hierarchical_select');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'hs_config_%'");
 }
 
 /**
@@ -48,13 +49,6 @@ function hierarchical_select_uninstall() {
 function hierarchical_select_schema() {
   $schema['cache_hierarchical_select'] = drupal_get_schema_unprocessed('system', 'cache');
   return $schema;
-}
-
-/**
- * Implementation of hook_uninstall().
- */
-function hierarchical_select_uninstall() {
-  db_query("DELETE FROM {variable} WHERE name LIKE 'hs_config_%'");
 }
 
 
