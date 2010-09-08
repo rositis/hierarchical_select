@@ -50,6 +50,13 @@ function hierarchical_select_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_uninstall().
+ */
+function hierarchical_select_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'hs_config_%'");
+}
+
 
 //----------------------------------------------------------------------------
 // Schema updates.
