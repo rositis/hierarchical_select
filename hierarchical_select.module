@@ -2356,6 +2356,8 @@ function _hierarchical_select_add_js_settings($settings, &$form_state) {
  */
 function hierarchical_select_ajax_data_alter(&$object, $module, $view) {
   global $views_ajax_form_js_settings;
-  $object->hs_drupal_js_settings = $views_ajax_form_js_settings;
-  $object->__callbacks = array_merge(array('Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate'), $object->__callbacks);
+  if (!empty($views_ajax_form_js_settings)) {
+    $object->hs_drupal_js_settings = $views_ajax_form_js_settings;
+    $object->__callbacks = array_merge(array('Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate'), $object->__callbacks);
+  }
 }
