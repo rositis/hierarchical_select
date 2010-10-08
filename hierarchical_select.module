@@ -1905,7 +1905,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
 
     // Item type.
-    $item_type = (isset($config['editability']['item_types'][$depth]) ? t($config['editability']['item_types'][$depth]) : NULL;
+    $item_type = (isset($config['editability']['item_types'][$depth])) ? t($config['editability']['item_types'][$depth]) : NULL;
     $item_type = (!empty($item_type)) ? $item_type : t('item');
 
     // The new level with only a level label and a "<create new item>" option.
