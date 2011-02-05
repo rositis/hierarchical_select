@@ -199,6 +199,9 @@ function hs_taxonomy_views_views_data_alter(&$data) {
      'handler'   => 'views_handler_field_numeric',
      'skip base' => array('node', 'node_revision'),
    ),
+   'sort' => array(
+     'handler' => 'views_handler_sort',
+   ),
    'argument' => array(
      'handler'   => 'views_handler_argument_numeric',
      'skip base' => array('node', 'node_revision'),
