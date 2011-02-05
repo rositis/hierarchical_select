@@ -81,7 +81,7 @@ function hierarchical_select_menu() {
 /**
  * Implementation of hook_form_alter().
  */
-function hierarchical_select_form_alter(&$form, &$form_state, $form_id) {
+function hierarchical_select_form_alter(&$form, $form_state, $form_id) {
   if (_hierarchical_select_form_has_hierarchical_select($form)) {
     $form['#after_build'][] = 'hierarchical_select_after_build';
   }
