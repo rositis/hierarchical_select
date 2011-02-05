@@ -625,7 +625,7 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       $node = $object;
 
       // Default values.
-      $values['save-lineage-termpath'] = $values['save-lineage-termpath-raw'] = FALSE;
+      $values['save-lineage-termpath'] = $values['save-lineage-termpath-raw'] = '';
 
       // If $node->taxonomy doesn't exist, these tokens cannot be created!
       if (!is_object($node) || !isset($node->taxonomy) || !is_array($node->taxonomy)) {
@@ -660,8 +660,10 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
           $terms = _hs_taxonomy_token_termpath_for_vid($selection, $vid);
         }
 
-        $values["save-lineage-termpath:$vid"] = implode($separator, array_map('check_plain', $terms));
-        $values["save-lineage-termpath-raw:$vid"] = implode($separator, $terms);
+        $terms_raw = $terms;
+        $terms = array_map('check_plain', $terms);
+        $values["save-lineage-termpath:$vid"] = !empty($options['pathauto']) ? $terms : implode($separator, $terms);
+        $values["save-lineage-termpath-raw:$vid"] = !empty($options['pathauto']) ? $terms_raw : implode($separator, $terms_raw);
       }
 
       // We use the terms of the first vocabulary that uses Hierarchical
@@ -669,8 +671,8 @@ function hs_taxonomy_token_values($type, $object = NULL, $options = array()) {
       $vids = array_intersect(array_keys($node->taxonomy), $hs_vids);
       if (!empty($vids)) {
         $vid = $vids[0];
-        $values['save-lineage-termpath'] = implode($separator, array_map('check_plain', $terms));
-        $values['save-lineage-termpath-raw'] = implode($separator, $terms);
+        $values['save-lineage-termpath'] = $values["save-lineage-termpath:$vid"];
+        $values['save-lineage-termpath-raw'] = $values["save-lineage-termpath-raw:$vid"];
       }
       break;
   }
