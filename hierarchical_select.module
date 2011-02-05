@@ -11,6 +11,9 @@
 // Make sure that the devel module is installed when you enable developer mode!
 define('HS_DEVELOPER_MODE', 0);
 
+// 6 hours cache life time for forms should be plenty.
+define('HS_CACHE_LIFETIME_DEFAULT', 21600);
+
 
 //----------------------------------------------------------------------------
 // Drupal core hooks.
@@ -76,6 +79,13 @@ function hierarchical_select_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implementation of hook_flush_caches().
+ */
+function hierarchical_select_flush_caches() {
+  return array('cache_hierarchical_select');
 }
 
 /**
@@ -736,14 +746,12 @@ function hierarchical_select_after_build($form, &$form_state) {
       'file'       => $menu_item['file'],
     );
 
-    // 6 hours cache life time for forms should be plenty.
-    $expire = 21600;
-
     // Store the information needed for dynamic form updates in the cache, so
     // we can retrieve this in our JSON callbacks (to be able to rebuild and
     // render part of the form).
     $hs_form_build_id = 'hs_form_'. md5(mt_rand());
-    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', time() + $expire);
+    $lifetime = variable_get('hierarchical_select_cache_lifetime', HS_CACHE_LIFETIME_DEFAULT);
+    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', time() + $lifetime);
   }
   elseif (isset($_POST['hs_form_build_id'])) {
     // Don't generate a new hs_form_build_id if this is a re-rendering of the
