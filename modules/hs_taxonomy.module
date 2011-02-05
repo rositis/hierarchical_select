@@ -246,7 +246,8 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
     }
     else {
       // After preview the terms must be converted to objects.
-      if (isset($form_state['node_preview'])) {
+      reset($node->taxonomy);
+      if (!is_object(current($node->taxonomy))) {
         $node->taxonomy = taxonomy_preview_terms($node);
       }
       $terms = $node->taxonomy;
