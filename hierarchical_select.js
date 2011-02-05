@@ -501,6 +501,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
           // The selection of this hierarchical select has changed!
           Drupal.HierarchicalSelect.triggerEvents(hsid, 'change-hierarchical-select', settings);
         });
+        return;
       }
       break;
     
