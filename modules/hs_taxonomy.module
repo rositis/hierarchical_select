@@ -60,9 +60,10 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   // Add the Hierarchical Select config form.
   $module = 'hs_taxonomy';
   $params = array(
-    'vid'         => $vid,
-    'exclude_tid' => NULL,
-    'root_term'   => NULL,
+    'vid'                        => $vid,
+    'exclude_tid'                => NULL,
+    'root_term'                  => NULL,
+    'entity_count_for_node_type' => NULL,
   );
   $config_id = "taxonomy-$vid";
   $defaults = array(
@@ -214,9 +215,10 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
     '#config'        => array(
       'module' => 'hs_taxonomy',
       'params' => array(
-        'vid'         => $vid,
-        'exclude_tid' => NULL,
-        'root_term'   => NULL,
+        'vid'                        => $vid,
+        'exclude_tid'                => NULL,
+        'root_term'                  => NULL,
+        'entity_count_for_node_type' => NULL,
       ),
     ),
     '#title'         => $title,
@@ -365,8 +367,9 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
 function hs_taxonomy_hierarchical_select_params() {
   $params = array(
     'vid',
-    'exclude_tid', // Allows a term to be excluded (necessary for the taxonomy_form_term form).
-    'root_term',   // Displays a fake "<root>" term in the root level (necessary for the taxonomy_form-term form).
+    'exclude_tid',                // Allows a term to be excluded (necessary for the taxonomy_form_term form).
+    'root_term',                  // Displays a fake "<root>" term in the root level (necessary for the taxonomy_form-term form).
+    'entity_count_for_node_type', // Restrict the entity count to a specific node type.
   );
   return $params;
 }
@@ -544,7 +547,13 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
  * Implementation of hook_hierarchical_select_entity_count().
  */
 function hs_taxonomy_hierarchical_select_entity_count($item, $params) {
-  return hs_taxonomy_term_count_nodes($item);
+  // Allow restricting entity count by node type.
+  if ($params['entity_count_for_node_type']){
+    return hs_taxonomy_term_count_nodes($item, $params['entity_count_for_node_type']);
+  }
+  else {
+    return hs_taxonomy_term_count_nodes($item);
+  }
 }
 
 /**
