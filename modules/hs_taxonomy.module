@@ -14,7 +14,7 @@
 function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   module_load_include('inc', 'hierarchical_select', 'includes/common');
 
-  $vid = (isset($form['vid'])) ? $form['vid']['#value'] : NULL;
+  $vid = (isset($form['vid'])) ? $form['vid']['#markup'] : NULL;
   $vocabulary = ($vid) ? taxonomy_vocabulary_load($vid) : NULL;
 
   // Don't add the per-vocabulary settings for Hierarchical Select when the
@@ -90,7 +90,7 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   // The forum selection requires that only the deepest term is saved!
   // See http://drupal.org/node/241766#comment-808464.
   if ($vid == variable_get('forum_nav_vocabulary', -1)) {
-    $form['hierarchical_select']['save_lineage']['#value'] = 0;
+    $form['hierarchical_select']['save_lineage']['#markup'] = 0;
     $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
     $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
       'This is the vocabulary that will be used for forum navigation and it
@@ -142,14 +142,14 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
       'status'   => 1,
     ),
     'params' => array(
-      'vid'         => isset($form['vid']['#value']) ? $form['vid']['#value'] : NULL,
-      'exclude_tid' => isset($form['tid']['#value']) ? $form['tid']['#value'] : NULL,
+      'vid'         => isset($form['vid']['#markup']) ? $form['vid']['#markup'] : NULL,
+      'exclude_tid' => isset($form['tid']['#markup']) ? $form['tid']['#markup'] : NULL,
       'root_term'   => TRUE,
     ),
   );
 
   // Use Hierarchical Select for selecting the parent term(s).
-  $parent = isset($form['tid']['#value']) ? array_keys(taxonomy_get_parents($form['tid']['#value'])) : array();
+  $parent = isset($form['tid']['#markup']) ? array_keys(taxonomy_get_parents($form['tid']['#markup'])) : array();
   $form['advanced']['parent'] = array(
     '#type'   => 'hierarchical_select',
     '#config' => $config,
@@ -162,7 +162,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
   $form['advanced']['parent']['#config']['dropbox']['title'] = t('All parent terms');
 
   // Use Hierarchical Select for selecting the related term(s).
-  $related = isset($form['tid']['#value']) ? array_keys(taxonomy_get_related($form['tid']['#value'])) : array();
+  $related = isset($form['tid']['#markup']) ? array_keys(taxonomy_get_related($form['tid']['#markup'])) : array();
   $form['advanced']['relations'] = array(
     '#type'   => 'hierarchical_select',
     '#config' => $config,
@@ -185,8 +185,8 @@ function hs_taxonomy_form_forum_form_container_alter(&$form, &$form_state) {
     'enforce_deepest' => 0,
     'save_lineage'    => 0,
     'params' => array(
-      'vid'         => $form['vid']['#value'],
-      'exclude_tid' => $form['tid']['#value'],
+      'vid'         => $form['vid']['#markup'],
+      'exclude_tid' => $form['tid']['#markup'],
       'root_term'   => TRUE,
     ),
   );
@@ -238,7 +238,7 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
 function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
   // Change the term selection of nodes. Only affects hierarchical
   // vocabularies.
-  if (isset($form['type']) && isset($form['#node']) && (variable_get('taxonomy_override_selector', FALSE)) && $form['type']['#value'] .'_node_form' == $form_id) {
+  if (isset($form['type']) && isset($form['#node']) && (variable_get('taxonomy_override_selector', FALSE)) && $form['type']['#markup'] .'_node_form' == $form_id) {
     $node = $form['#node'];
 
     if (!isset($node->taxonomy)) {

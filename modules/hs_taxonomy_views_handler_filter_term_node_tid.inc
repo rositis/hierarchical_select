@@ -166,7 +166,7 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
     $display_id = _hs_taxonomy_views_get_display_id_for_filter($this->view, $filter_id);
     $form['configure_hs'] = array(
       '#prefix'     => '<div class="form-item"><div id="configure-hierarchical-select-link" style="display: inline-block">',
-      '#value'      => l(t('Configure Hierarchical Select'), _hs_taxonomy_views_config_path($this->view->name, $display_id, $filter_id)),
+      '#markup'      => l(t('Configure Hierarchical Select'), _hs_taxonomy_views_config_path($this->view->name, $display_id, $filter_id)),
       '#suffix'     => '</div></div>',
       // Doesn't work because #process is not called for #type = markup form items.
       '#process'    => array('views_process_dependency'),
@@ -181,7 +181,7 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
     // Ensure the configure_hs form item is before the markup_end form item.
     unset($form['markup_end']);
     $form['markup_end'] = array(
-      '#value' => '</div>',
+      '#markup' => '</div>',
     );
   }
 

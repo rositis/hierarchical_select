@@ -323,7 +323,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
-    '#value' => l("Back to the View's display configuration", "admin/build/views/edit/$view->name", array('fragment' => 'views-tab-' . $display_id)),
+    '#markup' => l("Back to the View's display configuration", "admin/build/views/edit/$view->name", array('fragment' => 'views-tab-' . $display_id)),
     '#prefix' => '<div class="hierarchical-select-config-back-link">',
     '#suffix' => '</div>',
     '#weight' => -5,
@@ -331,7 +331,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
 
   $form['save'] = array(
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#markup' => t('Save'),
   );
 
   // Add the custom submit handler for the Hierarchical Select config form
