@@ -350,6 +350,83 @@ Written by Stephen Barker of Digital Frontiers Media
   http://drupal.org/node/532724
 
 
+Hierarchical Select Small Hierarchy
+-----------------------------------
+Hierarchical Select includes a Hierarchical Select API implementation that
+allows one to use a hardcoded hierarchy. When it becomes to slow, you should
+move the hierarchy into the database and write a proper implementation.
+Below you can find an example of how to use the hs_smallhierarchy module. Just
+change the $hierarchy array to suit your needs and off you go! Look at the
+code of hs_smallhierarchy.module for full details, but this code example
+should get you started.
+
+  $hierarchy = array(
+     'win' => array(
+       'label' => 'Windows',
+       'children' => array(
+         'xp'    => array('label' => 'XP'),
+         'vista' => array(
+           'label' => 'Vista',
+           'children' => array(
+             'x86' => array('label' => '32-bits'),
+             'x64' => array('label' => '64-bits'),
+           ),
+         ),
+       ),
+     ),
+  );
+
+  $form['select_some_term'] = array(
+    '#type' => 'hierarchical_select',
+    '#title' => t('Select the tag you wish to use.'),
+    '#size' => 1,
+    '#config' => array(
+      'module' => 'hs_smallhierarchy',
+      'params' => array(
+        'hierarchy' => $hierarchy,
+        'id' => 'my-hierarchy-about-windows',
+        'separator' => '|',
+      ),
+      'save_lineage'    => 0,
+      'enforce_deepest' => 0,
+      'entity_count'    => 0,
+      'resizable'       => 1,
+      'level_labels' => array(
+        'status' => 0,
+        'labels' => array(
+          0 => t('Main category'),
+          1 => t('Subcategory'),
+          2 => t('Third level category'),
+        ),
+      ),
+      'dropbox' => array(
+        'status'   => 0,
+        'title'    => t('All selections'),
+        'limit'    => 0,
+        'reset_hs' => 1,
+      ),
+      'editability' => array(
+        'status'           => 0,
+        'item_types'       => array(),
+        'allowed_levels'   => array(
+          0 => 0,
+          1 => 0,
+          2 => 1,
+        ),
+        'allow_new_levels' => 0,
+        'max_levels'       => 3,
+      ),
+      // These settings cannot be configured through the UI: they can only be
+      // overridden through code.
+      'animation_delay'    => 400,
+      'exclusive_lineages' => array(),
+      'render_flat_select' => 0,
+    ),
+    '#description' => 'Put your description here',
+    '#default_value' => 'win|xp|x86',
+  );
+
+
 Hooks
 -----
 1) hook_hierarchical_select_params();
