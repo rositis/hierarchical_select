@@ -4,4 +4,5 @@ description = Use Hierarchical Select for Taxonomy.
 dependencies[] = hierarchical_select
 dependencies[] = taxonomy
 package = Form Elements
-core = 6.x
+
+core = 7.x
