@@ -24,14 +24,14 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   }
 
   if (variable_get("taxonomy_hierarchical_select_$vid", 0)) {
-    $form['tags']['#attributes']['disabled'] = TRUE;
-    $form['tags']['#description'] = t(
+    $form['settings']['tags']['#attributes']['disabled'] = TRUE;
+    $form['settings']['tags']['#description'] = t(
       "This setting is irrelevant when you're using Hierarchical Select.
       <br />Use Hierarchical Select's %editability-settings instead.",
       array('%editability-settings' => t('Editability settings'))
     );
-    $form['multiple']['#attributes']['disabled'] = TRUE;
-    $form['multiple']['#description'] = t(
+    $form['settings']['multiple']['#attributes']['disabled'] = TRUE;
+    $form['settings']['multiple']['#description'] = t(
       "This setting is managed by the Hierarchical Select configuration, by
       the %enable-dropbox setting.",
       array('%enable-dropbox' => t('Enable the dropbox'))
@@ -755,17 +755,17 @@ function _hs_taxonomy_token_termpath_for_vid($selection, $vid) {
  */
 function hierarchical_select_taxonomy_form_vocabulary_validate($form, &$form_state) {
   // The "multiple select" setting doesn't exist for the forum vocabulary!
-  if (isset($form['multiple'])) {
+  if (isset($form['settings']['multiple'])) {
     // Enable Taxonomy's "multiple select" setting when:
     // - Hierarchical Select's "multiple select" setting is enabled, or:
     // - Hierarchical Select's "save term lineage" setting is enabled
     $multiple_select_enabled = ((isset($form_state['values']['hierarchical_select']['dropbox']['status']) && $form_state['values']['hierarchical_select']['dropbox']['status']) || $form_state['values']['hierarchical_select']['save_lineage']);
-    form_set_value($form['multiple'], (int) $multiple_select_enabled, $form_state);
+    form_set_value($form['settings']['multiple'], (int) $multiple_select_enabled, $form_state);
   }
 
   // If Hierarchical Select is enabled, disable freetagging.
   if ($form_state['values']['hierarchical_select_status']) {
-    form_set_value($form['tags'], 0, $form_state);
+    form_set_value($form['settings']['tags'], 0, $form_state);
   }
 }
 
