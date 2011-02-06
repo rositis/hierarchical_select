@@ -71,9 +71,9 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
 
   if (!isset($js_added)) {
     $js_added = TRUE;
-    drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css', 'module');
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js', 'module', 'header');
-    drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), 'setting');
+    drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css');
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js');
+    drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), array('type' => 'setting', 'scope' => JS_DEFAULT));
   }
 
   $config = hierarchical_select_common_config_get($config_id, $defaults_override);
@@ -375,7 +375,7 @@ function hierarchical_select_common_add_views_js() {
   static $js_added;
 
   if (!isset($js_added)) {
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/views.js', 'module');
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/views.js');
   }
 }
 

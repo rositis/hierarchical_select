@@ -20,7 +20,7 @@ define('HS_TAXONOMY_VIEWS_ANY_OPTION', 'Any');
 function hs_taxonomy_views_menu() {
   $items = array();
 
-  $items["admin/build/views/hs_config/%views_ui_cache/%/%"] = array(
+  $items["admin/structure/views/hs_config/%views_ui_cache/%/%"] = array(
     'title'            => 'Hierarchical Select configuration',
     'title callback'   => 'hs_taxonomy_views_config_title',
     'title arguments'  => array(4, 5, 6),
@@ -52,15 +52,15 @@ function hs_taxonomy_views_form_alter(&$form, $form_state, $form_id) {
     _hierarchical_select_setup_js();
 
     // Ensure that Drupal.HierarchicalSelect.prepareGETSubmit() gets called.
-    require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
     hierarchical_select_common_add_views_js();
   }
 
   if ($form_id == 'views_ui_config_item_form'
-       && $form_state['type'] == 'filter'
-       && $form_state['handler']->table == 'term_node'
-       && $form_state['handler']->field == 'tid') {
-    require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+        && $form_state['type'] == 'filter'
+        && $form_state['handler']->table == 'taxonomy_term_node'
+        && $form_state['handler']->field == 'tid') {
+    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
     $view_name  = $form_state['view']->name;
     $filter_id  = $form_state['id'];
@@ -191,7 +191,7 @@ function hs_taxonomy_views_handlers() {
  */
 function hs_taxonomy_views_views_data_alter(&$data) {
   // Term view type, tid field.
-  $data['term_data']['tid'] = array(
+  $data['taxonomy_term_data']['tid'] = array(
    'title' => t('Term ID'),
    'help'  => t('The taxonomy term ID.'),
    'field' => array(
@@ -209,38 +209,38 @@ function hs_taxonomy_views_views_data_alter(&$data) {
    // hs_taxonomy_views_handler_filter_term_node_tid subclass instead.
    'filter' => array(
      'handler'         => 'hs_taxonomy_views_handler_filter_term_node_tid',
-     'hierarchy table' => 'term_hierarchy',
+     'hierarchy table' => 'taxonomy_term_hierarchy',
      'numeric'         => TRUE,
      'skip base'       => array('node', 'node_revision'),
    ),
   );
 
   // Node view type, tid field.
-  $data['term_node']['tid'] = array(
+  $data['taxonomy_term_node']['tid'] = array(
     'title' => t('Term ID'),
     'help'  => t('The taxonomy term ID.'),
     'field' => array(
       'title'     => t('All terms'),
       'help'      => t('Display all taxonomy terms associated with a node from specified vocabularies.'),
       'handler'   => 'views_handler_field_term_node_tid',
-      'skip base' => 'term_data',
+      'skip base' => 'taxonomy_term_data',
     ),
     'argument' => array(
       'handler'          => 'views_handler_argument_term_node_tid',
-      'name table'       => 'term_data',
+      'name table'       => 'taxonomy_term_data',
       'name field'       => 'name',
       'empty name field' => t('Uncategorized'),
       'numeric'          => TRUE,
-      'skip base'        => 'term_data',
+      'skip base'        => 'taxonomy_term_data',
     ),
     // Override the views_handler_filter_term_node_tid filter handler: use our
     // hs_taxonomy_views_handler_filter_term_node_tid subclass instead.
     'filter' => array(
       'title'           => t('Term'),
       'handler'         => 'hs_taxonomy_views_handler_filter_term_node_tid',
-      'hierarchy table' => 'term_hierarchy',
+      'hierarchy table' => 'taxonomy_term_hierarchy',
       'numeric'         => TRUE,
-      'skip base'       => 'term_data',
+      'skip base'       => 'taxonomy_term_data',
     ),
   );
 
@@ -275,8 +275,8 @@ function hs_taxonomy_views_views_data_alter(&$data) {
  * @param $filter_id
  *   The ID of a filter used within the given view object.
  */
-function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_id) {
-  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+function hs_taxonomy_views_config_form($form, $form_state, $view, $display_id, $filter_id) {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
   $filter = _hs_taxonomy_views_get_filter($view, $display_id, $filter_id);
 
@@ -309,7 +309,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
     ),
   );
   $strings = array(
-    'hierarchy'   => t('vocabulary'),
+    'hierarchy'   => t('taxonomy_vocabulary'),
     'hierarchies' => t('vocabularies'),
     'item'        => t('term'),
     'items'       => t('terms'),
@@ -322,7 +322,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
-    '#markup' => l("Back to the View's display configuration", "admin/build/views/edit/$view->name", array('fragment' => 'views-tab-' . $display_id)),
+    '#markup' => l("Back to the View's display configuration", "admin/structure/views/edit/$view->name", array('fragment' => 'views-tab-' . $display_id)),
     '#prefix' => '<div class="hierarchical-select-config-back-link">',
     '#suffix' => '</div>',
     '#weight' => -5,
@@ -354,7 +354,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
  * Additional submit callback to redirect the user to the "Edit view" form.
  */
 function hs_taxonomy_views_common_config_form_submit($form, &$form_state) {
-  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
   $view_name  = $form['#custom_submit_data']['view_name'];
   $display_id = $form['#custom_submit_data']['display_id'];
@@ -468,7 +468,7 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
     if ($item != HS_TAXONOMY_VIEWS_ANY_OPTION) {
       // Get an array with all tids: the tid of the currently selected term and
       // all child terms.
-      $term = taxonomy_get_term($item);
+      $term = taxonomy_term_load($item);
       $tree = _hs_taxonomy_hierarchical_select_get_tree($term->vid, $term->tid);
       $tids = array($term->tid => $term->tid);
       foreach ($tree as $descendant) {
@@ -490,7 +490,7 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
           'limit' => TRUE,
           'vid' => $params['vid'],
           'id' => $id,
-          'table' => 'term_node',
+          'table' => 'taxonomy_term_node',
           'field' => 'tid',
           'hierarchy' => 0,
           'override' => array(
@@ -552,7 +552,8 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
     $count_query = 'SELECT COUNT(*) FROM (' . $count_query . ') count_alias';
 
     // Execute the count query.
-    $count[$current_view->name][$item] = db_result(db_query($count_query, $args));
+    // TODO Please convert this statement to the D7 database API syntax.
+    $count[$current_view->name][$item] = db_query($count_query, $args)->fetchField();
   }
 
   return $count[$current_view->name][$item];
@@ -580,7 +581,7 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
       if (isset($view->display[$display_id]->display_options['filters']) && count($view->display[$display_id]->display_options['filters'])) {
         foreach ($view->display[$display_id]->display_options['filters'] as $filter) {
           if (isset($filter['type']) && $filter['type'] == 'hierarchical_select'
-             && ((isset($filter['table']) && $filter['table'] == 'term_node'
+              && ((isset($filter['table']) && $filter['table'] == 'taxonomy_term_node'
               && isset($filter['field']) && $filter['field'] == 'tid')
              || (isset($filter['table']) && $filter['table'] == 'node'
               && isset($filter['field']) && $filter['field'] == 'term_node_tid_depth'))) {
@@ -665,7 +666,7 @@ function _hs_taxonomy_views_get_filter_label($view, $display_id, $filter_id) {
  *   The Drupal path for the desired config form..
  */
 function _hs_taxonomy_views_config_path($view_name, $display_id, $filter_id) {
-  return "admin/build/views/hs_config/$view_name/$display_id/$filter_id";
+  return "admin/structure/views/hs_config/$view_name/$display_id/$filter_id";
 }
 
 /**

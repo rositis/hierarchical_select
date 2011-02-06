@@ -25,7 +25,9 @@
  *
  * @ingroup themeable
  */
-function theme_hierarchical_select_form_element($element, $value) {
+function theme_hierarchical_select_form_element($variables) {
+  $element = $variables['element'];
+  $value = $variables['value'];
   $output = '<div class="form-item hierarchical-select-wrapper-wrapper"';
   if (!empty($element['#id'])) {
     $output .= ' id="' . $element['#id'] . '-wrapper"';
@@ -62,7 +64,8 @@ function theme_hierarchical_select_form_element($element, $value) {
  * @return
  *   A themed HTML string representing the form element.
  */
-function theme_hierarchical_select($element) {
+function theme_hierarchical_select($variables) {
+  $element = $variables['element'];
   $output = '';
 
   // Update $element['#attributes']['class'].
@@ -84,6 +87,7 @@ function theme_hierarchical_select($element) {
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
+  // TODO Please change this theme call to use an associative array for the $variables parameter.
   $output .= theme(
     'hierarchical_select_form_element',
     array(
@@ -107,10 +111,11 @@ function theme_hierarchical_select($element) {
  * @return
  *   A themed HTML string representing the form element.
  */
-function theme_hierarchical_select_selects_container($element) {
+function theme_hierarchical_select_selects_container($variables) {
+  $element = $variables['element'];
   $output = '';
   $output .= '<div class="hierarchical-select clear-block">';
-  $output .= drupal_render($element);
+  $output .= drupal_render_children($element);
   $output .= '</div>';
   return $output;
 }
@@ -124,7 +129,8 @@ function theme_hierarchical_select_selects_container($element) {
  * @return
  *   A themed HTML string representing the form element.
  */
-function theme_hierarchical_select_select($element) {
+function theme_hierarchical_select_select($variables) {
+  $element = $variables['element'];
   $select = '';
   $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
   $class = array('form-select');
@@ -146,7 +152,8 @@ function theme_hierarchical_select_select($element) {
  * @return
  *   A textually indicated special option.
  */
-function theme_hierarchical_select_special_option($option) {
+function theme_hierarchical_select_special_option($variables) {
+  $option = $variables['option'];
   return '<' . $option . '>';
 }
 
@@ -161,7 +168,12 @@ function theme_hierarchical_select_special_option($option) {
  *   A themed HTML string representing the form element.
  */
 // TODO: check if this has changed in D6.
-function theme_hierarchical_select_textfield($element) {
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function theme_hierarchical_select_textfield($variables) {
+  $element = $variables['element'];
   $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
   $class = array('form-text');
   $extra = '';
@@ -170,6 +182,7 @@ function theme_hierarchical_select_textfield($element) {
   if ($element['#autocomplete_path']) {
     drupal_add_js('misc/autocomplete.js');
     $class[] = 'form-autocomplete';
+    // TODO The second parameter to this function call should be an array.
     $extra =  '<input class="autocomplete" type="hidden" id="' . $element['#id'] . '-autocomplete" value="' . check_url(url($element['#autocomplete_path'], NULL, NULL, TRUE)) . '" disabled="disabled" />';
   }
   _form_set_class($element, $class);
@@ -195,7 +208,8 @@ function theme_hierarchical_select_textfield($element) {
  * @return
  *   A themed HTML string.
  */
-function theme_hierarchical_select_dropbox_table($element) {
+function theme_hierarchical_select_dropbox_table($variables) {
+  $element = $variables['element'];
   $output = '';
 
   $class = 'dropbox';
@@ -237,7 +251,7 @@ function theme_hierarchical_select_dropbox_table($element) {
         }
       }
       $output .= '</td>';
-      $output .= '<td class="dropbox-remove">' . drupal_render($db_entry['remove']) . '</td>';
+      $output .= '<td class="dropbox-remove">' . drupal_render_children($db_entry['remove']) . '</td>';
       $output .= '</tr>';
     }
   }
@@ -258,7 +272,12 @@ function theme_hierarchical_select_dropbox_table($element) {
  * Themeing function to render the level_labels settings as a table.
  */
 // TODO: rename $form to $element for consistency (and update hook_theme() after that), make the comment consistent.
-function theme_hierarchical_select_common_config_form_level_labels($form) {
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function theme_hierarchical_select_common_config_form_level_labels($variables) {
+  $form = $variables['form'];
   // Recover the stored strings.
   $strings = $form['#strings'];
 
@@ -278,7 +297,7 @@ function theme_hierarchical_select_common_config_form_level_labels($form) {
     }
 
     // Render the table.
-    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'));
+    $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;')));
   }
   else {
     // No levels exist yet in the hierarchy!
@@ -289,7 +308,7 @@ function theme_hierarchical_select_common_config_form_level_labels($form) {
   $output .= '</div>';
 
   // Render the remaining form items.
-  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -299,7 +318,12 @@ function theme_hierarchical_select_common_config_form_level_labels($form) {
  * (these are the item_types and allowed_levels settings).
  */
 // TODO: rename $form to $element for consistency (and update hook_theme() after that), make the comment consistent.
-function theme_hierarchical_select_common_config_form_editability($form) {
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function theme_hierarchical_select_common_config_form_editability($variables) {
+  $form = $variables['form'];
   // Recover the stored strings.
   $strings = $form['#strings'];
 
@@ -320,7 +344,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
     }
 
     // Render the table and description.
-    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'), '<em>' . t('Per-level settings for creating new !items.', array('!items' => $strings['items'])));
+    $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;'), 'caption' => '<em>' . t('Per-level settings for creating new !items.', array('!items' => $strings['items']))));
     $output .= '<div class="description">';
     $output .= t(
       'The %item_type you enter for each level is what will be used in
@@ -342,7 +366,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
   $output .= '</div>';
 
   // Render the remaining form items.
-  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -359,7 +383,9 @@ function theme_hierarchical_select_common_config_form_editability($form) {
  *   - save_lineage
  *   - params
  */
-function theme_hierarchical_select_selection_as_lineages($selection, $config) {
+function theme_hierarchical_select_selection_as_lineages($variables) {
+  $selection = $variables['selection'];
+  $config = $variables['config'];
   $output = '';
 
   $selection = (!is_array($selection)) ? array($selection) : $selection;

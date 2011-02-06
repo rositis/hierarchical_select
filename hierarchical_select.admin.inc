@@ -11,7 +11,7 @@
 /**
  * Form definition; admin settings.
  */
-function hierarchical_select_admin_settings() {
+function hierarchical_select_admin_settings($form, &$form_state) {
   $form['description'] = array(
     '#markup' => t('All settings below will be used as site-wide defaults.'),
     '#prefix' => '<div>',
@@ -91,15 +91,25 @@ function hierarchical_select_admin_configs() {
       $item['entity'],
       $item['context type'],
       $item['context'],
-      theme('links', array(
-        array('title' => t('Edit'),    'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"),
-        array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"),
-        array('title' => t('Import'), 'href' => "admin/settings/hierarchical_select/import/$config_id"),
-      )),
+      theme('links', array('links' => array(
+          array(
+            'title' => t('Edit'),
+            'href' => $item['edit link'],
+            'fragment' => "hierarchical-select-config-form-$config_id",
+          ),
+          array(
+            'title' => t('Export'),
+            'href' => "admin/config/hierarchical_select/export/$config_id",
+          ),
+          array(
+            'title' => t('Import'),
+            'href' => "admin/config/hierarchical_select/import/$config_id",
+          ),
+        ))),
     );
   }
 
-  return theme('table', $header, $rows, array(), t('Overview of all Hierarchical Select configurations.'));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all Hierarchical Select configurations.')));
 }
 
 /**
@@ -113,7 +123,7 @@ function hierarchical_select_admin_implementations() {
   // Retrieve all information items
   $rows = array();
   foreach (module_implements('hierarchical_select_root_level') as $module) {
-    $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
+    $filename = db_query("SELECT filename FROM {system} WHERE type = :type AND name = :name", array(':type' => 'module', ':name' => $module))->fetchField();
     $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
     // Try to extract the hierarchy type from the optional hook_hierarchical_select_config_info().
     $hierarchy_type = $entity_type = t('unknown');
@@ -141,7 +151,7 @@ function hierarchical_select_admin_implementations() {
   ');
   $output .= '</p>';
 
-  $output .= theme('table', $header, $rows, array(), t('Overview of all installed Hierarchical Select implementations.'));
+  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all installed Hierarchical Select implementations.')));
 
   return $output;
 }
@@ -149,14 +159,14 @@ function hierarchical_select_admin_implementations() {
 /**
  * Form definition; config export form.
  */
-function hierarchical_select_admin_export(&$form_state, $config_id) {
-  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+function hierarchical_select_admin_export($form, &$form_state, $config_id) {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
   $config = hierarchical_select_common_config_get($config_id);
   $code = _hierarchical_select_create_export_code($config);
 
   drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
-  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
+  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
 
   $lines = substr_count($code, "\n") + 1;
   $form['config'] = array(
@@ -173,11 +183,11 @@ function hierarchical_select_admin_export(&$form_state, $config_id) {
 /**
  * Form definition; config import form.
  */
-function hierarchical_select_admin_import(&$form_state, $config_id) {
-  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+function hierarchical_select_admin_import($form, &$form_state, $config_id) {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
   drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
-  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
+  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
 
   $form['config'] = array(
     '#type' => 'textarea',
@@ -196,7 +206,7 @@ function hierarchical_select_admin_import(&$form_state, $config_id) {
     '#type' => 'submit',
     '#markup' => t("Import"),
   );
-  $form['#redirect'] = NULL;
+  $form_state['#redirect'] = NULL;
   return $form;
 }
 

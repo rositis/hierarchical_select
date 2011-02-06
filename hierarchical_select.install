@@ -8,19 +8,19 @@
 
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function hierarchical_select_install() {
   // Ensure the Hierarchical Select module runs after the Taxonomy and Content
   // Taxonomy modules! This should not be necessary to do, but apparently some
   // idiot module developer is changing the weight of the Taxonomy module...
-  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  $weight = db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'taxonomy'))->fetchField();
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'content_taxonomy'))->fetchField());
   // Also ensure the Hierarchical Select module runs after the i18ntaxonomy
   // module.
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'i18ntaxonomy'))->fetchField());
   // Also ensure the Hierarchical Select module runs after the og_vocab module.
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'og_vocab'")));
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'og_vocab'))->fetchField());
   // If none of these modules was already enabled, the weight will still be
   // incorrect. Therefore, let's make the minimum weight of Hierarchical
   // Select 15.
@@ -30,21 +30,34 @@ function hierarchical_select_install() {
   // that Hierarchical Select will run after it.
   $weight++;
 
-  db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight, 'hierarchical_select');
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight, 'hierarchical_select') */
+  db_update('system')
+  ->fields(array(
+    'weight' => $weight,
+  ))
+  ->condition('name', 'hierarchical_select')
+  ->execute();
 
-  drupal_install_schema('hierarchical_select');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hierarchical_select')
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function hierarchical_select_uninstall() {
-  drupal_uninstall_schema('hierarchical_select');
-  db_query("DELETE FROM {variable} WHERE name LIKE 'hs_config_%'");
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('hierarchical_select')
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {variable} WHERE name LIKE 'hs_config_%'") */
+  db_delete('variable')
+  ->condition('name', 'hs_config_%', 'LIKE')
+  ->execute();
 }
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hierarchical_select_schema() {
   $schema['cache_hierarchical_select'] = drupal_get_schema_unprocessed('system', 'cache');
@@ -56,34 +69,54 @@ function hierarchical_select_schema() {
 // Schema updates.
 
 // Update module weight.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_1() {
   $ret = array();
 
   // Ensure the Hierarchical Select module runs after the Taxonomy and Content
   // Taxonomy modules! This should not be necessary to do, but apparently some
   // idiot module developer is changing the weight of the Taxonomy module...
-  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  $weight = db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'taxonomy'))->fetchField();
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'content_taxonomy'))->fetchField());
   $weight++;
-  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'") */;
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Update module weight again, this time for i18ntaxonomy compatibility.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_2() {
   $ret = array();
 
-  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
+  $weight = db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'taxonomy'))->fetchField();
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'content_taxonomy'))->fetchField());
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'i18ntaxonomy'))->fetchField());
   $weight++;
-  $ret[] = update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = $weight WHERE name = 'hierarchical_select'") */;
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Helper function for update 3.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_3_taxonomy_hierarchical_select_get_depth($vid) {
   $tree = taxonomy_get_tree($vid);
   foreach ($tree as $term) {
@@ -96,6 +129,10 @@ function hierarchical_select_update_3_taxonomy_hierarchical_select_get_depth($vi
 
 // Convert the Hierarchical Select settings for each vocabulary to the
 // standardized format.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_3() {
   $ret = array();
 
@@ -145,10 +182,17 @@ function hierarchical_select_update_3() {
     drupal_set_message('Migrated Hierarchical Select settings for vocabulary ' . $vid . '.');
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Shorter prefix for storing the config variables.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_4() {
   $ret = array();
 
@@ -157,6 +201,7 @@ function hierarchical_select_update_4() {
   //   source: http://dev.mysql.com/doc/refman/5.0/en/update.html
   // UPDATE `variable` SET name = CONCAT('hs_config_', SUBSTRING(name, 28)) WHERE name IN (SELECT name FROM `variable` WHERE name LIKE 'hierarchical_select_config_%')
 
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query("SELECT SUBSTRING(name, 28) AS config_id FROM {variable} WHERE name LIKE 'hierarchical_select_config_%'");
   while ($row = db_fetch_object($result)) {
     $config_id = $row->config_id;
@@ -165,27 +210,43 @@ function hierarchical_select_update_4() {
     variable_del("hierarchical_select_config_$config_id");
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Increase the length of the "name" field in the "variable" table to 128. The
 // Hierarchical Select module needs this for some of its variables. This does
 // NOT break updates to Drupal 6!
 // See http://drupal.org/node/259962.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_5() {
   $ret = array();
 
-  $ret[] = update_sql("ALTER TABLE {variable} MODIFY name varchar(128) NOT NULL default ''");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {variable} MODIFY name varchar(128) NOT NULL default ''") */;
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Several modules were renamed for consistency. Only one of these needs a
 // change in its config variables.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_6() {
   $ret = array();
 
   // hs_views_taxonomy -> hs_taxonomy_views
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query("SELECT SUBSTRING(name, 26) AS config_id FROM {variable} WHERE name LIKE 'hs_config_views-taxonomy_%'");
   while ($row = db_fetch_object($result)) {
     $config_id = $row->config_id;
@@ -194,13 +255,21 @@ function hierarchical_select_update_6() {
     variable_del("hs_config_views-taxonomy_$config_id");
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Rename 'node_count' as 'entity_count'.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_7() {
   $ret = array();
 
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query("SELECT name AS config_id, value AS config FROM {variable} WHERE name LIKE 'hs_config_%'");
   while ($row = db_fetch_object($result)) {
     $config_id = $row->config_id;
@@ -208,27 +277,41 @@ function hierarchical_select_update_7() {
     if (isset($config['node_count'])) {
       $config['entity_count'] = $config['node_count'];
       unset($config['node_count']);
-      db_query("UPDATE {variable} SET value = '%s' WHERE name = '%s'", serialize($config), $config_id);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("UPDATE {variable} SET value = '%s' WHERE name = '%s'", serialize($config), $config_id) */
+      db_update('variable')
+  ->fields(array(
+        'value' => serialize($config),
+      ))
+  ->condition('name', $config_id)
+  ->execute();
     }
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Update module weight again, this time for og_vocab compatibility.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_8() {
   $ret = array();
 
   // Ensure the Hierarchical Select module runs after the Taxonomy and Content
   // Taxonomy modules! This should not be necessary to do, but apparently some
   // idiot module developer is changing the weight of the Taxonomy module...
-  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'content_taxonomy'")));
+  $weight = db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'taxonomy'))->fetchField();
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'content_taxonomy'))->fetchField());
   // Also ensure the Hierarchical Select module runs after the i18ntaxonomy
   // module.
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'i18ntaxonomy'")));
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'i18ntaxonomy'))->fetchField());
   // Also ensure the Hierarchical Select module runs after the og_vocab module.
-  $weight = max($weight, db_result(db_query("SELECT weight FROM {system} WHERE name = 'og_vocab'")));
+  $weight = max($weight, db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'og_vocab'))->fetchField());
   // If none of these modules was already enabled, the weight will still be
   // incorrect. Therefore, let's make the minimum weight of Hierarchical
   // Select 15.
@@ -238,21 +321,32 @@ function hierarchical_select_update_8() {
   // that Hierarchical Select will run after it.
   $weight++;
 
-  $ret[] =  update_sql("UPDATE {system} SET weight = $weight  WHERE name  = 'hierarchical_select'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] =  array() /* update_sql("UPDATE {system} SET weight = $weight  WHERE name  = 'hierarchical_select'") */;
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Update module weight again, this time for create a separate cache table for
 // Hierarchical Select.
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hierarchical_select_update_9() {
   $ret = array();
 
   $schema = hierarchical_select_schema();
-  db_create_table($ret, 'cache_hierarchical_select', $schema['cache_hierarchical_select']);
+  db_create_table('cache_hierarchical_select', $schema['cache_hierarchical_select']);
 
   // Force a rebuild of the schema.
   drupal_get_schema(NULL, TRUE);
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

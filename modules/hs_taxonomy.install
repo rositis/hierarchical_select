@@ -15,7 +15,8 @@ function hs_taxonomy_install() {
 
   // Update the module weight to -1 so it runs before other taxonomy related
   // modules. See http://drupal.org/node/601500.
-  $ret[] = update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'") */;
 
   return $ret;
 }
@@ -25,8 +26,16 @@ function hs_taxonomy_install() {
  */
 function hs_taxonomy_uninstall() {
   // Remove any saved variables.
-  db_query("DELETE FROM {variable} WHERE name = 'taxonomy_override_selector'");
-  db_query("DELETE FROM {variable} WHERE name LIKE 'taxonomy_hierarchical_select_%'");
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {variable} WHERE name = 'taxonomy_override_selector'") */
+  db_delete('variable')
+  ->condition('name', 'taxonomy_override_selector')
+  ->execute();
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {variable} WHERE name LIKE 'taxonomy_hierarchical_select_%'") */
+  db_delete('variable')
+  ->condition('name', 'taxonomy_hierarchical_select_%', 'LIKE')
+  ->execute();
 }
 
 /**
@@ -40,7 +49,7 @@ function hs_taxonomy_enable() {
                         You can <a href=\"!configure-url\">configure</a> it to
                         be used on node forms too!",
                         array(
-                          '!configure-url' => url('admin/settings/hierarchical_select/configs'),
+                          '!configure-url' => url('admin/config/hierarchical_select/configs'),
                         )),
                       'warning');
 }
@@ -64,7 +73,8 @@ function hs_taxonomy_disable() {
 function hs_taxonomy_update_1() {
   $ret = array();
 
-  $ret[] = update_sql("UPDATE {system} SET weight = 2 WHERE name = 'hs_taxonomy'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = 2 WHERE name = 'hs_taxonomy'") */;
 
   return $ret;
 }
@@ -74,7 +84,8 @@ function hs_taxonomy_update_1() {
 function hs_taxonomy_update_6002() {
   $ret = array();
 
-  $ret[] = update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'") */;
 
   return $ret;
 }

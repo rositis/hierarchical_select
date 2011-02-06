@@ -27,7 +27,7 @@ class hs_taxonomy_views_handler_filter_term_node_tid extends views_handler_filte
     _hierarchical_select_setup_js();
 
     // Ensure that Drupal.HierarchicalSelect.prepareGETSubmit() gets called.
-    require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
+    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
     hierarchical_select_common_add_views_js();
   }
 

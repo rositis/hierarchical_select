@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_features_export().
+ * Implements hook_features_export().
  */
 function hierarchical_select_features_export($data, &$export, $module_name) {
   // Add hierarchical_select dependency.
@@ -35,7 +35,7 @@ function hierarchical_select_features_export($data, &$export, $module_name) {
 }
 
 /**
- * Implementation of hook_features_export_options().
+ * Implements hook_features_export_options().
  */
 function hierarchical_select_features_export_options() {
   // Retrieve all information items.
@@ -55,7 +55,7 @@ function hierarchical_select_features_export_options() {
 }
 
 /**
- * Implementation of hook_features_export_render().
+ * Implements hook_features_export_render().
  */
 function hierarchical_select_features_export_render($module, $data) {
   module_load_include('inc', 'hierarchical_select', 'includes/common');
@@ -77,14 +77,14 @@ function hierarchical_select_features_export_render($module, $data) {
 }
 
 /**
- * Implementation of hook_features_revert().
+ * Implements hook_features_revert().
  */
 function hierarchical_select_features_revert($module) {
   hierarchical_select_features_rebuild($module);
 }
 
 /**
- * Implementation of hook_features_rebuild().
+ * Implements hook_features_rebuild().
  */
 function hierarchical_select_features_rebuild($module) {
   $configs = module_invoke($module, 'hierarchical_select_default_configs');
