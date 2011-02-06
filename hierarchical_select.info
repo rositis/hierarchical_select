@@ -5,10 +5,4 @@ package = Form Elements
 
 core = 7.x
 
-files[] = hierarchical_select.admin.inc
-files[] = hierarchical_select.features.inc
-files[] = hierarchical_select.install
-files[] = hierarchical_select.module
-files[] = includes/common.inc
-files[] = includes/theme.inc
 files[] = tests/internals.test

@@ -6,11 +6,5 @@ dependencies[] = hs_taxonomy
 dependencies[] = views
 package = Form Elements
 core = 7.x
-files[] = hs_flatlist.module
-files[] = hs_menu.module
-files[] = hs_smallhierarchy.module
-files[] = hs_taxonomy.install
-files[] = hs_taxonomy.module
-files[] = hs_taxonomy_views.install
-files[] = hs_taxonomy_views.module
+
 files[] = hs_taxonomy_views_handler_filter_term_node_tid.inc
