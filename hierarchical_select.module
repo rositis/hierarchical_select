@@ -765,7 +765,7 @@ function hierarchical_select_after_build($form, &$form_state) {
     // render part of the form).
     $hs_form_build_id = 'hs_form_'. md5(mt_rand());
     $lifetime = variable_get('hierarchical_select_cache_lifetime', HS_CACHE_LIFETIME_DEFAULT);
-    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', time() + $lifetime);
+    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', REQUEST_TIME + $lifetime);
   }
   elseif (isset($_POST['hs_form_build_id'])) {
     // Don't generate a new hs_form_build_id if this is a re-rendering of the
