@@ -191,7 +191,7 @@ function _hs_smallhierarchy_transform($hierarchy, $id, $separator = '|') {
 
 /**
  * Helper function for _hs_smallhierarchy_transform().
- * 
+ *
  * @params $parent
  *   The parent item of the current level.
  * @params $hs_hierarchy

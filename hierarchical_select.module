@@ -160,7 +160,7 @@ function hierarchical_select_requirements($phase) {
     foreach ($core_overriding_modules as $module) {
       $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
       if (strpos($filename, 'modules/') === 0) {
-        $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
+        $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
         $path_errors[] = t('!module', array('!module' => $module_info['name']));
       }
     }
@@ -169,7 +169,7 @@ function hierarchical_select_requirements($phase) {
       $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = '%s'", $module));
       if (!($hierarchical_select_weight > $weight)) {
         $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
-        $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
+        $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
         $weight_errors[] = t('!module (!weight)', array('!module' => $module_info['name'], '!weight' => $weight));
       }
     }
@@ -187,7 +187,7 @@ function hierarchical_select_requirements($phase) {
         installed in core's <code>modules</code> directory, but should be
         installed in either the <code>sites/all/modules</code> directory or a
         <code>sites/yoursite.com/modules</code> directory"
-      ) .':'. theme('item_list', $path_errors);
+      ) . ':' . theme('item_list', $path_errors);
       $severity = REQUIREMENT_ERROR;
     }
     elseif ($weight_errors) {
@@ -196,7 +196,7 @@ function hierarchical_select_requirements($phase) {
         'The weight of the Hierarchical Select module (!weight) is not
         strictly higher than the weight of the following modules',
         array('!weight' => $hierarchical_select_weight)
-      ) .':'. theme('item_list', $weight_errors);
+      ) . ':' . theme('item_list', $weight_errors);
       $severity = REQUIREMENT_ERROR;
     }
     else {
@@ -278,7 +278,7 @@ function hierarchical_select_theme() {
  * Implementation of hook_simpletest().
  */
 function hierarchical_select_simpletest() {
-  $dir = drupal_get_path('module', 'hierarchical_select') .'/tests';
+  $dir = drupal_get_path('module', 'hierarchical_select') . '/tests';
   $tests = file_scan_directory($dir, '\.test$');
   return array_keys($tests);
 }
@@ -293,7 +293,7 @@ function hierarchical_select_features_api() {
       'feature_source' => TRUE,
       'default_hook' => 'hierarchical_select_default_configs',
       'default_file' => FEATURES_DEFAULTS_INCLUDED,
-      'file' => drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.features.inc',
+      'file' => drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.features.inc',
     ),
   );
 }
@@ -305,7 +305,7 @@ function hierarchical_select_features_api() {
  * Wildcard loader for Hierarchical Select config ID's.
  */
 function hierarchical_select_config_id_load($config_id) {
-  $config = variable_get('hs_config_'. $config_id, FALSE);
+  $config = variable_get('hs_config_' . $config_id, FALSE);
   return ($config !== FALSE) ? $config['config_id'] : FALSE;
 }
 
@@ -405,7 +405,7 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     // AHAH. A normal static variable won't do in this case, because then at
     // least two Hierarchical Select form items will have HSID 0, because they
     // are generated in different requests, both of which will have a first HSID
-    // of 0. This will then cause problems on the page. 
+    // of 0. This will then cause problems on the page.
     if (!isset($_SESSION['hsid'])) {
       $_SESSION['hsid'] = 0;
     }
@@ -446,13 +446,13 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   // hierarchical select.
   $config = _hierarchical_select_inherit_default_config($element['#config']);
   _hierarchical_select_setup_js();
-   _hierarchical_select_setup_js($form_state);
-   $settings =  array(
+  _hierarchical_select_setup_js($form_state);
+  $settings =  array(
      'HierarchicalSelect' => array(
        'settings' => array(
          $hsid => array(
            'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
-           'cacheId'          => $config['module'] .'_'. implode('_', (is_array($config['params'])) ? $config['params'] : array()),
+           'cacheId'          => $config['module'] . '_' . implode('_', (is_array($config['params'])) ? $config['params'] : array()),
            'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
            'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
            'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
@@ -477,7 +477,7 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
       $required_params = module_invoke($config['module'], 'hierarchical_select_params');
       $missing_params = array_diff($required_params, array_keys($config['params']));
       if (!empty($missing_params)) {
-        $diagnostics[] = t("'params' is missing values for: ") . implode(', ', $missing_params) .'.';
+        $diagnostics[] = t("'params' is missing values for: ") . implode(', ', $missing_params) . '.';
       }
     }
     $config_id = (isset($config['config_id']) && is_string($config['config_id'])) ? $config['config_id'] : 'none';
@@ -488,8 +488,8 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
       $diagnostics_string = print_r($diagnostics, TRUE);
       $message = "Config diagnostics (config id: $config_id): $diagnostics_string";
       _hierarchical_select_log($message);
-      $element['#type']= 'item';
-      $element['#markup'] = '<p><span style="color:red;">Fix the indicated errors in the #config property first!</span><br />'. nl2br($message) .'</p>';
+      $element['#type'] = 'item';
+      $element['#markup'] = '<p><span style="color:red;">Fix the indicated errors in the #config property first!</span><br />' . nl2br($message) . '</p>';
       return $element;
     }
   }
@@ -542,11 +542,11 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
 
   if (HS_DEVELOPER_MODE) {
-    _hierarchical_select_log('Generated hierarchy in '. $hierarchy->build_time['total'] .' ms:');
+    _hierarchical_select_log('Generated hierarchy in ' . $hierarchy->build_time['total'] . ' ms:');
     _hierarchical_select_log($hierarchy);
 
     if ($config['dropbox']['status']) {
-      _hierarchical_select_log('Generated dropbox in '. $dropbox->build_time .' ms: ');
+      _hierarchical_select_log('Generated dropbox in ' . $dropbox->build_time . ' ms: ');
       _hierarchical_select_log($dropbox);
     }
   }
@@ -589,7 +589,7 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
         }
 
         $element['hierarchical_select']['create_new_item'] = array(
-          '#prefix' => '<div class="'. str_replace('_', '-', $value) .'">',
+          '#prefix' => '<div class="' . str_replace('_', '-', $value) . '">',
           '#suffix' => '</div>',
         );
 
@@ -733,9 +733,9 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   return $element;
 }
 
- /**
-  * Hierarchical select form element type #after_build callback.
-  */
+/**
+ * Hierarchical select form element type #after_build callback.
+ */
 function hierarchical_select_after_build($form, &$form_state) {
   // TRICKY: Pageroute compatibility: avoid that the body of this #after_build
   // callback is executed twice.
@@ -763,7 +763,7 @@ function hierarchical_select_after_build($form, &$form_state) {
     // Store the information needed for dynamic form updates in the cache, so
     // we can retrieve this in our JSON callbacks (to be able to rebuild and
     // render part of the form).
-    $hs_form_build_id = 'hs_form_'. md5(mt_rand());
+    $hs_form_build_id = 'hs_form_' . md5(mt_rand());
     $lifetime = variable_get('hierarchical_select_cache_lifetime', HS_CACHE_LIFETIME_DEFAULT);
     cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', REQUEST_TIME + $lifetime);
   }
@@ -1023,7 +1023,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
           || $config['editability']['max_levels'] == 0
           || $depth < $config['editability']['max_levels']
         )
-        &&
+         &&
         (_hierarchical_select_create_new_item_is_allowed($config, $depth))
       ) {
         // Create the new item in the hierarchy and retrieve its value.
@@ -1160,7 +1160,7 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
 
         $element['lineages'][$x][$depth] = array(
           '#markup' => $item['label'],
-          '#prefix' => '<span class="dropbox-item'. (($is_selected) ? ' dropbox-selected-item' : '') .'">',
+          '#prefix' => '<span class="dropbox-item' . (($is_selected) ? ' dropbox-selected-item' : '') . '">',
           '#suffix' => '</span>',
         );
       }
@@ -1341,7 +1341,7 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
     // negotiation is being used.
     $negotiation = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
     if (module_exists('i18n') && ($language->prefix != '') && ($negotiation == LANGUAGE_NEGOTIATION_PATH_DEFAULT || $negotiation == LANGUAGE_NEGOTIATION_PATH)) {
-       $url .= $language->prefix . '/';
+      $url .= $language->prefix . '/';
     }
     if (module_exists('purl')) {
       $options = array();
@@ -1359,20 +1359,20 @@ function _hierarchical_select_setup_js(&$form_state = NULL) {
 
     // Add the CSS and JS, set the URL that should be used by all hierarchical
     // selects.
-    drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.js');
+    drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
+    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.js');
     if (variable_get('hierarchical_select_js_cache_system', 0) == 1) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_cache.js');
+      drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select_cache.js');
     }
     if (!module_exists('jquery_form')) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select_formtoarray.js');
+      drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select_formtoarray.js');
     }
     else {
       jquery_form_add();
     }
     if (!module_exists('jquery_ui')) {
       foreach ($jquery_ui_components as $component) {
-        drupal_add_js(drupal_get_path('module', 'hierarchical_select') ."/js/jquery.ui/$component.js");
+        drupal_add_js(drupal_get_path('module', 'hierarchical_select') . "/js/jquery.ui/$component.js");
       }
     }
     else {
@@ -1410,7 +1410,7 @@ function _hierarchical_select_json_convert_hierarchy_to_cache($hierarchy) {
   // The last item in the lineage never has any children.
   $value = end($hierarchy->lineage);
   $cache[] = array(
-    'value'  => $value .'-has-no-children', // Construct a pseudo-value (will never be actually used).
+    'value'  => $value . '-has-no-children', // Construct a pseudo-value (will never be actually used).
     'label'  => '',
     'parent' => $value,
     'weight' => 0,
@@ -1758,8 +1758,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // - the hook is implemented (this is an optional hook), and
   // - the allowed_levels setting allows to create new items at this level.
   if ($config['editability']['status']
-      && module_hook($config['module'], 'hierarchical_select_create_item')
-      && _hierarchical_select_create_new_item_is_allowed($config, 0)
+       && module_hook($config['module'], 'hierarchical_select_create_item')
+       && _hierarchical_select_create_new_item_is_allowed($config, 0)
   ) {
     $item_type = isset($config['editability']['item_types'][0]) ? t($config['editability']['item_types'][0]) : '';
     $item_type = (!empty($item_type)) ? $item_type : t('item');
@@ -1823,9 +1823,9 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       // - the hook is implemented (this is an optional hook), and
       // - the allowed_levels setting allows to create new items at this level.
       if ($depth > 0
-          && $config['editability']['status']
-          && module_hook($config['module'], 'hierarchical_select_create_item')
-          && _hierarchical_select_create_new_item_is_allowed($config, $depth)
+           && $config['editability']['status']
+           && module_hook($config['module'], 'hierarchical_select_create_item')
+           && _hierarchical_select_create_new_item_is_allowed($config, $depth)
       ) {
         $item_type = t($config['editability']['item_types'][$depth]);
         $item_type = (!empty($item_type)) ? $item_type : t('item');
@@ -1834,7 +1834,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       }
       // Level label: set an empty level label if they've been disabled.
       $label = ($config['level_labels']['status'] && isset($config['level_labels']['labels'][$depth])) ? t($config['level_labels']['labels'][$depth]) : '';
-      $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth];
+      $hierarchy->levels[$depth] = array('label_' . $depth => $label) + $hierarchy->levels[$depth];
     }
 
     // If the root level label is empty and the none option is present, remove
@@ -1863,8 +1863,8 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         // - the hook is implemented (this is an optional hook), and
         // - the allowed_levels setting allows to create new items at this level.
         if ($config['editability']['status']
-            && module_hook($config['module'], 'hierarchical_select_create_item')
-            && _hierarchical_select_create_new_item_is_allowed($config, $depth)
+             && module_hook($config['module'], 'hierarchical_select_create_item')
+             && _hierarchical_select_create_new_item_is_allowed($config, $depth)
         ) {
           $item_type = t($config['editability']['item_types'][$depth]);
           $item_type = (!empty($item_type)) ? $item_type : t('item');
@@ -1873,9 +1873,9 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         }
 
         // Level label: set an empty level label if they've been disabled.
-        $hierarchy->lineage[$depth] = 'label_'. $depth;
+        $hierarchy->lineage[$depth] = 'label_' . $depth;
         $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
-        $hierarchy->levels[$depth] = array('label_'. $depth => $label) + $hierarchy->levels[$depth] + $children;
+        $hierarchy->levels[$depth] = array('label_' . $depth => $label) + $hierarchy->levels[$depth] + $children;
 
         $hierarchy->levels[$depth] = _hierarchical_select_apply_entity_settings($hierarchy->levels[$depth], $config);
       }
@@ -1890,15 +1890,15 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // - the deepest item of the lineage is a valid item
   // NOTE: this uses an optional hook, so we also check if it's implemented.
   if ($config['editability']['status']
-      && $config['editability']['allow_new_levels']
-      && ($config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels'])
-      && module_invoke($config['module'], 'hierarchical_select_valid_item', end($hierarchy->lineage), $config['params'])
-      && module_hook($config['module'], 'hierarchical_select_create_item')
+       && $config['editability']['allow_new_levels']
+       && ($config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels'])
+       && module_invoke($config['module'], 'hierarchical_select_valid_item', end($hierarchy->lineage), $config['params'])
+       && module_hook($config['module'], 'hierarchical_select_create_item')
   ) {
     $depth = $max_depth + 1;
 
     // Level label: set an empty level label if they've been disabled.
-    $hierarchy->lineage[$depth] = 'label_'. $depth;
+    $hierarchy->lineage[$depth] = 'label_' . $depth;
     $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
 
     // Item type.
@@ -1908,7 +1908,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // The new level with only a level label and a "<create new item>" option.
     $option = theme('hierarchical_select_special_option', t('create new !item_type', array('!item_type' => $item_type)));
     $hierarchy->levels[$depth] = array(
-      'label_'. $depth  => $label,
+      'label_' . $depth  => $label,
       'create_new_item' => $option,
     );
   }
@@ -1958,10 +1958,9 @@ function _hierarchical_select_apply_entity_settings($level, $config) {
     foreach ($level as $item => $label) {
       // We don't want to alter internal or special items.
       if (!preg_match('/(none|label_\d+|create_new_item)/', $item)
-          && !in_array($item, $special_items['exclusive'])
-          && !in_array($item, $special_items['none'])
-         )
-      {
+           && !in_array($item, $special_items['exclusive'])
+           && !in_array($item, $special_items['none'])
+         ) {
         $entity_count = module_invoke($config['module'], 'hierarchical_select_entity_count', $item, $config['params']);
 
         // When the require_entity setting is enabled and the entity count is
@@ -2215,7 +2214,7 @@ function _hierarchical_select_dropbox_reconstruct_lineages_save_lineage_enabled(
           else {
             // Create new lineage based on current one and add the child.
             $lineage = $lineages[$id];
-            $lineage[$i + 1] = array('value' => $child, 'label' => $children[$child]);;
+            $lineage[$i + 1] = array('value' => $child, 'label' => $children[$child]);
 
             // Add the new lineage to the set of lineages
             $lineages[] = $lineage;

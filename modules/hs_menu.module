@@ -29,7 +29,7 @@ function hs_menu_menu() {
  * Implementation of hook_form_alter().
  */
 function hs_menu_form_alter(&$form, $form_state, $form_id) {
-  if (isset($form['type']['#markup']) && $form['type']['#markup'] .'_node_form' == $form_id && isset($form['menu']['parent']) && $form['menu']['#access']) {
+  if (isset($form['type']['#markup']) && $form['type']['#markup'] . '_node_form' == $form_id && isset($form['menu']['parent']) && $form['menu']['#access']) {
     unset($form['menu']['parent']['#options']);
     $form['menu']['parent']['#type'] = 'hierarchical_select';
     _hs_menu_apply_config($form['menu']['parent'], NULL);
@@ -77,7 +77,7 @@ function hs_menu_admin_settings() {
 function hs_menu_hierarchical_select_params() {
   $params = array(
     'exclude', // The menu_name and mlid (in an array) of a menu link that should be excluded from the hierarchy.
-  );  
+  );
   return $params;
 }
 
@@ -121,8 +121,7 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
       $plid = db_result(db_query("SELECT plid FROM {menu_links} WHERE mlid = %d", $mlid));
       array_unshift($lineage, "$menu_name:$plid");
       $mlid = $plid;
-    }
-    while ($plid > 0);
+    } while ($plid > 0);
   }
 
   return $lineage;
@@ -150,7 +149,7 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
  */
 function hs_menu_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
-  
+
   $parts = explode(':', $item);
   if (count($parts) == 1) { // Get the menu name.
     $menu_name = $parts[0];
@@ -193,9 +192,9 @@ function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
 
       $title = truncate_utf8($data['link']['title'], 30, TRUE, FALSE);
       if ($data['link']['hidden']) {
-        $title .= ' ('. t('disabled') .')';
+        $title .= ' (' . t('disabled') . ')';
       }
-      $children[$menu_name .':'. $data['link']['mlid']] = $title;
+      $children[$menu_name . ':' . $data['link']['mlid']] = $title;
       if ($data['below']) {
         $children += _hs_menu_children($data['below'], $menu_name, $plid, $exclude);
       }

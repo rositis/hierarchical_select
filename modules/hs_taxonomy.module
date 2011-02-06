@@ -45,7 +45,7 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
 
   $form['hierarchical_select_status'] = array(
     '#type' => 'checkbox',
-    '#title' => '<strong>'. t('Use the Hierarchical Select form element for this vocabulary.') .'</strong>',
+    '#title' => '<strong>' . t('Use the Hierarchical Select form element for this vocabulary.') . '</strong>',
     '#default_value' => variable_get("taxonomy_hierarchical_select_$vid", 0),
     '#description' => t(
       'When checked, the %free_tagging and %multiple_values settings will
@@ -92,7 +92,7 @@ function hs_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
   if ($vid == variable_get('forum_nav_vocabulary', -1)) {
     $form['hierarchical_select']['save_lineage']['#markup'] = 0;
     $form['hierarchical_select']['save_lineage']['#attributes'] = array('disabled' => 'disabled');
-    $form['hierarchical_select']['save_lineage']['#description'] .= '<br />'. t(
+    $form['hierarchical_select']['save_lineage']['#description'] .= '<br />' . t(
       'This is the vocabulary that will be used for forum navigation and it
       <strong>always</strong> requires the %dont_save_lineage setting to be
       set!',
@@ -123,7 +123,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     return;
   }
 
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
 
   // Build an appropriate config, that inherits the level_labels settings
   // from the vocabulary's Hierarchical Select config.
@@ -155,7 +155,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     '#config' => $config,
     // Copied from core.
     '#title'         => t('Parents'),
-    '#description'   => t('Parent terms') .'.',
+    '#description'   => t('Parent terms') . '.',
     '#weight'        => -15,
     '#default_value' => $parent,
   );
@@ -198,7 +198,7 @@ function hs_taxonomy_form_forum_form_forum_alter(&$form, &$form_state) {
 }
 
 function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
 
   $vocabulary = taxonomy_vocabulary_load($vid);
   if (module_exists('i18ntaxonomy')) {
@@ -238,7 +238,7 @@ function hs_taxonomy_form($vid, $value = 0, $help = NULL) {
 function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
   // Change the term selection of nodes. Only affects hierarchical
   // vocabularies.
-  if (isset($form['type']) && isset($form['#node']) && (variable_get('taxonomy_override_selector', FALSE)) && $form['type']['#markup'] .'_node_form' == $form_id) {
+  if (isset($form['type']) && isset($form['#node']) && (variable_get('taxonomy_override_selector', FALSE)) && $form['type']['#markup'] . '_node_form' == $form_id) {
     $node = $form['#node'];
 
     if (!isset($node->taxonomy)) {
@@ -276,7 +276,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
           '#description' => $help,
           '#required' => $vocabulary->required,
           '#default_value' => $typed_string,
-          '#autocomplete_path' => 'taxonomy/autocomplete/'. $vocabulary->vid,
+          '#autocomplete_path' => 'taxonomy/autocomplete/' . $vocabulary->vid,
           '#weight' => $vocabulary->weight,
           '#maxlength' => 255,
         );
@@ -290,7 +290,7 @@ function hs_taxonomy_form_alter(&$form, $form_state, $form_id) {
             $form['taxonomy']['tags'][$vid]['#description'] = i18nstrings("taxonomy:vocabulary:$vid:help", $form['taxonomy']['tags'][$vid]['#description']);
           }
           if ($type == I18N_TAXONOMY_LOCALIZE) {
-            $form['taxonomy']['tags'][$vid]['#description'] .= ' '. t('This is a localizable vocabulary, so only terms in %language are allowed here.', array('%language' => language_default('name')));
+            $form['taxonomy']['tags'][$vid]['#description'] .= ' ' . t('This is a localizable vocabulary, so only terms in %language are allowed here.', array('%language' => language_default('name')));
           }
         }
       }
@@ -385,7 +385,7 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
   if (isset($params['root_term']) && $params['root_term'] === TRUE) {
     $root_term = new StdClass();
     $root_term->tid = 0;
-    $root_term->name = '<'. t('root') .'>';
+    $root_term->name = '<' . t('root') . '>';
     $terms = array_merge(array($root_term), $terms);
   }
 
@@ -488,7 +488,7 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
   if (function_exists('term_permissions_allowed')) {
     global $user;
     if (!term_permissions_allowed($term->tid, $user) ) {
-        return FALSE;
+      return FALSE;
     }
   }
 
@@ -549,7 +549,7 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
  */
 function hs_taxonomy_hierarchical_select_entity_count($item, $params) {
   // Allow restricting entity count by node type.
-  if ($params['entity_count_for_node_type']){
+  if ($params['entity_count_for_node_type']) {
     return hs_taxonomy_term_count_nodes($item, $params['entity_count_for_node_type']);
   }
   else {
@@ -603,7 +603,7 @@ function hs_taxonomy_hierarchical_select_config_info() {
     }
   }
 
-  return  $config_info;
+  return $config_info;
 }
 
 

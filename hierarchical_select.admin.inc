@@ -92,7 +92,7 @@ function hierarchical_select_admin_configs() {
       $item['context type'],
       $item['context'],
       theme('links', array(
-        array('title' => t('Edit'),   'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"),
+        array('title' => t('Edit'),    'href' => $item['edit link'], 'fragment' => "hierarchical-select-config-form-$config_id"),
         array('title' => t('Export'), 'href' => "admin/settings/hierarchical_select/export/$config_id"),
         array('title' => t('Import'), 'href' => "admin/settings/hierarchical_select/import/$config_id"),
       )),
@@ -114,7 +114,7 @@ function hierarchical_select_admin_implementations() {
   $rows = array();
   foreach (module_implements('hierarchical_select_root_level') as $module) {
     $filename = db_result(db_query("SELECT filename FROM {system} WHERE type = 'module' AND name = '%s'", $module));
-    $module_info = drupal_parse_info_file(dirname($filename) ."/$module.info");
+    $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
     // Try to extract the hierarchy type from the optional hook_hierarchical_select_config_info().
     $hierarchy_type = $entity_type = t('unknown');
     if (module_hook($module, 'hierarchical_select_implementation_info')) {
@@ -150,12 +150,12 @@ function hierarchical_select_admin_implementations() {
  * Form definition; config export form.
  */
 function hierarchical_select_admin_export(&$form_state, $config_id) {
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
 
   $config = hierarchical_select_common_config_get($config_id);
   $code = _hierarchical_select_create_export_code($config);
 
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
   drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
 
   $lines = substr_count($code, "\n") + 1;
@@ -174,9 +174,9 @@ function hierarchical_select_admin_export(&$form_state, $config_id) {
  * Form definition; config import form.
  */
 function hierarchical_select_admin_import(&$form_state, $config_id) {
-  require_once(drupal_get_path('module', 'hierarchical_select') .'/includes/common.inc');
+  require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
 
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
   drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', 'inline');
 
   $form['config'] = array(
@@ -247,14 +247,14 @@ function _hierarchical_select_create_export_code($config) {
   $output = '';
 
   $output .= "\$config = array(\n";
-  $output .= "  'config_id'       => '". $config['config_id'] ."',\n";
-  $output .= "  'save_lineage'    => ". $config['save_lineage'] .",\n";
-  $output .= "  'enforce_deepest' => ". $config['enforce_deepest'] .",\n";
-  $output .= "  'entity_count'    => ". $config['entity_count'] .",\n";
-  $output .= "  'require_entity'  => ". $config['require_entity'] .",\n";
-  $output .= "  'resizable'       => ". $config['resizable'] .",\n";
+  $output .= "  'config_id'       => '" . $config['config_id'] . "',\n";
+  $output .= "  'save_lineage'    => " . $config['save_lineage'] . ",\n";
+  $output .= "  'enforce_deepest' => " . $config['enforce_deepest'] . ",\n";
+  $output .= "  'entity_count'    => " . $config['entity_count'] . ",\n";
+  $output .= "  'require_entity'  => " . $config['require_entity'] . ",\n";
+  $output .= "  'resizable'       => " . $config['resizable'] . ",\n";
   $output .= "  'level_labels' => array(\n";
-  $output .= "    'status' => ". $config['level_labels']['status'] .",\n";
+  $output .= "    'status' => " . $config['level_labels']['status'] . ",\n";
   $output .= "    'labels' => array(\n";
   if (isset($config['level_labels']['labels'])) {
     foreach ($config['level_labels']['labels'] as $depth => $label) {
@@ -265,13 +265,13 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    ),\n";
   $output .= "  ),\n";
   $output .= "  'dropbox' => array(\n";
-  $output .= "    'status'    => ". $config['dropbox']['status'] .",\n";
-  $output .= "    'title'     => '". str_replace("'", "\'", $config['dropbox']['title']) ."',\n";
-  $output .= "    'limit'     => ". $config['dropbox']['limit'] .",\n";
-  $output .= "    'reset_hs'  => ". $config['dropbox']['reset_hs'] .",\n";
+  $output .= "    'status'    => " . $config['dropbox']['status'] . ",\n";
+  $output .= "    'title'     => '" . str_replace("'", "\'", $config['dropbox']['title']) . "',\n";
+  $output .= "    'limit'     => " . $config['dropbox']['limit'] . ",\n";
+  $output .= "    'reset_hs'  => " . $config['dropbox']['reset_hs'] . ",\n";
   $output .= "  ),\n";
   $output .= "  'editability' => array(\n";
-  $output .= "    'status' => ". $config['editability']['status'] .",\n";
+  $output .= "    'status' => " . $config['editability']['status'] . ",\n";
   $output .= "    'item_types' => array(\n";
   if (isset($config['editability']['item_types'])) {
     foreach ($config['editability']['item_types'] as $depth => $item_type) {
@@ -287,8 +287,8 @@ function _hierarchical_select_create_export_code($config) {
     }
   }
   $output .= "    ),\n";
-  $output .= "    'allow_new_levels' => ". $config['editability']['allow_new_levels'] .",\n";
-  $output .= "    'max_levels'       => ". $config['editability']['max_levels'] .",\n";
+  $output .= "    'allow_new_levels' => " . $config['editability']['allow_new_levels'] . ",\n";
+  $output .= "    'max_levels'       => " . $config['editability']['max_levels'] . ",\n";
   $output .= "  ),\n";
   $output .= ");\n";
 

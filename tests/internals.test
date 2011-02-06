@@ -415,8 +415,8 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
   }
 
   private function assertHierarchy($hierarchy, $reference) {
-    $this->assertIdentical($hierarchy->lineage,   $reference->lineage,   'Hierarchy lineage is correct.');
-    $this->assertIdentical($hierarchy->levels,    $reference->levels,    'Hierarchy levels is correct.');
+    $this->assertIdentical($hierarchy->lineage,    $reference->lineage,    'Hierarchy lineage is correct.');
+    $this->assertIdentical($hierarchy->levels,     $reference->levels,     'Hierarchy levels is correct.');
     $this->assertIdentical($hierarchy->childinfo, $reference->childinfo, 'Hierarchy child info is correct.');
   }
 }

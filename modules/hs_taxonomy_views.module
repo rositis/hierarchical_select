@@ -46,7 +46,7 @@ function hs_taxonomy_views_menu() {
  * Implementation of hook_form_alter().
  */
 function hs_taxonomy_views_form_alter(&$form, $form_state, $form_id) {
-  // 
+  //
   if ($form_id == 'views_ui_edit_view_form') {
     // Add JS and CSS required for Hierarchical Select to work.
     _hierarchical_select_setup_js();
@@ -57,16 +57,15 @@ function hs_taxonomy_views_form_alter(&$form, $form_state, $form_id) {
   }
 
   if ($form_id == 'views_ui_config_item_form'
-      && $form_state['type'] == 'filter'
-      && $form_state['handler']->table == 'term_node'
-      && $form_state['handler']->field == 'tid')
-  {
+       && $form_state['type'] == 'filter'
+       && $form_state['handler']->table == 'term_node'
+       && $form_state['handler']->field == 'tid') {
     require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
 
     $view_name  = $form_state['view']->name;
     $filter_id  = $form_state['id'];
     $display_id = _hs_taxonomy_views_get_display_id_for_filter($form_state['view'], $filter_id);
-    
+
 
     $config_id = "taxonomy-views-$view_name-$display_id-$filter_id";
     $config    = hierarchical_select_common_config_get($config_id);
@@ -319,7 +318,7 @@ function hs_taxonomy_views_config_form($form_state, $view, $display_id, $filter_
     'entities'    => t('nodes'),
   );
   $max_hierarchy_depth = _hs_taxonomy_hierarchical_select_get_depth($vocabulary->vid);
-  $preview_is_required = !(bool)$filter['expose']['optional'];
+  $preview_is_required = !(bool) $filter['expose']['optional'];
   $form['hierarchical_select_config'] = hierarchical_select_common_config_form($module, $params, $config_id, $defaults, $strings, $max_hierarchy_depth, $preview_is_required);
 
   $form['link'] = array(
@@ -399,7 +398,7 @@ function hs_taxonomy_views_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_taxonomy_views_hierarchical_select_root_level($params) {
-  $any_label = variable_get('views_exposed_filter_any_label', 'old_any') === 'old_any' ? '<'. t('Any') .'>' : '- '. t('Any') .' -';
+  $any_label = variable_get('views_exposed_filter_any_label', 'old_any') === 'old_any' ? '<' . t('Any') . '>' : '- ' . t('Any') . ' -';
   $root_level =  ($params['optional']) ? array(HS_TAXONOMY_VIEWS_ANY_OPTION => $any_label) : array();
   $root_level += hs_taxonomy_hierarchical_select_root_level($params);
   return $root_level;
@@ -430,7 +429,7 @@ function hs_taxonomy_views_hierarchical_select_valid_item($item, $params) {
  * Implementation of hook_hierarchical_select_item_get_label().
  */
 function hs_taxonomy_views_hierarchical_select_item_get_label($item, $params) {
-  return ($item == HS_TAXONOMY_VIEWS_ANY_OPTION) ? '<'. t('Any') .'>' : hs_taxonomy_hierarchical_select_item_get_label($item, $params);
+  return ($item == HS_TAXONOMY_VIEWS_ANY_OPTION) ? '<' . t('Any') . '>' : hs_taxonomy_hierarchical_select_item_get_label($item, $params);
 }
 
 /**
@@ -536,10 +535,10 @@ function hs_taxonomy_views_hierarchical_select_entity_count($item, $params) {
         $values = '';
         foreach ($node_types as $key => $value) {
           if (empty($values)) {
-            $values = '\''. $value .'\'';
+            $values = '\'' . $value . '\'';
           }
           else {
-            $values .= ', \''. $value .'\'';
+            $values .= ', \'' . $value . '\'';
           }
         }
 
@@ -581,11 +580,10 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
       if (isset($view->display[$display_id]->display_options['filters']) && count($view->display[$display_id]->display_options['filters'])) {
         foreach ($view->display[$display_id]->display_options['filters'] as $filter) {
           if (isset($filter['type']) && $filter['type'] == 'hierarchical_select'
-            && ((isset($filter['table']) && $filter['table'] == 'term_node'
+             && ((isset($filter['table']) && $filter['table'] == 'term_node'
               && isset($filter['field']) && $filter['field'] == 'tid')
              || (isset($filter['table']) && $filter['table'] == 'node'
-              && isset($filter['field']) && $filter['field'] == 'term_node_tid_depth')))
-          {
+              && isset($filter['field']) && $filter['field'] == 'term_node_tid_depth'))) {
             $vocabulary = taxonomy_vocabulary_load($filter['vid']);
             $filter_label = (!empty($filter['expose']['label'])) ? $filter['expose']['label'] : t('Taxonomy: Term');
 
@@ -612,7 +610,7 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
     }
   }
 
-  return  $config_info;
+  return $config_info;
 }
 
 

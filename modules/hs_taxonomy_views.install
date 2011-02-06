@@ -25,7 +25,7 @@ function hs_taxonomy_views_uninstall() {
       }
     }
   }
-  
+
   drupal_set_message(t("Reset the Selection Type from 'Hierarchical Select' to
                         'Dropdown' everywhere where it was used."),
                     'warning');

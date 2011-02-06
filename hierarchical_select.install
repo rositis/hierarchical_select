@@ -134,7 +134,7 @@ function hierarchical_select_update_3() {
       variable_del($var);
     }
     $config['dropbox']['reset_hs'] = 1;
-    variable_set('hierarchical_select_config_'. $config['config_id'], $config);
+    variable_set('hierarchical_select_config_' . $config['config_id'], $config);
 
     // Rename the variable that indicates if a vocabulary is using
     // Hierarchical Select or not.
@@ -142,7 +142,7 @@ function hierarchical_select_update_3() {
     variable_set("taxonomy_hierarchical_select_$vid", variable_get($var, 0));
     variable_del($var);
 
-    drupal_set_message('Migrated Hierarchical Select settings for vocabulary '. $vid .'.');
+    drupal_set_message('Migrated Hierarchical Select settings for vocabulary ' . $vid . '.');
   }
 
   return $ret;

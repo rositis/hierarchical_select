@@ -28,25 +28,25 @@
 function theme_hierarchical_select_form_element($element, $value) {
   $output = '<div class="form-item hierarchical-select-wrapper-wrapper"';
   if (!empty($element['#id'])) {
-    $output .= ' id="'. $element['#id'] .'-wrapper"';
+    $output .= ' id="' . $element['#id'] . '-wrapper"';
   }
   $output .= ">\n";
-  $required = !empty($element['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
+  $required = !empty($element['#required']) ? '<span class="form-required" title="' . t('This field is required.') . '">*</span>' : '';
 
   if (!empty($element['#title'])) {
     $title = $element['#title'];
     if (!empty($element['#id'])) {
-      $output .= ' <label for="'. $element['#id'] .'">'. t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) ."</label>\n";
+      $output .= ' <label for="' . $element['#id'] . '">' . t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) . "</label>\n";
     }
     else {
-      $output .= ' <label>'. t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) ."</label>\n";
+      $output .= ' <label>' . t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) . "</label>\n";
     }
   }
 
   $output .= " $value\n";
 
   if (!empty($element['#description'])) {
-    $output .= ' <div class="description">'. $element['#description'] ."</div>\n";
+    $output .= ' <div class="description">' . $element['#description'] . "</div>\n";
   }
 
   $output .= "</div>\n";
@@ -80,7 +80,7 @@ function theme_hierarchical_select($element) {
    'hierarchical-select-wrapper-for-name-' . $element['#id'],
    (isset($element['#config']['config_id'])) ? 'hierarchical-select-wrapper-for-config-' . $element['#config']['config_id'] : NULL,
   );
-  $element['#attributes']['class'] .= ' '. implode(' ', $classes);
+  $element['#attributes']['class'] .= ' ' . implode(' ', $classes);
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
@@ -93,7 +93,7 @@ function theme_hierarchical_select($element) {
       '#required' => $element['#required'],
       '#error' => isset($element['#error']) ? $element['#error'] : '',
     ),
-    '<div '. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>'
+    '<div ' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>'
   );
 
   return $output;
@@ -126,14 +126,14 @@ function theme_hierarchical_select_selects_container($element) {
  */
 function theme_hierarchical_select_select($element) {
   $select = '';
-  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
+  $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
   $class = array('form-select');
   if (form_get_error($element) === '') {
     $class = array_merge($class, array('error'));
   }
   _form_set_class($element, $class);
   $multiple = isset($element['#multiple']) && $element['#multiple'];
-  return '<select name="'. $element['#name'] .''. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) .' id="'. $element['#id'] .'" '. $size .'>'. _hierarchical_select_options($element) .'</select>';
+  return '<select name="' . $element['#name'] . '' . ($multiple ? '[]' : '') . '"' . ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) . ' id="' . $element['#id'] . '" ' . $size . '>' . _hierarchical_select_options($element) . '</select>';
 }
 
 /**
@@ -147,7 +147,7 @@ function theme_hierarchical_select_select($element) {
  *   A textually indicated special option.
  */
 function theme_hierarchical_select_special_option($option) {
-  return '<'. $option .'>';
+  return '<' . $option . '>';
 }
 
 
@@ -162,7 +162,7 @@ function theme_hierarchical_select_special_option($option) {
  */
 // TODO: check if this has changed in D6.
 function theme_hierarchical_select_textfield($element) {
-  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
+  $size = $element['#size'] ? ' size="' . $element['#size'] . '"' : '';
   $class = array('form-text');
   $extra = '';
   $output = '';
@@ -170,18 +170,18 @@ function theme_hierarchical_select_textfield($element) {
   if ($element['#autocomplete_path']) {
     drupal_add_js('misc/autocomplete.js');
     $class[] = 'form-autocomplete';
-    $extra =  '<input class="autocomplete" type="hidden" id="'. $element['#id'] .'-autocomplete" value="'. check_url(url($element['#autocomplete_path'], NULL, NULL, TRUE)) .'" disabled="disabled" />';
+    $extra =  '<input class="autocomplete" type="hidden" id="' . $element['#id'] . '-autocomplete" value="' . check_url(url($element['#autocomplete_path'], NULL, NULL, TRUE)) . '" disabled="disabled" />';
   }
   _form_set_class($element, $class);
 
   if (isset($element['#field_prefix'])) {
-    $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
+    $output .= '<span class="field-prefix">' . $element['#field_prefix'] . '</span> ';
   }
 
-  $output .= '<input type="text" maxlength="'. $element['#maxlength'] .'" name="'. $element['#name'] .'" id="'. $element['#id'] .'" '. $size .' value="'. check_plain($element['#markup']) .'"'. drupal_attributes($element['#attributes']) .' />';
+  $output .= '<input type="text" maxlength="' . $element['#maxlength'] . '" name="' . $element['#name'] . '" id="' . $element['#id'] . '" ' . $size . ' value="' . check_plain($element['#markup']) . '"' . drupal_attributes($element['#attributes']) . ' />';
 
   if (isset($element['#field_suffix'])) {
-    $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
+    $output .= ' <span class="field-suffix">' . $element['#field_suffix'] . '</span>';
   }
 
   return $output . $extra;
@@ -207,11 +207,11 @@ function theme_hierarchical_select_dropbox_table($element) {
   $separator = $element['separator']['#markup'];
   $is_empty  = $element['is_empty']['#markup'];
 
-  $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
+  $separator_html = '<span class="hierarchical-select-item-separator">' . $separator . '</span>';
 
   $output .= '<div class="' . $class . '">';
   $output .= '<table>';
-  $output .= '<caption class="dropbox-title">'. $title .'</caption>';
+  $output .= '<caption class="dropbox-title">' . $title . '</caption>';
   $output .= '<tbody>';
 
   if (!$is_empty) {
@@ -226,7 +226,7 @@ function theme_hierarchical_select_dropbox_table($element) {
       // is the element for the "Remove" checkbox.
       $deepest_level = count(element_children($db_entry)) - 1;
 
-      $output .= '<tr class="dropbox-entry '. $first .' '. $last .' '. $zebra .'">';
+      $output .= '<tr class="dropbox-entry ' . $first . ' ' . $last . ' ' . $zebra . '">';
       $output .= '<td>';
       // Each item in a lineage is separated by the separator string.
       for ($depth = 0; $depth < $deepest_level; $depth++) {
@@ -237,7 +237,7 @@ function theme_hierarchical_select_dropbox_table($element) {
         }
       }
       $output .= '</td>';
-      $output .= '<td class="dropbox-remove">'. drupal_render($db_entry['remove']) .'</td>';
+      $output .= '<td class="dropbox-remove">' . drupal_render($db_entry['remove']) . '</td>';
       $output .= '</tr>';
     }
   }
@@ -320,7 +320,7 @@ function theme_hierarchical_select_common_config_form_editability($form) {
     }
 
     // Render the table and description.
-    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'), '<em>'. t('Per-level settings for creating new !items.', array('!items' => $strings['items'])));
+    $output .= theme('table', $header, $rows, array('style' => 'width: auto;'), '<em>' . t('Per-level settings for creating new !items.', array('!items' => $strings['items'])));
     $output .= '<div class="description">';
     $output .= t(
       'The %item_type you enter for each level is what will be used in
@@ -383,7 +383,7 @@ function theme_hierarchical_select_selection_as_lineages($selection, $config) {
   }
 
   // Add the CSS.
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') .'/hierarchical_select.css');
+  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
 
   return $output;
 }
@@ -412,8 +412,8 @@ function _hierarchical_select_options($element) {
   $value_is_array = is_array($element['#markup']);
   $options = '';
   foreach ($choices as $key => $choice) {
-    $key = (string)$key;
-    if ($value_valid && (!$value_is_array && (string)$element['#markup'] === $key || ($value_is_array && in_array($key, $element['#markup'])))) {
+    $key = (string) $key;
+    if ($value_valid && (!$value_is_array && (string) $element['#markup'] === $key || ($value_is_array && in_array($key, $element['#markup'])))) {
       $selected = ' selected="selected"';
     }
     else {
@@ -432,7 +432,7 @@ function _hierarchical_select_options($element) {
       $class = ($element['#childinfo'][$key] == 0) ? 'has-no-children' : 'has-children';
     }
 
-    $options .= '<option value="'. check_plain($key) .'" class="'. $class .'"'. $selected .'>'. check_plain($choice) .'</option>';
+    $options .= '<option value="' . check_plain($key) . '" class="' . $class . '"' . $selected . '>' . check_plain($choice) . '</option>';
   }
   return $options;
 }
