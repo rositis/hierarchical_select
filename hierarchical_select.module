@@ -784,14 +784,6 @@ function hierarchical_select_after_build($form, &$form_state) {
   );
   $form['hs_form_build_id'] = form_builder($form['form_id']['#value'], $form_element, $form_state);
 
-  // Pass the hs_form_build_id to a custom submit function that will clear
-  // the associated values from the cache. The _hierarchical_select_submit()
-  // must be the first submit callback to ensure that it's executed: if a
-  // submit callback before it performs a drupal_goto(), it won't be called!
-  $form_state['hs_form_build_id'] = $hs_form_build_id;
-  $form['#submit'] = (is_array($form['#submit'])) ? $form['#submit'] : array();
-  $form['#submit'] = array_merge(array('_hierarchical_select_submit'), $form['#submit']);
-
   return $form;
 }
 
@@ -850,23 +842,6 @@ function _hierarchical_select_validate(&$element, &$form_state) {
   if ($element['#required'] && (!count($element['#value']) || (is_string($element['#value']) && strlen(trim($element['#value'])) == 0))) {
     form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
     _hierarchical_select_form_set_error_class($element);
-  }
-}
-
-/**
- * Hierarchical select form element #submit callback.
- */
-function _hierarchical_select_submit($form, &$form_state) {
-  // Delete the stored form information when the form is submitted.
-  // [VIEWS] TRICKY: when using Views, which uses its own Forms API workflow
-  // instead of core's, this #submit callback is called even when there is
-  // nothing really there to submit. So to prevent our cache to be cleared,
-  // which would result in failing AHAH callbacks, we just prevent it from
-  // clearing the cache. This results in cache entries that aren't cleared
-  // immediately upon finishing use of the form, but that's acceptable in the
-  // end because the cache will be cleared anyway at some point.
-  if (isset($form_state['hs_form_build_id']) && !isset($form_state['view'])) {
-    cache_clear_all($form_state['hs_form_build_id'], 'cache_hierarchical_select');
   }
 }
 
