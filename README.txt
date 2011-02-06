@@ -86,10 +86,19 @@ Limitations
    A -> D
    B -> C
    B -> D
-   If you then save any two lineages in which all four terms exist, all four
-   lineages will be rendered by Hierarchical Select, because only the four
-   terms are stored and thus there is no way to recover the originally
-   selected two lineages.
+  If you then save any two lineages in which all four terms exist, all four
+  lineages will be rendered by Hierarchical Select, because only the four
+  terms are stored and thus there is no way to recover the originally selected
+  two lineages.
+- You can NOT expect the Hierarchical Select Taxonomy module to automagically
+  fix all existing nodes when you enable or disable the "save lineage" setting
+  and neither can you expect it to keep working properly when you reorganize
+  the term hierarchy. There's nothing I can do about this. Hierarchical Select
+  is merely a form element, it can't be held responsible for features that
+  Drupal core lacks or supports poorly.
+  See the following issues:
+  * http://drupal.org/node/1023762#comment-4054386
+  * http://drupal.org/node/976394#comment-4054456
 
 
 Maximum scalability
