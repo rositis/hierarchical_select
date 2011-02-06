@@ -489,6 +489,23 @@ Retrieving all hsids in the current document can be done like this:
     // …
   }
 
+Alternatively, you can use one of the transliterated class names. A wrapper
+for Hierarchical Select looks like this:
+  <div class="hierarchical-select-wrapper
+              hierarchical-select-level-labels-style-none
+              hierarchical-select-wrapper-for-name-edit-taxonomy-1
+              hierarchical-select-wrapper-for-config-taxonomy-1
+              hierarchical-select-wrapper-processed"
+       id="hierarchical-select-35-wrapper">
+  …
+  </div>
+Hence, you could also use selectors such as these, to achieve the same effect,
+but with more robust code:
+  $('.hierarchical-select-wrapper-for-config-taxonomy-1:first')
+  .trigger('enforce-update');
+  $('.hierarchical-select-wrapper-for-name-edit-taxonomy-1:first')
+  .trigger('enforce-update');
+
 The following events are triggered:
   - change-hierarchical-select
   - update-hierarchical-select
