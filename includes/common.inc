@@ -96,7 +96,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     ),
   );
 
-  $form['config_id'] = array('#type' => 'value', '#value' => $config_id);
+  $form['config_id'] = array('#type' => 'value', '#markup' => $config_id);
 
   // TODO: really make this a *live* preview, i.e. refresh the preview on each
   // change in the form. This cannot be done easily in Drupal 5, so let's do

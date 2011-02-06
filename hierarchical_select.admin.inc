@@ -13,7 +13,7 @@
  */
 function hierarchical_select_admin_settings() {
   $form['description'] = array(
-    '#value' => t('All settings below will be used as site-wide defaults.'),
+    '#markup' => t('All settings below will be used as site-wide defaults.'),
     '#prefix' => '<div>',
     '#suffix' => '</div>',
   );
@@ -191,10 +191,10 @@ function hierarchical_select_admin_import(&$form_state, $config_id) {
     ),
     '#attributes' => array('class' => 'hierarchical-select-config-code'),
   );
-  $form['interpreted_config'] = array('#type' => 'value', '#value' => NULL);
+  $form['interpreted_config'] = array('#type' => 'value', '#markup' => NULL);
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t("Import"),
+    '#markup' => t("Import"),
   );
   $form['#redirect'] = NULL;
   return $form;

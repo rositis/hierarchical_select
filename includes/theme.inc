@@ -69,7 +69,7 @@ function theme_hierarchical_select($element) {
   if (!isset($element['#attributes']['class'])) {
     $element['#attributes']['class'] = '';
   }
-  $hsid = $element['hsid']['#value'];
+  $hsid = $element['hsid']['#markup'];
   $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
   $classes = array(
    'hierarchical-select-wrapper',
@@ -178,7 +178,7 @@ function theme_hierarchical_select_textfield($element) {
     $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
   }
 
-  $output .= '<input type="text" maxlength="'. $element['#maxlength'] .'" name="'. $element['#name'] .'" id="'. $element['#id'] .'" '. $size .' value="'. check_plain($element['#value']) .'"'. drupal_attributes($element['#attributes']) .' />';
+  $output .= '<input type="text" maxlength="'. $element['#maxlength'] .'" name="'. $element['#name'] .'" id="'. $element['#id'] .'" '. $size .' value="'. check_plain($element['#markup']) .'"'. drupal_attributes($element['#attributes']) .' />';
 
   if (isset($element['#field_suffix'])) {
     $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
@@ -203,9 +203,9 @@ function theme_hierarchical_select_dropbox_table($element) {
     $class .= ' error';
   }
 
-  $title     = $element['title']['#value'];
-  $separator = $element['separator']['#value'];
-  $is_empty  = $element['is_empty']['#value'];
+  $title     = $element['title']['#markup'];
+  $separator = $element['separator']['#markup'];
+  $is_empty  = $element['is_empty']['#markup'];
 
   $separator_html = '<span class="hierarchical-select-item-separator">'. $separator .'</span>';
 
@@ -406,14 +406,14 @@ function _hierarchical_select_options($element) {
   if (!isset($choices)) {
     $choices = $element['#options'];
   }
-  // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
+  // array_key_exists() accommodates the rare event where $element['#markup'] is NULL.
   // isset() fails in this situation.
-  $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
-  $value_is_array = is_array($element['#value']);
+  $value_valid = isset($element['#markup']) || array_key_exists('#markup', $element);
+  $value_is_array = is_array($element['#markup']);
   $options = '';
   foreach ($choices as $key => $choice) {
     $key = (string)$key;
-    if ($value_valid && (!$value_is_array && (string)$element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+    if ($value_valid && (!$value_is_array && (string)$element['#markup'] === $key || ($value_is_array && in_array($key, $element['#markup'])))) {
       $selected = ' selected="selected"';
     }
     else {
