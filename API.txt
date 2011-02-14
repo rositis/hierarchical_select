@@ -80,7 +80,6 @@ element type:
       'animation_delay'    => 400,
       'special_items'      => array(),
       'render_flat_select' => 0,
-      'path'               => 'hierarchical_select_json',
     ),
     '#default_value' => '83',
   ); 
@@ -225,12 +224,6 @@ array. These are the items it can contain:
    see the JavaScript events section for details) and you have a work-around
    (which, admittedly, only works when JS is enabled).
 
- - path (optional, defaults to 'hierarchical_select_json')
-   The Drupal path at which a JSON object with Hierarchical Select update
-   information is available. In 99% of the cases, this will remain unchanged,
-   but for advanced use cases, e.g. Views, where an object is referenced by
-   the form in which Hierarchical Select is present and must this exist before
-   the form is rendered, this can be a work-around.
 3) We *don't* specify a list of options: Hierarchical Select automatically
 generates the options for us, thanks to the 'module' and 'params' settings.
 
@@ -316,31 +309,11 @@ Hierarchical Select compatibility: gotcha's
 -------------------------------------------
 - "Invalid response from server"
   This typically means that some functions could not be found when
-  Hierarchical Select does an AHAH callback to the server, which in turn means
+  Hierarchical Select does an AJAX callback to the server, which in turn means
   that some code (some PHP file) has not been included, while it should have
-  been.
-  Hierarchical Select supports the same system to define files that should be
-  included as CTools:
-    $form_state['form_load_files']
-  Hence you should do something like this in your form code:
-    $form_state['form_load_files'] = array(drupal_get_path('module', 'node') . '/pages.inc');
-  Which could look like this in your case:
-    $form_state['form_load_files'] = array(drupal_get_path('module', 'mymodule') . '/something.inc');
-
-
-Why Hierarchical Select can't take advantage of Drupal 6 Form API
------------------------------------------------------------------
-There are two main things that make Hierarchical Select's FAPI code very
-complex. But for neither one I can take advantage of Drupal 6's FAPI
-improvements.
-1) Hierarchical Select has its own "light" form cache (only a unique id, the
-   form_id and the parameters that are passed to the form definition function)
-   to make AJAX updates possible (in an AJAX callback only the Hierarchical
-   Select should be re-rendered and returned).
-   One would think he can use Drupal 6's shiny $form_state. But one would be
-   wrong, because Views (the exposed filters form) support is a necessity. And
-   that particular form doesn't work when $form['#cache'] is set.
-2) add child form items based on the user's input
+  been. Instead of using module_load_include() or even require_once, you
+  should use form_load_include(). This function is new in Drupal 7 and will
+  ensure that all required PHP files are included automatically.
 
 
 Hierarchical Select API Tutorial

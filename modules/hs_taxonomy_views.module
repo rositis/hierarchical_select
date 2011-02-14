@@ -330,7 +330,7 @@ function hs_taxonomy_views_config_form($form, $form_state, $view, $display_id, $
 
   $form['save'] = array(
     '#type' => 'submit',
-    '#markup' => t('Save'),
+    '#value' => t('Save'),
   );
 
   // Add the custom submit handler for the Hierarchical Select config form

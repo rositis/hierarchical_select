@@ -5,6 +5,6 @@ dependencies[] = hierarchical_select
 dependencies[] = hs_taxonomy 
 dependencies[] = views
 package = Form Elements
-core = 7.x
+core = 6.x
 
 files[] = hs_taxonomy_views_handler_filter_term_node_tid.inc

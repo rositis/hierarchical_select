@@ -2,12 +2,14 @@
 
 (function($) {
 
-Drupal.behaviors.HierarchicalSelect = function (context) {
-  $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
-  .addClass('hierarchical-select-wrapper-processed').each(function() {
-    var hsid = $(this).attr('id').replace(/^hierarchical-select-(\d+)-wrapper$/, "$1");
-    Drupal.HierarchicalSelect.initialize(hsid);
-  });
+Drupal.behaviors.HierarchicalSelect = {
+  attach: function (context) {
+    $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
+    .addClass('hierarchical-select-wrapper-processed').each(function() {
+      var hsid = $(this).attr('id').replace(/^hierarchical-select-(\d+)-wrapper$/, "$1");
+      Drupal.HierarchicalSelect.initialize(hsid);
+    });
+  }
 };
 
 Drupal.HierarchicalSelect = {};
@@ -48,11 +50,11 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
     Drupal.HierarchicalSelect.state[hsid] = {};
   }
 
+  Drupal.HierarchicalSelect.attachBindings(hsid);
   this.transform(hsid);
   if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
     this.resizable(hsid);
   }
-  Drupal.HierarchicalSelect.attachBindings(hsid);
 
   if (this.cache != null && this.cache.status()) {
     this.cache.load(hsid);
@@ -250,6 +252,7 @@ Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
 };
 
 Drupal.HierarchicalSelect.attachBindings = function(hsid) {
+  var updateOpString = $('#hierarchical-select-'+ hsid +'-wrapper .update-button').val();
   var addOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select input', Drupal.HierarchicalSelect.context).val();
   var createNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-create', Drupal.HierarchicalSelect.context).val();
   var cancelNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-cancel', Drupal.HierarchicalSelect.context).val();
@@ -265,7 +268,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   
   // "enforce-update" event
   .unbind('enforce-update').bind('enforce-update', data, function(e, extraPost) {
-     Drupal.HierarchicalSelect.update(e.data.hsid, 'enforced-update', { extraPost: extraPost });
+     Drupal.HierarchicalSelect.update(e.data.hsid, 'enforced-update', { opString: updateOpString, extraPost: extraPost });
   })
 
   // "prepare-GET-submit" event
@@ -277,7 +280,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   .find('.hierarchical-select .selects select').unbind().change(function(_hsid) {
     return function() {
       if (Drupal.settings.HierarchicalSelect.settings[_hsid]['updatesEnabled']) {
-        Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { select_id : $(this).attr('id') });
+        Drupal.HierarchicalSelect.update(_hsid, 'update-hierarchical-select', { opString: updateOpString, select_id : $(this).attr('id') });
       }
     };
   }(hsid)).end()
@@ -503,9 +506,11 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         });
         return;
       }
+      post.push({ name : 'op', value : settings.opString });
       break;
     
     case 'enforced-update':
+      post.push({ name : 'op', value : settings.opString });
       post = post.concat(settings.extraPost);
       break;
 
@@ -516,13 +521,8 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       break;
   }
 
-  // Construct the URL the request should be made to. GET arguments may not be
-  // forgotten.
-  var url = Drupal.settings.HierarchicalSelect.basePath + Drupal.settings.HierarchicalSelect.settings[hsid]['path'];
-  if (Drupal.settings.HierarchicalSelect.getArguments.length > 0) {
-    url += (url.indexOf('?') == -1) ? '?' : '&';
-    url += Drupal.settings.HierarchicalSelect.getArguments;
-  }
+  // Construct the URL the request should be made to.
+  var url = Drupal.settings.basePath + Drupal.settings.HierarchicalSelect.settings[hsid].ajax_path;
 
   // Construct the object that contains the options for a callback to the
   // server. If a client-side cache is found however, it's possible that this
@@ -540,18 +540,23 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
       // When invalid HTML is received in Safari, jQuery calls this function.
       Drupal.HierarchicalSelect.throwError(hsid, Drupal.t('Received an invalid response from the server.'));
     },
-    success:    function(response) {
-      // When invalid HTML is received in Firefox, jQuery calls this function.
-      if ($('.hierarchical-select-wrapper > *', $(response.output)).length == 0) {
+    success: function(response, status) {
+      // An invalid response may be returned by the server, in case of a PHP
+      // error. Detect this and let the user know.
+      if (response === null || response.length == 0) {
         Drupal.HierarchicalSelect.throwError(hsid, Drupal.t('Received an invalid response from the server.'));
         return;
       }
 
-      // Replace the old HTML with the (relevant part of) retrieved HTML.
-      $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
-      .removeClass('hierarchical-select-wrapper-processed')
-      .html($('.hierarchical-select-wrapper > *', $(response.output)));
-
+      // Execute all AJAX commands in the response. But pass an additional
+      // hsid parameter, which is then only used by the commands written
+      // for Hierarchical Select.
+      for (var i in response) {
+        if (response[i]['command'] && Drupal.ajax.prototype.commands[response[i]['command']]) {
+          Drupal.ajax.prototype.commands[response[i]['command']](this, response[i], status, hsid);
+        }
+      }
+      
       // Attach behaviors. This is just after the HTML has been updated, so
       // it's as soon as we can.
       Drupal.attachBehaviors(Drupal.HierarchicalSelect.context);
@@ -605,9 +610,11 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   }
 };
 
-Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate = function(target, response) {
-  $.extend(Drupal.settings.HierarchicalSelect.settings, response.hs_drupal_js_settings);
-  Drupal.attachBehaviors($(target));
+Drupal.ajax.prototype.commands.hierarchicalSelectUpdate = function(ajax, response, status, hsid) {
+  // Replace the old HTML with the (relevant part of) retrieved HTML.
+  $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
+  .parent('.form-item')
+  .replaceWith($(response.output));
 };
 
 })(jQuery);

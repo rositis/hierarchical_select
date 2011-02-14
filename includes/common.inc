@@ -67,15 +67,6 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
  * Form definition of the hierarchical_select_common_config_form form.
  */
 function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth, $preview_is_required) {
-  static $js_added;
-
-  if (!isset($js_added)) {
-    $js_added = TRUE;
-    drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css');
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js');
-    drupal_add_js(array('HierarchicalSelect' => array('configForm' => array($config_id))), array('type' => 'setting', 'scope' => JS_DEFAULT));
-  }
-
   $config = hierarchical_select_common_config_get($config_id, $defaults_override);
   $args = array(
     '!item' => $strings['item'],
@@ -91,30 +82,43 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#type' => 'fieldset',
     '#title' => t('Hierarchical Select configuration'),
     '#attributes' => array(
-      'class' => 'hierarchical-select-config-form',
+      'class' => array('hierarchical-select-config-form'),
       'id'    => 'hierarchical-select-config-form-' . $config_id,
     ),
+    '#attached' => array(
+      'css' => array(
+        drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css'
+      ),
+      'js' => array(
+        array(
+          'type' => 'file',
+          'data' => drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js',
+        ),
+        array(
+          'type' => 'setting',
+          'data' => array('HierarchicalSelect' => array('configForm' => array($config_id))),
+        ),
+      ),
+    )
   );
 
-  $form['config_id'] = array('#type' => 'value', '#markup' => $config_id);
+  $form['config_id'] = array('#type' => 'value', '#value' => $config_id);
 
   // TODO: really make this a *live* preview, i.e. refresh the preview on each
-  // change in the form. This cannot be done easily in Drupal 5, so let's do
-  // so in Drupal 6. See cfg.livePreview in common_config_form.js.
+  // change in the form. This cannot be done easily in Drupal 5 or 6, so let's
+  // do so in Drupal 7. See cfg.livePreview in common_config_form.js.
   $form['live_preview'] = array(
     '#type' => 'fieldset',
     '#title' => t('Preview'),
     '#description' => t('This is what the Hierarchical Select will look like with your current configuration.'),
     '#collapsible' => FALSE,
-    '#attributes' => array('class' => 'live-preview'),
+    '#attributes' => array('class' => array('live-preview')),
   );
   $form['live_preview']['example'] = array(
     '#type' => 'hierarchical_select',
     '#required' => $preview_is_required,
     '#title' => t('Preview'),
     '#description' => t('The description.'),
-    // Skip all validation.
-    '#validated' => TRUE,
   );
   hierarchical_select_common_config_apply($form['live_preview']['example'], $config_id, array_merge($defaults_override, array('module' => $module, 'params' => $params)));
 
@@ -146,7 +150,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       user can select a !item.',
       $args
     ),
-    '#attributes' => array('class' => 'enforce-deepest'),
+    '#attributes' => array('class' => array('enforce-deepest')),
   );
 
   if (module_hook($module, 'hierarchical_select_entity_count')) {
@@ -163,7 +167,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         1 => t('Enabled'),
       ),
       '#default_value' => (isset($config['entity_count'])) ? $config['entity_count'] : NULL,
-      '#attributes' => array('class' => 'entity-count'),
+      '#attributes' => array('class' => array('entity-count')),
     );
 
     $form['require_entity'] = array(
@@ -180,7 +184,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         1 => t('Enabled'),
       ),
       '#default_value' => (isset($config['require_entity'])) ? $config['require_entity'] : NULL,
-      '#attributes' => array('class' => 'require-entity'),
+      '#attributes' => array('class' => array('require-entity')),
     );
   }
 
@@ -197,7 +201,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       1 => t('Enabled'),
     ),
     '#default_value' => (isset($config['resizable'])) ? $config['resizable'] : NULL,
-    '#attributes' => array('class' => 'resizable'),
+    '#attributes' => array('class' => array('resizable')),
   );
 
   $form['level_labels'] = array(
@@ -219,7 +223,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#type' => 'checkbox',
     '#title' => t('Enable level labels'),
     '#default_value' => (isset($config['level_labels']['status'])) ? $config['level_labels']['status'] : NULL,
-    '#attributes' => array('class' => 'level-labels-status'),
+    '#attributes' => array('class' => array('level-labels-status')),
   );
   for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
     $form['level_labels']['labels'][$depth] = array(
@@ -227,7 +231,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#size' => 20,
       '#maxlength' => 255,
       '#default_value' => (isset($config['level_labels']['labels'][$depth])) ? $config['level_labels']['labels'][$depth] : NULL,
-      '#attributes' => array('class' => 'level-label'),
+      '#attributes' => array('class' => array('level-label')),
     );
   }
   $form['level_labels']['#theme'] = 'hierarchical_select_common_config_form_level_labels';
@@ -243,7 +247,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#type' => 'checkbox',
     '#title' => t('Enable the dropbox'),
     '#default_value' => (isset($config['dropbox']['status'])) ? $config['dropbox']['status'] : NULL,
-    '#attributes' => array('class' => 'dropbox-status'),
+    '#attributes' => array('class' => array('dropbox-status')),
   );
   $form['dropbox']['title'] = array(
     '#type' => 'textfield',
@@ -252,7 +256,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#size' => 20,
     '#maxlength' => 255,
     '#default_value' => (isset($config['dropbox']['title'])) ? $config['dropbox']['title'] : NULL,
-    '#attributes' => array('class' => 'dropbox-title'),
+    '#attributes' => array('class' => array('dropbox-title')),
   );
   $form['dropbox']['limit'] = array(
     '#type' => 'textfield',
@@ -269,7 +273,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#size' => 5,
     '#maxlength' => 5,
     '#default_value' => (isset($config['dropbox']['limit'])) ? $config['dropbox']['limit'] : NULL,
-    '#attributes' => array('class' => 'dropbox-limit'),
+    '#attributes' => array('class' => array('dropbox-limit')),
   );
   $form['dropbox']['reset_hs'] = array(
     '#type' => 'radios',
@@ -283,7 +287,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       1 => t('Enabled'),
     ),
     '#default_value' => (isset($config['dropbox']['reset_hs'])) ? $config['dropbox']['reset_hs'] : NULL,
-    '#attributes' => array('class' => 'dropbox-reset-hs'),
+    '#attributes' => array('class' => array('dropbox-reset-hs')),
   );
 
   if (module_hook($module, 'hierarchical_select_create_item')) {
@@ -305,7 +309,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         1 => t('Enabled'),
       ),
       '#default_value' => (isset($config['editability']['status'])) ? $config['editability']['status'] : NULL,
-      '#attributes' => array('class' => 'editability-status'),
+      '#attributes' => array('class' => array('editability-status')),
     );
     for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
       $form['editability']['item_types'][$depth] = array(
@@ -313,7 +317,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         '#size' => 20,
         '#maxlength' => 255,
         '#default_value' => (isset($config['editability']['item_types'][$depth])) ? $config['editability']['item_types'][$depth] : NULL,
-        '#attributes' => array('class' => 'editability-item-type'),
+        '#attributes' => array('class' => array('editability-item-type')),
       );
     }
     for ($depth = 0; $depth <= $max_hierarchy_depth; $depth++) {
@@ -331,7 +335,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         children.',
         $args
       ),
-      '#attributes' => array('class' => 'editability-allow-new-levels'),
+      '#attributes' => array('class' => array('editability-allow-new-levels')),
     );
     $form['editability']['max_levels'] = array(
       '#type' => 'select',
@@ -345,7 +349,7 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
         the user from creating extremely deep !hierarchies.',
         $args
       ),
-      '#attributes' => array('class' => 'editability-max-levels'),
+      '#attributes' => array('class' => array('editability-max-levels')),
     );
 
     $form['editability']['#theme'] = 'hierarchical_select_common_config_form_editability';
@@ -365,18 +369,6 @@ function hierarchical_select_common_config_form_submit($form, &$form_state) {
   unset($config['live_preview']);
 
   hierarchical_select_common_config_set($config['config_id'], $config);
-}
-
-/**
- * Helper function that adds the JS to make Hierarchical Select work when used
- * as a Views exposed filter.
- */
-function hierarchical_select_common_add_views_js() {
-  static $js_added;
-
-  if (!isset($js_added)) {
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/includes/views.js');
-  }
 }
 
 /**

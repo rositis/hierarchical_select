@@ -117,17 +117,15 @@ cfg.livePreview = function(configId) {
   });  
 };
 
-if (Drupal.jsEnabled) {
-  $(document).ready(function() {
-    for (var id in Drupal.settings.HierarchicalSelect.configForm) {
-      var configId = Drupal.settings.HierarchicalSelect.configForm.id;
+$(document).ready(function() {
+  for (var id in Drupal.settings.HierarchicalSelect.configForm) {
+    var configId = Drupal.settings.HierarchicalSelect.configForm.id;
 
-      cfg.levelLabels(configId);
-      cfg.dropbox(configId);
-      cfg.editability(configId);
-      //cfg.livePreview(configId);
-    }
-  });
-}
+    cfg.levelLabels(configId);
+    cfg.dropbox(configId);
+    cfg.editability(configId);
+    //cfg.livePreview(configId);
+  }
+});
 
 })(jQuery, Drupal.HierarchicalSelectConfigForm);

@@ -9,10 +9,7 @@
 
 
 // Make sure that the devel module is installed when you enable developer mode!
-define('HS_DEVELOPER_MODE', 0);
-
-// 6 hours cache life time for forms should be plenty.
-define('HS_CACHE_LIFETIME_DEFAULT', 21600);
+define('HS_DEVELOPER_MODE', 1);
 
 
 //----------------------------------------------------------------------------
@@ -22,14 +19,15 @@ define('HS_CACHE_LIFETIME_DEFAULT', 21600);
  * Implements hook_menu().
  */
 function hierarchical_select_menu() {
-  $items['hierarchical_select_json'] = array(
-    'page callback'   => 'hierarchical_select_json',
-    'type'            => MENU_CALLBACK,
-    // TODO: Needs improvements. Ideally, this would inherit the permissions
-    // of the form the Hierarchical Select was in.
-    'access callback' => TRUE,
+  $items['hierarchical_select_ajax'] = array(
+    'page callback'     => 'hierarchical_select_ajax',
+    'delivery callback' => 'ajax_deliver',
+    'access arguments'  => array('access content'),
+    'theme callback'    => 'ajax_base_page_theme',
+    'type'              => MENU_CALLBACK,
   );
-  $items['admin/config/hierarchical_select'] = array(
+  
+  $items['admin/config/content/hierarchical_select'] = array(
     'title'            => 'Hierarchical Select',
     'description'      => 'Configure site-wide settings for the Hierarchical Select form element.',
     'access arguments' => array('administer site configuration'),
@@ -38,14 +36,14 @@ function hierarchical_select_menu() {
     'type'             => MENU_NORMAL_ITEM,
     'file'             => 'hierarchical_select.admin.inc',
   );
-  $items['admin/config/hierarchical_select/settings'] = array(
+  $items['admin/config/content/hierarchical_select/settings'] = array(
     'title'            => 'Site-wide settings',
     'access arguments' => array('administer site configuration'),
     'weight'           => -10,
     'type'             => MENU_DEFAULT_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
-  $items['admin/config/hierarchical_select/configs'] = array(
+  $items['admin/config/content/hierarchical_select/configs'] = array(
     'title'            => 'Configurations',
     'description'      => 'All available Hierarchical Select configurations.',
     'access arguments' => array('administer site configuration'),
@@ -53,7 +51,7 @@ function hierarchical_select_menu() {
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
-  $items['admin/config/hierarchical_select/implementations'] = array(
+  $items['admin/config/content/hierarchical_select/implementations'] = array(
     'title'            => 'Implementations',
     'description'      => 'Features of each Hierarchical Select implementation.',
     'access arguments' => array('administer site configuration'),
@@ -61,7 +59,7 @@ function hierarchical_select_menu() {
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
-  $items['admin/config/hierarchical_select/export/%hierarchical_select_config_id'] = array(
+  $items['admin/config/content/hierarchical_select/export/%hierarchical_select_config_id'] = array(
     'title'            => 'Export',
     'access arguments' => array('administer site configuration'),
     'page callback'    => 'drupal_get_form',
@@ -69,7 +67,7 @@ function hierarchical_select_menu() {
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
-  $items['admin/config/hierarchical_select/import/%hierarchical_select_config_id'] = array(
+  $items['admin/config/content/hierarchical_select/import/%hierarchical_select_config_id'] = array(
     'title'            => 'Import',
     'access arguments' => array('administer site configuration'),
     'page callback'    => 'drupal_get_form',
@@ -82,28 +80,14 @@ function hierarchical_select_menu() {
 }
 
 /**
- * Implements hook_flush_caches().
- */
-function hierarchical_select_flush_caches() {
-  return array('cache_hierarchical_select');
-}
-
-/**
- * Implements hook_form_alter().
- */
-function hierarchical_select_form_alter(&$form, $form_state, $form_id) {
-  if (_hierarchical_select_form_has_hierarchical_select($form)) {
-    $form['#after_build'][] = 'hierarchical_select_after_build';
-  }
-}
-
-/**
  * Implements hook_element_info().
  */
 function hierarchical_select_element_info() {
-  $type['hierarchical_select'] = array(
+  $types['hierarchical_select'] = array(
     '#input' => TRUE,
-    '#process' => array('hierarchical_select_process'),
+    '#process' => array('form_hierarchical_select_process'),
+    '#theme' => array('hierarchical_select'),
+    '#theme_wrappers' => array('form_element'),
     '#config' => array(
       'module' => 'some_module',
       'params' => array(),
@@ -132,11 +116,10 @@ function hierarchical_select_element_info() {
       'animation_delay'    => variable_get('hierarchical_select_animation_delay', 400),
       'special_items'      => array(),
       'render_flat_select' => 0,
-      'path'               => 'hierarchical_select_json',
     ),
     '#default_value' => -1,
   );
-  return $type;
+  return $types;
 }
 
 /**
@@ -248,10 +231,6 @@ function hierarchical_select_theme() {
       'file'      => 'includes/theme.inc',
       'variables' => array('option' => NULL),
     ),
-    'hierarchical_select_textfield' => array(
-      'file'      => 'includes/theme.inc',
-      'render element' => 'element',
-    ),
     'hierarchical_select_dropbox_table' => array(
       'file'      => 'includes/theme.inc',
       'render element' => 'element',
@@ -275,15 +254,6 @@ function hierarchical_select_theme() {
 }
 
 /**
- * Implements hook_simpletest().
- */
-function hierarchical_select_simpletest() {
-  $dir = drupal_get_path('module', 'hierarchical_select') . '/tests';
-  $tests = file_scan_directory($dir, '/\.test$/');
-  return array_keys($tests);
-}
-
-/**
  * Implements hook_features_api().
  */
 function hierarchical_select_features_api() {
@@ -298,6 +268,7 @@ function hierarchical_select_features_api() {
   );
 }
 
+
 //----------------------------------------------------------------------------
 // Menu system callbacks.
 
@@ -309,72 +280,56 @@ function hierarchical_select_config_id_load($config_id) {
   return ($config !== FALSE) ? $config['config_id'] : FALSE;
 }
 
+
+//----------------------------------------------------------------------------
+// Forms API callbacks.
+
 /**
- * Menu callback; format=text/json; generates and outputs the appropriate HTML.
+ * Strongly 
+ *
+ * @see file_ajax_upload(), upon which this is strongly inspired.
+ * @see ajax_form_callback()
  */
-function hierarchical_select_json() {
-  // We are returning Javascript, so tell the browser. Ripped from Drupal 6's
-  // drupal_json() function.
-  drupal_add_http_header('Content-Type', 'text/javascript; charset=utf-8');
-
-  $hs_form_build_id = $_POST['hs_form_build_id'];
-
-  // In this context, we're in a node selection mode.
-  // See http://drupal.org/node/683574#comment-3117926.
-  if (module_exists('i18n') && isset($_POST['language'])) {
-    i18n_selection_mode('node', $_POST['language']);
-  }
-
-  // Collect all necessary variables.
-  $cached = cache_get($hs_form_build_id, 'cache_hierarchical_select');
-  $storage = $cached->data;
-
-  // Ensure that the form id in the POST array is the same as the one of the
-  // stored parameters of the original form. For 99% of the forms, this step
-  // is not necessary, but when a hierarchical_select form item is inside a
-  // form in a subform_element in a form, then it is necessary.
-  $form_id = $_POST['form_id'] = $storage['parameters'][0];
+function hierarchical_select_ajax($form, $form_state) {
+  $form_parents = func_get_args();
+  $form_build_id = (string) array_pop($form_parents);
 
   if (HS_DEVELOPER_MODE) {
-    _hierarchical_select_log("form_id: $form_id");
-    _hierarchical_select_log("hs_form_build_id: $hs_form_build_id");
+    _hierarchical_select_log("form_build_id: $form_build_id");
   }
 
-  $form_state = &$storage['parameters'][1];
-
-  // Include the file in which the form definition function lives.
-  if (!empty($storage['file'])) {
-    require_once DRUPAL_ROOT . '/' . $storage['file'];
+  if (empty($_POST['form_build_id']) || $form_build_id != $_POST['form_build_id']) {
+    // Invalid request.
+    drupal_set_message(t('An unrecoverable error occurred.'), 'error');
+    $commands = array();
+    $commands[] = ajax_command_replace(NULL, theme('status_messages'));
+    return array('#type' => 'ajax', '#commands' => $commands);
   }
 
-  // Also include files set in $form_state['form_load_files']. Set by CTools
-  // Delegator, which is used by Panels (i.e. this is necessary for Panels
-  // compatibility).
-  if (isset($form_state['form_load_files'])) {
-    foreach ($form_state['form_load_files'] as $file) {
-      require_once DRUPAL_ROOT . '/' . $file;
-    }
+  list($form, $form_state) = ajax_get_form();
+
+  if (!$form) {
+    // Invalid form_build_id.
+    drupal_set_message(t('An unrecoverable error occurred. Use of this form has expired. Try reloading the page and submitting again.'), 'error');
+    $commands = array();
+    $commands[] = ajax_command_replace(NULL, theme('status_messages'));
+    return array('#type' => 'ajax', '#commands' => $commands);
   }
 
-  // Retrieve and process the form.
-  $form = call_user_func_array('drupal_retrieve_form', $storage['parameters']);
-  drupal_prepare_form($form_id, $form, $form_state);
-  $form['#post'] = $_POST;
-  $form = form_builder($form_id, $form, $form_state);
+  // Process user input. $form and $form_state are modified in the process.
+  drupal_process_form($form['#form_id'], $form, $form_state);
 
-  // Render only the relevant part of the form (i.e. the hierarchical_select
-  // form item that has triggered this AJAX callback).
-  $hsid = $_POST['hsid'];
-  $name = $storage['#names'][$hsid];
-  $part_of_form = _hierarchical_select_get_form_item($form, $name);
-  $output = drupal_render($part_of_form);
-
+  // Retrieve the element to be rendered.
+  foreach ($form_parents as $parent) {
+    $form = $form[$parent];
+  }
+  
   // If the user's browser supports the active cache system, then send the
   // currently requested hierarchy in an easy-to-manage form.
   $cache = array();
   if (isset($_POST['client_supports_caching'])) {
     if ($_POST['client_supports_caching'] == 'true') {
-      $cache = _hierarchical_select_json_convert_hierarchy_to_cache($part_of_form['hierarchy']['#markup']);
+      $cache = _hierarchical_select_json_convert_hierarchy_to_cache($form['hierarchy']['#value']);
     }
     else if ($_POST['client_supports_caching'] == 'false') {
       // This indicates that a client-side cache is installed, but not working
@@ -383,56 +338,51 @@ function hierarchical_select_json() {
     }
   }
 
-  print drupal_json_encode(array(
-    'cache'  => $cache,
-    'output' => $output,
-    'log'    => (isset($part_of_form['log']['#markup'])) ? $part_of_form['log']['#markup'] : NULL,
-  ));
-  exit;
+  // Render the output.
+  $output = theme('status_messages') . drupal_render($form);
+
+  // Send AJAX command to update the Hierarchical Select.
+  $commands = array();
+  $commands[] = array(
+      'command' => 'hierarchicalSelectUpdate', 
+      'output'  => $output, 
+      // 'cache'   => $cache,
+    );
+  return array('#type' => 'ajax', '#commands' => $commands);
 }
-
-
-//----------------------------------------------------------------------------
-// Forms API callbacks.
 
 /**
  * Hierarchical select form element type #process callback.
  */
-function hierarchical_select_process($element, $edit, &$form_state, $form) {
-  if (!is_array($element['#markup']) || !isset($element['#markup']['hsid'])) {
-    // The HSID is stored in the session, to allow for multiple Hierarchical
-    // Select form items on the same page of which at least one is added through
-    // AHAH. A normal static variable won't do in this case, because then at
-    // least two Hierarchical Select form items will have HSID 0, because they
-    // are generated in different requests, both of which will have a first HSID
-    // of 0. This will then cause problems on the page.
-    if (!isset($_SESSION['hsid'])) {
-      $_SESSION['hsid'] = 0;
+function form_hierarchical_select_process($element, &$form_state, $complete_form) {  
+  // Determine the HSID to use: either the existing one that is passed in
+  // via POST, or generate a new one based on the last HSID used (which is
+  // stored in form state storage).
+  if (!isset($element['#value']) || !isset($element['#value']['hsid'])) {
+    if (!isset($form_state['storage']['hierarchical_select']['last_hsid'])) {
+      $form_state['storage']['hierarchical_select']['last_hsid'] = 0;
     }
     else {
-      // Let the HSID go from 0 to 99, then start over. Larger numbers are
-      // pointless: who's going to use more than a hundred Hierarchical Select
-      // form items on the same page?
-      $_SESSION['hsid'] = ($_SESSION['hsid'] + 1) % 100;
+      $form_state['storage']['hierarchical_select']['last_hsid']++;
     }
-    $hsid = $_SESSION['hsid'];
+    $hsid = $form_state['storage']['hierarchical_select']['last_hsid'];
   }
   else {
-    $hsid = check_plain($element['#markup']['hsid']);
+    $hsid = check_plain($element['#value']['hsid']);
   }
-  $element['hsid'] = array('#type' => 'hidden', '#markup' => $hsid);
-  // A hierarchical_select form element expands to multiple items. For example
-  // $element['hsid'] got set just above. If #markup is not an array, then
-  // form_set_value(), which is called by form_builder() will fail, because it
-  // assumes that #markup is an array, because we are trying to set a child of
-  // it.
-  if (!is_array($element['#markup'])) {
-    $element['#markup'] = array($element['#markup']);
-  }
+  $element['hsid'] = array('#type' => 'hidden', '#value' => $hsid);
 
-  // Store the #name property of each hierarchical_select form item, this is
-  // necessary to find this form item back in an AJAX callback.
-  _hierarchical_select_store_name($element, $hsid);
+  // A hierarchical_select form element expands to multiple items. For example
+  // $element['hsid'] got set just above. If #value is not an array, then
+  // form_set_value(), which is called by form_builder() will fail, because it
+  // assumes that #value is an array, because we are trying to set a child of
+  // it.
+  if (isset($element['#value']) && !is_array($element['#value'])) {
+    $element['#value'] = array($element['#value']);
+  }
+  
+  // Allow this HS to be found again during an AJAX callback.
+  $form_state['storage']['hierarchical_select'][$hsid] = $element['#array_parents'];
 
   // Get the config and convert the 'special_items' setting to a more easily
   // accessible format.
@@ -444,9 +394,15 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
 
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
+  $element['#attached']['library'][] = array('system', 'effects.core');    
+  $element['#attached']['library'][] = array('system', 'effects.drop');    
+  $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
+  $element['#attached']['js'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.js';
+  if (variable_get('hierarchical_select_js_cache_system', 0) == 1) {
+    $element['#attached']['js'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select_cache.js';
+  }
+
   $config = _hierarchical_select_inherit_default_config($element['#config']);
-  _hierarchical_select_setup_js();
-  _hierarchical_select_setup_js($form_state);
   $settings =  array(
      'HierarchicalSelect' => array(
        'settings' => array(
@@ -457,12 +413,15 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
            'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
            'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
            'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
-           'path'             => $config['path'],
+           'ajax_path'        => 'hierarchical_select_ajax/' . implode('/', $element['#array_parents']) . '/' . $complete_form['form_build_id']['#value'],
         ),
        ),
      )
   );
-  _hierarchical_select_add_js_settings($settings, $form_state);
+  $element['#attached']['js'][] = array(
+    'type' => 'setting',
+    'data' => $settings
+  );
 
   // Basic config validation and diagnostics.
   if (HS_DEVELOPER_MODE) {
@@ -496,6 +455,7 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
 
   // Calculate the selections in both the hierarchical select and the dropbox,
   // we need these before we can render anything.
+  $hs_selection = $db_selection = array();
   list($hs_selection, $db_selection) = _hierarchical_select_process_calculate_selections($element);
 
   if (HS_DEVELOPER_MODE) {
@@ -550,10 +510,11 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
       _hierarchical_select_log($dropbox);
     }
   }
+  
 
   // Store the hierarchy object in the element, we'll need this if the user's
   // browser supports the active cache system.
-  $element['hierarchy'] = array('#type' => 'value', '#markup' => $hierarchy);
+  $element['hierarchy'] = array('#type' => 'value', '#value' => $hierarchy);
 
 
   // Ensure that #tree is enabled!
@@ -567,8 +528,9 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   // Render the hierarchical select.
   $element['hierarchical_select'] = array(
     '#theme' => 'hierarchical_select_selects_container',
-  );
+  );  
   $element['hierarchical_select']['selects'] = _hierarchical_select_process_render_hs_selects($hsid, $hierarchy);
+  
 
   // The selects in the hierarchical select should inherit the #size property.
   foreach (element_children($element['hierarchical_select']['selects']) as $depth) {
@@ -577,8 +539,8 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
 
   // Check if a new item is being created.
   $creating_new_item = FALSE;
-  if (isset($element['#markup']['hierarchical_select']['selects'])) {
-    foreach ($element['#markup']['hierarchical_select']['selects'] as $depth => $value) {
+  if (isset($element['#value']['hierarchical_select']['selects'])) {
+    foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
       if ($value == 'create_new_item' && _hierarchical_select_create_new_item_is_allowed($config, $depth)) {
         $creating_new_item = TRUE;
 
@@ -605,21 +567,21 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
             'title' => t('new @item', array('@item' => $item_type)),
             'class' => 'create-new-item-input'
           ),
-          // Use a #theme callback to prevent the textfield from being wrapped
-          // in a div. This simplifies the CSS and JS code.
-          '#theme' => 'hierarchical_select_textfield',
+          // Prevent the textfield from being wrapped in a div. This
+          // simplifies the CSS and JS code.
+          '#theme_wrappers' => array(),
         );
 
         $element['hierarchical_select']['create_new_item']['create'] = array(
           '#type' => 'button',
-          '#markup' => t('Create'),
-          '#attributes' => array('class' => 'create-new-item-create'),
+          '#value' => t('Create'),
+          '#attributes' => array('class' => array('create-new-item-create')),
         );
 
         $element['hierarchical_select']['create_new_item']['cancel'] = array(
           '#type' => 'button',
-          '#markup' => t('Cancel'),
-          '#attributes' => array('class' => 'create-new-item-cancel'),
+          '#value' => t('Cancel'),
+          '#attributes' => array('class' => array('create-new-item-cancel')),
         );
       }
     }
@@ -631,8 +593,8 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
       // Append an "Add" button to the selects.
       $element['hierarchical_select']['dropbox_add'] = array(
         '#type'       => 'button',
-        '#markup'      => t('Add'),
-        '#attributes' => array('class' => 'add-to-dropbox'),
+        '#value'      => t('Add'),
+        '#attributes' => array('class' => array('add-to-dropbox')),
       );
     }
 
@@ -668,12 +630,15 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     '#suffix' => '</div>',
   );
   $element['nojs']['update_button'] = array(
-    '#type'       => 'button',
-    '#markup'      => t('Update'),
-    '#attributes' => array('class' => 'update-button'),
+    '#type'                    => 'submit',
+    '#value'                   => t('Update'),
+    '#attributes'              => array('class' => array('update-button')),
+    '#limit_validation_errors' => array($element['#parents']),
+    '#validate'                => array(),
+    '#submit'                  => array('hierarchical_select_nojs_update_submit'),
   );
   $element['nojs']['update_button_help_text'] = array(
-    '#markup'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
+    '#value'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
     '#prefix' => '<div class="help-text">',
     '#suffix' => '</div>',
   );
@@ -685,21 +650,14 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   $element['dropbox']['#weight']               = 2;
   $element['nojs']['#weight']                  = 3;
 
-  // This prevents values from in $element['#post'] to be used instead of the
-  // generated default values (#default_value).
-  // For example: $element['hierarchical_select']['selects']['0']['#default_value']
-  // is set to 'label_0' after an "Add" operation. When $element['#post'] is
-  // NOT unset, the corresponding value in $element['#post'] will be used
-  // instead of the default value that was set. This is undesired behavior.
-  if (isset($element['#post'])) {
-    unset($element['#post']);
-  }
-
   // Finally, calculate the return value of this hierarchical_select form
   // element. This will be set in _hierarchical_select_validate(). (If we'd
   // set it now, it would be overridden again.)
   $element['#return_value'] = _hierarchical_select_process_calculate_return_value($hierarchy, ($config['dropbox']['status']) ? $dropbox : FALSE, $config['module'], $config['params'], $config['save_lineage']);
-
+  if (!is_array($element['#return_value'])) {
+    $element['#return_value'] = array($element['#return_value']);
+  }
+  
   // Add a validate callback, which will:
   // - validate that the dropbox limit was not exceeded.
   // - set the return value of this form element.
@@ -708,15 +666,18 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
   $element['#element_validate'] = array_merge(array('_hierarchical_select_validate'), $element['#element_validate']);
 
   if (HS_DEVELOPER_MODE) {
-    $element['log'] = array('#type' => 'value', '#markup' => _hierarchical_select_log(NULL, TRUE));
+    $element['log'] = array('#type' => 'value', '#value' => _hierarchical_select_log(NULL, TRUE));
     $settings = array(
       'HierarchicalSelect' => array(
         'initialLog' => array(
-          $hsid => $element['log']['#markup'],
+          $hsid => $element['log']['#value'],
         ),
       ),
     );
-    _hierarchical_select_add_js_settings($settings, $form_state);
+    $element['#attached']['js'][] = array(
+      'type' => 'setting',
+      'data' => $settings,
+    );
   }
 
   // If the form item is marked as disabled, disable all child form items as
@@ -725,67 +686,13 @@ function hierarchical_select_process($element, $edit, &$form_state, $form) {
     _hierarchical_select_mark_as_disabled($element);
   }
 
-  // Remove #options in case it's been added.
-  if (isset($element['#options'])) {
-    unset($element['#options']);
-  }
-
   return $element;
 }
 
-/**
- * Hierarchical select form element type #after_build callback.
- */
-function hierarchical_select_after_build($form, &$form_state) {
-  // TRICKY: Pageroute compatibility: avoid that the body of this #after_build
-  // callback is executed twice.
-  if (isset($form['hs_form_build_id'])) {
-    return $form;
-  }
-
-  $names = _hierarchical_select_store_name(NULL, NULL, TRUE);
-
-  if (!isset($_POST['hs_form_build_id']) && count($names)) {
-    $parameters = (isset($form['#parameters'])) ? $form['#parameters'] : array();
-    $menu_item = menu_get_item();
-
-    // Collect information in this array, which will be used in dynamic form
-    // updates, to …
-    $storage = array(
-      // … retrieve $form.
-      'parameters' => $parameters,
-      // … determine which part of $form should be rendered.
-      '#names'     => $names,
-      // … include the file in which the form function lives.
-      'file'       => $menu_item['file'],
-    );
-
-    // Store the information needed for dynamic form updates in the cache, so
-    // we can retrieve this in our JSON callbacks (to be able to rebuild and
-    // render part of the form).
-    $hs_form_build_id = 'hs_form_' . md5(mt_rand());
-    $lifetime = variable_get('hierarchical_select_cache_lifetime', HS_CACHE_LIFETIME_DEFAULT);
-    cache_set($hs_form_build_id, $storage, 'cache_hierarchical_select', REQUEST_TIME + $lifetime);
-  }
-  elseif (isset($_POST['hs_form_build_id'])) {
-    // Don't generate a new hs_form_build_id if this is a re-rendering of the
-    // same form!
-    $hs_form_build_id = $_POST['hs_form_build_id'];
-  }
-
-  // Store the hs_form_build_id in a hidden value, so that it gets POSTed.
-  $form_element = array(
-    '#type' => 'hidden',
-    '#markup' => $hs_form_build_id,
-    // We have to set #parents manually because we want to send only
-    // $form_element through form_builder(), not $form. If we set #parents,
-    // form_builder() has all info it needs to generate #name and #id.
-    '#parents' => array('hs_form_build_id'),
-  );
-  $form['hs_form_build_id'] = form_builder($form['form_id']['#markup'], $form_element, $form_state);
-
-  return $form;
+function hierarchical_select_nojs_update_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
 }
+
 
 /**
  * Hierarchical select form element #element_validate callback.
@@ -802,7 +709,7 @@ function _hierarchical_select_validate(&$element, &$form_state) {
       // many selections may be added to the dropbox). This means it's
       // possible the user has actually selected too many items without being
       // notified of this.
-      $lineage_count = count($element['#markup']['dropbox']['hidden']['lineages_selections']);
+      $lineage_count = count($element['#value']['dropbox']['hidden']['lineages_selections']);
       if ($lineage_count > $config['dropbox']['limit']) {
         // TRICKY: this should propagate the error down to the children, but
         // this doesn't seem to happen, since for example the selects of the
@@ -834,12 +741,12 @@ function _hierarchical_select_validate(&$element, &$form_state) {
     $element['#return_value'] = $element['#default_value'];
   }
 
-  $element['#markup'] = $element['#return_value'];
-  form_set_value($element, $element['#markup'], $form_state);
+  $element['#value'] = $element['#return_value'];
+  form_set_value($element, $element['#value'], $form_state);
 
   // We have to check again for errors. This line is taken litterally from
   // form.inc, so it works in an identical way.
-  if ($element['#required'] && (!count($element['#markup']) || (is_string($element['#markup']) && strlen(trim($element['#markup'])) == 0))) {
+  if ($element['#required'] && (!count($element['#value']) || (is_string($element['#value']) && strlen(trim($element['#value'])) == 0))) {
     form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
     _hierarchical_select_form_set_error_class($element);
   }
@@ -866,14 +773,14 @@ function _hierarchical_select_process_get_hs_selection($element) {
   $hs_selection = array();
   $config = _hierarchical_select_inherit_default_config($element['#config']);
 
-  if (!empty($element['#markup']['hierarchical_select']['selects'])) {
+  if (!empty($element['#value']['hierarchical_select']['selects'])) {
     if ($config['save_lineage']) {
-      foreach ($element['#markup']['hierarchical_select']['selects'] as $key => $value) {
+      foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
     }
     else {
-      foreach ($element['#markup']['hierarchical_select']['selects'] as $key => $value) {
+      foreach ($element['#value']['hierarchical_select']['selects'] as $key => $value) {
         $hs_selection[] = $value;
       }
       $hs_selection = _hierarchical_select_hierarchy_validate($hs_selection, $config['module'], $config['params']);
@@ -906,14 +813,14 @@ function _hierarchical_select_process_get_hs_selection($element) {
 function _hierarchical_select_process_get_db_selection($element) {
   $db_selection = array();
 
-  if (!empty($element['#markup']['dropbox']['hidden']['lineages_selections'])) {
-    // This is only present in #markup if at least one "Remove" checkbox was
+  if (!empty($element['#value']['dropbox']['hidden']['lineages_selections'])) {
+    // This is only present in #value if at least one "Remove" checkbox was
     // checked, so ensure that we're doing something valid.
-    $remove_from_db_selection = (!isset($element['#markup']['dropbox']['visible']['lineages'])) ? array() : array_keys($element['#markup']['dropbox']['visible']['lineages']);
+    $remove_from_db_selection = (!isset($element['#value']['dropbox']['visible']['lineages'])) ? array() : array_keys($element['#value']['dropbox']['visible']['lineages']);
 
     // Add all selections to the dropbox selection, except for the ones that
     // are scheduled for removal.
-    foreach ($element['#markup']['dropbox']['hidden']['lineages_selections'] as $x => $selection) {
+    foreach ($element['#value']['dropbox']['hidden']['lineages_selections'] as $x => $selection) {
       if (!in_array($x, $remove_from_db_selection)) {
         $db_selection = array_merge($db_selection, unserialize($selection));
       }
@@ -930,7 +837,7 @@ function _hierarchical_select_process_get_db_selection($element) {
     // that specific lineage.
     // Easier explanation at http://drupal.org/node/221210#comment-733715.
     foreach ($remove_from_db_selection as $key => $x) {
-      $item = end(unserialize($element['#markup']['dropbox']['hidden']['lineages_selections'][$x]));
+      $item = end(unserialize($element['#value']['dropbox']['hidden']['lineages_selections'][$x]));
       $position = array_search($item, $db_selection);
       if ($position) {
         unset($db_selection[$position]);
@@ -971,11 +878,11 @@ function _hierarchical_select_process_calculate_selections(&$element) {
 
   // When:
   // - no data was POSTed
-  // - or #markup is set directly and not by a Hierarchical Select POST (and
+  // - or #value is set directly and not by a Hierarchical Select POST (and
   //   therefor set either manually or by another module),
-  // then use the value of #default_value, or when available, of #markup.
-  if (!isset($element['#post']) || (!isset($element['#markup']['hierarchical_select']) && !isset($element['#markup']['dropbox']))) {
-    $value = (isset($element['#markup'])) ? $element['#markup'] : $element['#default_value'];
+  // then use the value of #default_value, or when available, of #value.  
+  if (empty($_POST) || (!isset($element['#value']['hierarchical_select']) && !isset($element['#value']['dropbox']))) {
+    $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
     $value = (is_array($value)) ? $value : array($value);
     if ($dropbox) {
       $db_selection = $value;
@@ -1006,15 +913,15 @@ function _hierarchical_select_process_calculate_selections(&$element) {
       // TODO: http://drupal.org/node/253868
       // TODO: http://drupal.org/node/253869
 
-      $label = trim($element['#markup']['hierarchical_select']['create_new_item']['input']);
-      $selects = isset($element['#markup']['hierarchical_select']['selects']) ? $element['#markup']['hierarchical_select']['selects'] : array();
+      $label = trim($element['#value']['hierarchical_select']['create_new_item']['input']);
+      $selects = isset($element['#value']['hierarchical_select']['selects']) ? $element['#value']['hierarchical_select']['selects'] : array();
       $depth = count($selects);
       $parent = ($depth > 0) ? end($selects) : 0;
 
       // Disallow items with empty labels; allow the user again to create a
       // (proper) new item.
       if (empty($label)) {
-        $element['#markup']['hierarchical_select']['selects'][count($selects)] = 'create_new_item';
+        $element['#value']['hierarchical_select']['selects'][count($selects)] = 'create_new_item';
       }
       // Ensure that this new item will not violate the max_levels and
       // allowed_levels settings.
@@ -1033,7 +940,7 @@ function _hierarchical_select_process_calculate_selections(&$element) {
         if ($value) {
           // Pretend there was a select where the "create new item" section
           // was, and assign it the value of the item that was just created.
-          $element['#markup']['hierarchical_select']['selects'][count($selects)] = $value;
+          $element['#value']['hierarchical_select']['selects'][count($selects)] = $value;
         }
       }
 
@@ -1086,14 +993,20 @@ function _hierarchical_select_process_render_hs_selects($hsid, $hierarchy) {
       '#type' => 'select',
       '#options' => $hierarchy->levels[$depth],
       '#default_value' => $selected_item,
-      // Use a #theme callback to prevent the select from being wrapped in a
-      // div. This simplifies the CSS and JS code. Also sets a special class
-      // on the level label option, if any, to make level label styles
-      // possible.
+      // Prevent the select from being wrapped in a div. This simplifies the
+      // CSS and JS code.
+      '#theme_wrappers' => array(),
+      // This alternative to theme_select ets a special class on the level
+      // label option, if any, to make level label styles possible.
       '#theme' => 'hierarchical_select_select',
       // Add child information. When a child has no children, its
       // corresponding "option" element will be marked as such.
       '#childinfo' => (isset($hierarchy->childinfo[$depth])) ? $hierarchy->childinfo[$depth] : NULL,
+      // Drupal 7's Forms API insists on validating "select" form elements,
+      // despite the fact that this form element is merely part of a larger
+      // whole, with its own #element_validate callback. This disables that
+      // validation.
+      '#validated' => TRUE,
     );
   }
   return $form;
@@ -1114,7 +1027,7 @@ function _hierarchical_select_process_render_db_hidden($hsid, $dropbox) {
   $element['#tree'] = TRUE;
 
   foreach ($dropbox->lineages_selections as $x => $lineage_selection) {
-    $element['lineages_selections'][$x] = array('#type' => 'hidden', '#markup' => serialize($lineage_selection));
+    $element['lineages_selections'][$x] = array('#type' => 'hidden', '#value' => serialize($lineage_selection));
   }
   return $element;
 }
@@ -1135,9 +1048,9 @@ function _hierarchical_select_process_render_db_visible($hsid, $dropbox) {
 
 
   // This information is necessary for the #theme callback.
-  $element['title']     = array('#type' => 'value', '#markup' => t($dropbox->title));
-  $element['separator'] = array('#type' => 'value', '#markup' => '›');
-  $element['is_empty']  = array('#type' => 'value', '#markup' => empty($dropbox->lineages));
+  $element['title']     = array('#type' => 'value', '#value' => t($dropbox->title));
+  $element['separator'] = array('#type' => 'value', '#value' => '›');
+  $element['is_empty']  = array('#type' => 'value', '#value' => empty($dropbox->lineages));
 
 
   if (!empty($dropbox->lineages)) {
@@ -1217,11 +1130,11 @@ function _hierarchical_select_process_render_flat_select($hierarchy, $dropbox, $
     '#type' => 'select',
     '#multiple' => ($config['save_lineage'] || $config['dropbox']['status']),
     '#options' => $options,
-    '#markup' => array_keys($options),
+    '#value' => array_keys($options),
     // Use a #theme callback to prevent the select from being wrapped in a
     // div. This simplifies the CSS and JS code.
     '#theme' => 'hierarchical_select_select',
-    '#attributes' => array('class' => 'flat-select'),
+    '#attributes' => array('class' => array('flat-select')),
   );
 
   return $element;
@@ -1230,7 +1143,7 @@ function _hierarchical_select_process_render_flat_select($hierarchy, $dropbox, $
 /**
  * Calculate the return value of a hierarchical_select form element, based on
  * the $hierarchy and $dropbox objects. We have to set a return value, because
- * the values set and used by this form element ($element['#markup]) are not
+ * the values set and used by this form element ($element['#value]) are not
  * easily usable in the Forms API; we want to return a flat list of item ids.
  *
  * @param $hierarchy
@@ -1301,7 +1214,7 @@ function _hierarchical_select_inherit_default_config($config, $defaults_override
   // hook_elements() implementation. Default properties from this hook are
   // applied automatically, but properties inside properties, such as is the
   // case for Hierarchical Select's #config property, aren't applied.
-  $type = hierarchical_select_elements();
+  $type = hierarchical_select_element_info();
   $defaults = $type['hierarchical_select']['#config'];
   // Don't inherit the module and params settings.
   unset($defaults['module']);
@@ -1314,72 +1227,6 @@ function _hierarchical_select_inherit_default_config($config, $defaults_override
   $config = array_smart_merge($defaults, $config);
 
   return $config;
-}
-
-/**
- * Helper function to add the required Javascript files and settings.
- *
- * @param $form_state
- *   A form state array. Necessary to set the callback URL for Hierarchical
- *   Select through _hierarchical_select_add_js_settings().
- */
-function _hierarchical_select_setup_js(&$form_state = NULL) {
-  global $language;
-
-  static $ran_once;
-  static $js_settings_added;
-
-  $jquery_ui_components = array(
-    'effects.core',
-    'effects.drop',
-  );
-
-  if (!$js_settings_added && isset($form_state)) {
-    $url = base_path();
-    $url .= variable_get('clean_url', 0) ? '' : 'index.php?q=';
-    // Prefix URL with language path when i18n is enabled and when path-based
-    // negotiation is being used.
-    $negotiation = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE);
-    if (module_exists('i18n') && ($language->prefix != '') && ($negotiation == LANGUAGE_NEGOTIATION_PATH_DEFAULT || $negotiation == LANGUAGE_NEGOTIATION_PATH)) {
-      $url .= $language->prefix . '/';
-    }
-    if (module_exists('purl')) {
-      $options = array();
-      purl_url_outbound_alter($url, $options, '');
-      $url = str_replace('//', '/', '/' . $url);
-    }
-
-    _hierarchical_select_add_js_settings(array('HierarchicalSelect' => array('basePath' => $url, 'getArguments' => drupal_query_string_encode($_GET, array('q')))), $form_state);
-
-    $js_settings_added = TRUE;
-  }
-
-  if (!$ran_once) {
-    $ran_once = TRUE;
-
-    // Add the CSS and JS, set the URL that should be used by all hierarchical
-    // selects.
-    drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
-    drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.js');
-    if (variable_get('hierarchical_select_js_cache_system', 0) == 1) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select_cache.js');
-    }
-    if (!module_exists('jquery_form')) {
-      drupal_add_js(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select_formtoarray.js');
-    }
-    else {
-      jquery_form_add();
-    }
-    if (!module_exists('jquery_ui')) {
-      foreach ($jquery_ui_components as $component) {
-        drupal_add_js(drupal_get_path('module', 'hierarchical_select') . "/js/jquery.ui/$component.js");
-      }
-    }
-    else {
-      // TODO $jquery_ui_components needs to be a string or multiple calls to drupal_add_library need to be made.
-      drupal_add_library('system', $jquery_ui_components);
-    }
-  }
 }
 
 /**
@@ -1483,94 +1330,9 @@ function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
   $output .= t('Hover for more information!');
   $output .= '</span> ';
   $output .= t("But don't worry: you can still use this web site! You have two options:");
-  $output .= theme('item_list', array('items' => $items, 'title' => NULL, 'type' => 'ul', 'attributes' => array('class' => 'solutions')));
+  $output .= theme('item_list', array('items' => $items, 'title' => NULL, 'type' => 'ul', 'attributes' => array('class' => array('solutions'))));
 
   return $output;
-}
-
-/**
- * Get the form item that has the the given #name property.
- *
- * @param $form
- *   A structured array for use in the Forms API.
- * @param $name
- *   A #name value.
- * @return
- *   A form item.
- */
-function _hierarchical_select_get_form_item($form, $name) {
-  if (isset($form['#name']) && $form['#name'] == $name) {
-    return $form;
-  }
-
-  // The current form item apparently is not the one we're looking for, so try
-  // to find it in the child form items.
-  foreach (element_children($form) as $child) {
-    $form_item = _hierarchical_select_get_form_item($form[$child], $name);
-    if ($form_item !== FALSE) {
-      return $form_item;
-    }
-  }
-
-  // No match in the children either, so return FALSE.
-  return FALSE;
-}
-
-/**
- * Store the #name property of the given form item, so we can retrieve a list
- * of #name properties of hierarchical_select form items present in this form
- * later.
- *
- * @param $form_item
- *   Optional. A hierarchical_select form item.
- * @param $hsid
- *   Optional. A hierarchical select ID.
- * @param $reset
- *   Optional. Flag that marks if the stored #name properties should be reset.
- * @return
- *   The stored #name properties per hierarchical_select form item.
- */
-function _hierarchical_select_store_name($form_item = NULL, $hsid = NULL, $reset = FALSE) {
-  static $names;
-
-  if ($reset) {
-    $ret = $names;
-    $names = array();
-    return $ret;
-  }
-
-  if (isset($form_item) && isset($hsid)) {
-    $names[$hsid] = $form_item['#name'];
-  }
-
-  return $names;
-}
-
-/**
- * Detect whether a form has at least one hierarchical_select form element.
- *
- * @param $form
- *   A structured array for use in the Forms API.
- * @return
- *   TRUE if the form contains a hierarchical_select form element, FALSE
- *   otherwise.
- */
-function _hierarchical_select_form_has_hierarchical_select($form) {
-  if (isset($form['#type']) && $form['#type'] == 'hierarchical_select') {
-    return TRUE;
-  }
-  else {
-    $has_hierarchical_select = FALSE;
-    foreach (element_children($form) as $name) {
-      if (is_array($form[$name])) {
-        $has_hierarchical_select = _hierarchical_select_form_has_hierarchical_select($form[$name]);
-        if ($has_hierarchical_select) {
-          break;
-        }
-      }
-    }
-    return $has_hierarchical_select;
-  }
 }
 
 /**
@@ -1953,7 +1715,7 @@ function _hierarchical_select_apply_entity_settings($level, $config) {
 
   // Only do something when the entity_count or the require_entity (or both)
   // settings are enabled.
-  // NOTE: this uses the optional "hierarchical_selectentity_count" hook, so
+  // NOTE: this uses the optional "hierarchical_select_entity_count" hook, so
   // we also check if it's implemented.
   if (($config['entity_count'] || $config['require_entity']) && module_hook($config['module'], 'hierarchical_select_entity_count')) {
     foreach ($level as $item => $label) {
@@ -2315,46 +2077,4 @@ function _hierarchical_select_special_item_exclusive($item) {
  */
 function _hierarchical_select_special_item_none($item) {
   return in_array('none', $item);
-}
-
-
-/**
- * Abstraction around drupal_add_js() and Views' $form_state['js settings'].
- *
- * @param $settings
- *   The JS settings you'd like to add.
- * @param $form_state
- *   A form state array.
- */
-function _hierarchical_select_add_js_settings($settings, &$form_state) {
-  global $views_ajax_form_js_settings;
-
-  // If we're on a Views-powered form, we must use $form_state['js settings'].
-  if (isset($form_state['view']) && isset($form_state['ajax']) && !empty($form_state['ajax'])) {
-    $form_state['js settings'] = (!isset($form_state['js settings']) || !is_array($form_state['js settings'])) ? array() : $form_state['js settings'];
-    $form_state['js settings'] = array_merge_recursive($form_state['js settings'], $settings);
-  }
-  // Otherwise, use drupal_add_js().
-  else {
-    drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));
-
-    // Necessary for Views AJAX pager support.
-    // Also see hierarchical_select_ajax_data_alter().
-    if (isset($settings['HierarchicalSelect']['settings'])) {
-      $views_ajax_form_js_settings = $settings['HierarchicalSelect']['settings'];
-    }
-  }
-}
-
-
-/**
- * Implements hook_ajax_data_alter().
- * (Necessary for Views AJAX pager support.)
- */
-function hierarchical_select_ajax_data_alter(&$object, $module, $view) {
-  global $views_ajax_form_js_settings;
-  if (!empty($views_ajax_form_js_settings)) {
-    $object->hs_drupal_js_settings = $views_ajax_form_js_settings;
-    $object->__callbacks = array_merge(array('Drupal.HierarchicalSelect.ajaxViewPagerSettingsUpdate'), $object->__callbacks);
-  }
 }

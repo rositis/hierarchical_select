@@ -44,6 +44,8 @@ function hierarchical_select_admin_settings($form, &$form_state) {
     ),
     '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
   );
+  // TODO: port the HS client-side cache system to Drupal 7.
+  /*
   $form['hierarchical_select_js_cache_system'] = array(
     '#type' => 'radios',
     '#title' => t('Cache in a HTML 5 client-side database'),
@@ -62,7 +64,7 @@ function hierarchical_select_admin_settings($form, &$form_state) {
     ),
     '#default_value' => variable_get('hierarchical_select_js_cache_system', 0),
   );
-
+  */
 
   return system_settings_form($form);
 }
@@ -71,7 +73,7 @@ function hierarchical_select_admin_settings($form, &$form_state) {
  * Menu callback; a table that lists all Hierarchical Select configs.
  */
 function hierarchical_select_admin_configs() {
-  $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Entity'), t('Context type'), t('Context'), t('Actions'));
+  $header = array(t('Hierarchy type'), t('Hierarchy'), t('Entity type'), t('Bundle'), t('Context type'), t('Context'), t('Actions'));
 
   // Retrieve all information items
   $info_items = array();
@@ -86,9 +88,9 @@ function hierarchical_select_admin_configs() {
 
     $rows[$id] = array(
       $item['hierarchy type'],
-      check_plain($item['hierarchy']),
+      $item['hierarchy'],
       $item['entity type'],
-      $item['entity'],
+      $item['bundle'],
       $item['context type'],
       $item['context'],
       theme('links', array('links' => array(
@@ -174,7 +176,7 @@ function hierarchical_select_admin_export($form, &$form_state, $config_id) {
     '#title' => t('Hierarchical Select configuration %config_id', array('%config_id' => $config_id)),
     '#default_value' => $code,
     '#rows' => $lines,
-    '#attributes' => array('class' => 'hierarchical-select-config-code'),
+    '#attributes' => array('class' => array('hierarchical-select-config-code')),
   );
 
   return $form;
@@ -199,12 +201,12 @@ function hierarchical_select_admin_import($form, &$form_state, $config_id) {
       current Hierarchical Select configuration for %config_id.',
       array('%config_id' => $config_id)
     ),
-    '#attributes' => array('class' => 'hierarchical-select-config-code'),
+    '#attributes' => array('class' => array('hierarchical-select-config-code')),
   );
-  $form['interpreted_config'] = array('#type' => 'value', '#markup' => NULL);
+  $form['interpreted_config'] = array('#type' => 'value', '#value' => NULL);
   $form['submit'] = array(
     '#type' => 'submit',
-    '#markup' => t("Import"),
+    '#value' => t("Import"),
   );
   $form_state['#redirect'] = NULL;
   return $form;

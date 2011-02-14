@@ -17,7 +17,7 @@
   border-top-width: 0;
   cursor: s-resize;
   margin-right: 0.5em; /* Give the grippie the same margin as each select. */
-  min-width: 70px; /* Hack for IE, makes the grip usable, but not yet the same as in other browsers. */
+  min-width: 50px; /* Hack for IE, makes the grip usable, but not yet the same as in other browsers. */
 }
 
 .hierarchical-select-wrapper .hierarchical-select select,
