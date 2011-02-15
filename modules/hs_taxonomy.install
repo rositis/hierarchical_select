@@ -8,84 +8,22 @@
 
 
 /**
- * Implementation of hook_install().
- */
-function hs_taxonomy_install() {
-  $ret = array();
-
-  // Update the module weight to -1 so it runs before other taxonomy related
-  // modules. See http://drupal.org/node/601500.
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'") */;
-
-  return $ret;
-}
-
-/**
  * Implementation of hook_uninstall().
  */
 function hs_taxonomy_uninstall() {
-  // Remove any saved variables.
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {variable} WHERE name = 'taxonomy_override_selector'") */
-  db_delete('variable')
-  ->condition('name', 'taxonomy_override_selector')
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {variable} WHERE name LIKE 'taxonomy_hierarchical_select_%'") */
   db_delete('variable')
   ->condition('name', 'taxonomy_hierarchical_select_%', 'LIKE')
   ->execute();
-}
-
-/**
- * Implementation of hook_enable().
- */
-function hs_taxonomy_enable() {
-  variable_set('taxonomy_override_selector', TRUE);
-  drupal_set_message(t("Drupal core's taxonomy selects are now overridden on the
-                        Taxonomy Term form. They've been replaced by
-                        Hierarchical Selects for better scalability.<br />
-                        You can <a href=\"!configure-url\">configure</a> it to
-                        be used on node forms too!",
-                        array(
-                          '!configure-url' => url('admin/config/hierarchical_select/configs'),
-                        )),
-                      'warning');
-}
-
-/**
- * Implementation of hook_disable().
- */
-function hs_taxonomy_disable() {
-  variable_set('taxonomy_override_selector', FALSE);
-  drupal_set_message(t("Drupal core's taxonomy selects are now restored.
-                        Please remember that they're not scalable!."),
-                    'warning');
 }
 
 
 //----------------------------------------------------------------------------
 // Schema updates.
 
-// Update the module weight to 2 so hs_taxonomy runs after the forum module.
-// See http://drupal.org/node/475784.
-function hs_taxonomy_update_1() {
-  $ret = array();
-
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("UPDATE {system} SET weight = 2 WHERE name = 'hs_taxonomy'") */;
-
-  return $ret;
-}
-
-// Update the module weight to -1 so it runs before other taxonomy related
-// modules. See http://drupal.org/node/601500.
-function hs_taxonomy_update_6002() {
-  $ret = array();
-
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("UPDATE {system} SET weight = -1 WHERE name = 'hs_taxonomy'") */;
-
-  return $ret;
+/**
+ * Upgrade path from Drupal 6 to Drupal 7 version of Hierarchical Select:
+ * - delete the taxonomy_override_selector variable if it exists.
+ */
+function hs_taxonomy_update_7300() {
+  variable_del('taxonomy_override_selector');
 }
