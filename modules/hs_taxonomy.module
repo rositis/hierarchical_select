@@ -11,8 +11,8 @@
 // Drupal core hooks.
 
 /**
- * Alter the widget type form; dynamically add the HS Configuration form when
- * it is needed.
+ * Alter the widget type form; dynamically add the Hierarchical Select
+ * Configuration form when it is needed.
  */
 function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) {
   form_load_include($form_state, 'inc', 'hierarchical_select', 'includes/common');
@@ -182,6 +182,17 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
   $form_item['#process'] = array_merge($element_info['#process'], array('hs_taxonomy_widget_process'));
 
   return $form_item;
+}
+
+/**
+ * Implements hook_field_widget_settings_form().
+ */
+function hs_taxonomy_field_widget_settings_form($field, $instance) {
+  // This poorly integrates with the Field UI. Hence we alter the
+  // field_ui_widget_type_form, to provide a more appropriate integration.
+  // @see hs_taxonomy_form_field_ui_widget_type_form_alter.
+  $form = array();
+  return $form;
 }
 
 /**
