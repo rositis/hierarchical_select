@@ -88,41 +88,7 @@ function theme_hierarchical_select($variables) {
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
-/*
-
-  $output .= theme(
-    'hierarchical_select_form_element',
-    array(
-      'element' => array(
-        '#title' => $element['#title'],
-        '#description' => $element['#description'],
-        '#id' => $element['#id'],
-        '#required' => $element['#required'],
-        '#error' => isset($element['#error']) ? $element['#error'] : '',
-      ),
-      'value' => '<div ' . drupal_attributes($element['#attributes']) . '>' . drupal_render_children($element) . '</div>'
-    )
-  );
-*/
-
-  // $output .= theme(
-  //    'hierarchical_select_form_element',
-  //    array(
-  //      'element' => array(
-  //        '#title' => $element['#title'],
-  //        '#description' => $element['#description'],
-  //        '#id' => $element['#id'],
-  //        '#required' => $element['#required'],
-  //        '#error' => isset($element['#error']) ? $element['#error'] : '',
-  //      ),
-  //      'value' => '<div ' . drupal_attributes($element['#attributes']) . '>' . drupal_render_children($element) . '</div>'
-  //    )
-  //  );
-  
   return '<div ' . drupal_attributes($element['#attributes']) . '>' . drupal_render_children($element) . '</div>';
-
-
-  return $output;
 }
 
 /**
@@ -206,7 +172,7 @@ function theme_hierarchical_select_dropbox_table($variables) {
     // Each lineage in the dropbox corresponds to an entry in the dropbox table.
     $lineage_count = count(element_children($element['lineages']));
     for ($x = 0; $x < $lineage_count; $x++) {
-      $db_entry = $element['lineages'][$x];
+      $db_entry = $element['lineages']["lineage-$x"];
       $zebra = $db_entry['#zebra'];
       $first = $db_entry['#first'];
       $last  = $db_entry['#last'];
@@ -225,7 +191,7 @@ function theme_hierarchical_select_dropbox_table($variables) {
         }
       }
       $output .= '</td>';
-      $output .= '<td class="dropbox-remove">' . drupal_render_children($db_entry['remove']) . '</td>';
+      $output .= '<td class="dropbox-remove">' . drupal_render($db_entry['remove']) . '</td>';
       $output .= '</tr>';
     }
   }

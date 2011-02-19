@@ -119,6 +119,9 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#required' => $preview_is_required,
     '#title' => t('Preview'),
     '#description' => t('The description.'),
+    // Skip al validation for this form element: the data collected through it
+    // is always discarded, it's merely here for illustrative purposes.
+    '#validated' => TRUE,
   );
   hierarchical_select_common_config_apply($form['live_preview']['example'], $config_id, array_merge($defaults_override, array('module' => $module, 'params' => $params)));
 

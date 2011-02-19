@@ -11,6 +11,8 @@
 // Drupal core hooks.
 
 /**
+ * Implements hook_form_FORMID_alter().
+ *
  * Alter the widget type form; dynamically add the Hierarchical Select
  * Configuration form when it is needed.
  */
@@ -74,7 +76,6 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     // TODO: implement all functionality, but for now, disable unsupported
     // settings.
     unset($form['hs']['save_lineage']);
-    unset($form['hs']['dropbox']);
     unset($form['hs']['editability']);
 
     // TODO: support multiple parents, i.e. support "save lineage".
@@ -96,12 +97,55 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     // sure it is executed first.
     $form['#hs_common_config_form_parents'] = array('hs');
     array_unshift($form['#submit'], 'hierarchical_select_common_config_form_submit');
+
+    // Add a submit handler for HS Taxonomy that will update the field
+    // settings when necessary.
+    // @see hs_taxonomy_field_settings_submit() for details.
+    $form['#submit'][] = 'hs_taxonomy_field_settings_submit';
   }
   else {
     $form['hs'] = array(
       '#prefix' => '<div id="hs-config-replace">',
       '#suffix' => '</div>',
     ); 
+  }
+}
+
+/**
+ * Submit callback; updates the field settings (i.e. sets the cardinality of
+ * the field to unlimited) whenever either the dropbox or "save lineage" is
+ * enabled.
+ */
+function hs_taxonomy_field_settings_submit(&$form, &$form_state) {  
+  $field = field_info_field($form['#field_name']);
+  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+  $config = hierarchical_select_common_config_get("taxonomy-$vocabulary->vid");
+  
+  if ($config['dropbox']['status'] || $config['save_lineage']) {
+    $field = field_info_field($form['#field_name']);
+    $field['cardinality'] = -1; // -1 = unlimited
+    field_update_field($field);
+
+    drupal_set_message(t("Updated this field's cardinality to unlimited."));
+  }
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * Alter the field settings form; dynamically disable the "cardinality" (or
+ * "Number of values" in the UI) setting on the form when either the dropbox
+ * or "save lineage" is enabled.
+ */
+function hs_taxonomy_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
+
+  $vocabulary = taxonomy_vocabulary_machine_name_load($form['#field']['settings']['allowed_values'][0]['vocabulary']);
+  $config = hierarchical_select_common_config_get("taxonomy-$vocabulary->vid");
+
+  if ($config['dropbox']['status'] || $config['save_lineage']) {
+    $form['field']['cardinality']['#disabled'] = TRUE;
+    $form['field']['cardinality']['#description'] .= ' <strong>' . t('This setting is now managed by the Hierarchical Select configuration.') . '</strong>';
   }
 }
 
@@ -142,9 +186,9 @@ function hs_taxonomy_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
-
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
+
+  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
 
   // Build an array of existing term IDs.
   $tids = array();

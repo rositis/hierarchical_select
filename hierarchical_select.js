@@ -50,11 +50,11 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
     Drupal.HierarchicalSelect.state[hsid] = {};
   }
 
-  Drupal.HierarchicalSelect.attachBindings(hsid);
   this.transform(hsid);
   if (Drupal.settings.HierarchicalSelect.settings[hsid].resizable) {
     this.resizable(hsid);
   }
+  Drupal.HierarchicalSelect.attachBindings(hsid);
 
   if (this.cache != null && this.cache.status()) {
     this.cache.load(hsid);
@@ -96,7 +96,7 @@ Drupal.HierarchicalSelect.transform = function(hsid) {
 
   $('#hierarchical-select-'+ hsid +'-wrapper', Drupal.HierarchicalSelect.context)
   // Remove the .nojs div.
-  .find('.nojs').remove().end()
+  .find('.nojs').hide().end()
   // Find all .dropbox-remove cells in the dropbox table.
   .find('.dropbox .dropbox-remove')
   // Hide the children of these table cells. We're not removing them because
@@ -323,7 +323,7 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
       // Check the (hidden, because JS is enabled) checkbox that marks this
       // dropbox entry for removal. 
       $(this).parent().find('input[type=checkbox]').attr('checked', true);
-      Drupal.HierarchicalSelect.update(_hsid, 'remove-from-dropbox', {});
+      Drupal.HierarchicalSelect.update(_hsid, 'remove-from-dropbox', { opString: updateOpString });
       return false; // Prevent the browser from POSTing the page.
     };
   }(hsid));
@@ -466,6 +466,8 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // - 'update-hierarchical-select'
   // - 'enforced-update'
   // - 'create-new-item'
+  // - 'cancel-new-item'
+  // - 'add-to-dropbox'
   // - 'remove-from-dropbox'
   switch (updateType) {
     case 'update-hierarchical-select':
@@ -517,7 +519,11 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
     case 'create-new-item':
     case 'cancel-new-item':
     case 'add-to-dropbox':
+    case 'remove-from-dropbox':
       post.push({ name : 'op', value : settings.opString });
+      break;
+
+    default:
       break;
   }
 

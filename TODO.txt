@@ -6,7 +6,7 @@ HS core:
 ✓ fix: #element_validate callback: _hierarchical_select_validate() — verify this still works
 ✓ port: support multiple HS on the same page
 ✓ port: admin UI
-- port: "dropbox" support
+✓ port: "dropbox" support
 - port: "create new item" support
 - port: render_flat_select support
 - upgrade path: delete cache_hierarchical_select
@@ -18,8 +18,8 @@ HS core:
 
 Taxonomy:
 ✓ port: admin UI
+✓ port: "dropbox" support
 - port: taxonomy term form should be altered to include HS
-- port: "dropbox" support
 - port: "save lineage" support (i.e. support multiple parents, automatic warning shown through hs_taxonomy_hierarchical_select_root_level())
 - port: "create new item" support
 - refactor: use the vocabulary machine name internally instead of the vid
