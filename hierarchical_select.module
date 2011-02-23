@@ -1569,7 +1569,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // - the special_items setting has been configured, and
     // - one special item has the 'none' property
     // then we'll use the special item instead of the normal "<none>" option.
-    $none_option = (count($special_items['none'])) ? $special_items['none'][0] : 'none';
+    $none_option = (isset($special_items) && count($special_items['none'])) ? $special_items['none'][0] : 'none';
 
     // Set "<none>" option (or its equivalent special item), or "label_0".
     $hierarchy->lineage[0] = ($first_case || $second_case) ? $none_option : 'label_0';
@@ -1641,7 +1641,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   $first_case  = !$required;
   $second_case = $config['enforce_deepest'];
   $third_case  = $dropbox && count($dropbox->lineages) > 0;
-  if (($first_case || $second_case || $third_case) && !count($special_items['none'])) {
+  if (($first_case || $second_case || $third_case) && (isset($special_items) && !count($special_items['none'])) {
     $option = theme('hierarchical_select_special_option', array('option' => t('none')));
     $hierarchy->levels[0] = array('none' => $option) + $hierarchy->levels[0];
   }
