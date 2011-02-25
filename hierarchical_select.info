@@ -1,4 +1,3 @@
-; $Id$
 name = Hierarchical Select
 description = Simplifies the selection of one or multiple items in a hierarchical tree.
 package = Form Elements

@@ -1,4 +1,3 @@
-// $Id$
 
 Upgrading (from Drupal 5 to 6)
 ------------------------------
