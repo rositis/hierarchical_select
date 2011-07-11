@@ -342,7 +342,15 @@ function hierarchical_select_ajax($form, $form_state) {
       'command' => 'hierarchicalSelectUpdate', 
       'output'  => $output, 
       // 'cache'   => $cache,
+  );
+  $new_settings = _hs_new_setting_ajax();
+  foreach ($new_settings as $new_setting) {
+    $commands[] = array(
+      'command'  => 'hierarchicalSelectSettingsUpdate',
+      'hsid'     => $new_setting['hsid'],
+      'settings' => $new_setting['settings'],
     );
+  }
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
@@ -404,12 +412,29 @@ function _hs_process_attach_css_js($element, $hsid, $complete_form) {
        ),
      )
   );
-  $element['#attached']['js'][] = array(
-    'type' => 'setting',
-    'data' => $settings,
-  );
+
+    if (!isset($_POST['hsid'])) {
+      $element['#attached']['js'][] = array(
+        'type' => 'setting',
+        'data' => $settings,
+      );
+    }
+    else {
+      $element['#attached']['_hs_new_setting_ajax'][] = array($hsid, $settings['HierarchicalSelect']['settings'][$hsid]);
+    }
+
 
   return $element;
+}
+
+function _hs_new_setting_ajax($hsid = FALSE, $settings) {
+  static $hs_settings = array();
+
+  if ($hsid !== FALSE) {
+    $hs_settings[] = array('hsid' => $hsid, 'settings' => $settings);
+  }
+
+  return $hs_settings;
 }
 
 // Basic config validation and diagnostics.

@@ -622,4 +622,8 @@ Drupal.ajax.prototype.commands.hierarchicalSelectUpdate = function(ajax, respons
   .replaceWith($(response.output));
 };
 
+Drupal.ajax.prototype.commands.hierarchicalSelectSettingsUpdate = function(ajax, response, status, hsid) {
+  Drupal.settings.HierarchicalSelect.settings[response.hsid] = response.settings;
+};
+
 })(jQuery);
