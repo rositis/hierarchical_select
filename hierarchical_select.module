@@ -378,6 +378,8 @@ function _hs_process_shortcut_special_items($config) {
 function _hs_process_attach_css_js($element, $hsid, $complete_form) {
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
+  $element['#attached']['library'][] = array('system', 'drupal.ajax');
+  $element['#attached']['library'][] = array('system', 'jquery.form');
   $element['#attached']['library'][] = array('system', 'effects.core');    
   $element['#attached']['library'][] = array('system', 'effects.drop');    
   $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
@@ -705,6 +707,9 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // Also make sure it is the *first* validate callback.
   $element['#element_validate'] = (isset($element['#element_validate'])) ? $element['#element_validate'] : array();
   $element['#element_validate'] = array_merge(array('_hierarchical_select_validate'), $element['#element_validate']);
+
+  // Ensure the form is cached, for AJAX to work.
+  $form_state['cache'] = TRUE;
 
   //
   // Rendering.
