@@ -62,7 +62,7 @@ function hierarchical_select_menu() {
     'title'            => 'Export',
     'access arguments' => array('administer site configuration'),
     'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('hierarchical_select_admin_export', 4),
+    'page arguments'   => array('hierarchical_select_admin_export', 5),
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
@@ -70,7 +70,7 @@ function hierarchical_select_menu() {
     'title'            => 'Import',
     'access arguments' => array('administer site configuration'),
     'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('hierarchical_select_admin_import', 4),
+    'page arguments'   => array('hierarchical_select_admin_import', 5),
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'hierarchical_select.admin.inc',
   );
