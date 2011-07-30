@@ -30,7 +30,7 @@ Taxonomy:
 - refactor: optimize HS API implementation: take advantage of improvements in Taxonomy
 
 HS Taxonomy Views: 
-- everything
+- everything — see http://drupal.org/node/1170192
 
 Menu: 
 - everything
