@@ -137,7 +137,7 @@ function hs_taxonomy_field_settings_submit(&$form, &$form_state) {
  * or "save lineage" is enabled.
  */
 function hs_taxonomy_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  if (isset($form['#field']['settings']['allowed_values'][0]['vocabulary'])) {
+  if (isset($form['#field']['type']) && $form['#field']['type'] === 'taxonomy_term_reference') {
     require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
     $vocabulary = taxonomy_vocabulary_machine_name_load($form['#field']['settings']['allowed_values'][0]['vocabulary']);
