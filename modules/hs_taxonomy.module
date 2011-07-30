@@ -210,9 +210,9 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
         'entity_count_for_node_type' => NULL,
       ),
     ),
-    '#title'         => $vocabulary->name,
+    '#title'         => $instance['label'],
     '#default_value' => $tids,
-    '#description'   => $vocabulary->description,
+    '#description'   => $instance['description'],
     '#weight'        => -15,
   );
 
