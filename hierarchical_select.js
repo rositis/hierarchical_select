@@ -197,7 +197,7 @@ Drupal.HierarchicalSelect.enableForm = function(hsid) {
   if (!dropboxLimitExceeded) {
     $e = $e.add($('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select'));
   }
-  $e.attr('disabled', false);
+  $e.removeAttr("disabled");
 
   // Don't enable the 'Add' button again if it's been disabled because the
   // dropbox limit was exceeded.
