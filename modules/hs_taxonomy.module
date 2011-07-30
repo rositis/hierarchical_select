@@ -765,7 +765,7 @@ function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
   $options = array();
   foreach ($terms as $key => $term) {
     // Use the translated term when available!
-    if (module_exists('i18ntaxonomy') && isset($term->vid) && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
+    if (module_exists('i18n_taxonomy')) {
       $options[$term->tid] = tt("taxonomy:term:$term->tid:name", $term->name);
     }
     else {

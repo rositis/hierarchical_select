@@ -527,7 +527,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   }
 
   // Construct the URL the request should be made to.
-  var url = Drupal.settings.basePath + Drupal.settings.HierarchicalSelect.settings[hsid].ajax_path;
+  var url = Drupal.settings.HierarchicalSelect.settings[hsid].ajax_url;
 
   // Construct the object that contains the options for a callback to the
   // server. If a client-side cache is found however, it's possible that this

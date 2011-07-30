@@ -412,7 +412,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
              'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
              'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
              'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
-             'ajax_path'        => 'hierarchical_select_ajax/' . implode('/', $element['#array_parents']) . '/' . $complete_form['form_build_id']['#value'],
+             'ajax_url'         => url('hierarchical_select_ajax/' . implode('/', $element['#array_parents']) . '/' . $complete_form['form_build_id']['#value']),
           ),
          ),
        )
