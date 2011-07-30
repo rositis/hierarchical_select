@@ -334,7 +334,9 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
   $terms = taxonomy_get_children($parent, $params['vid']);
 
   // Unset the term that's being excluded, if it is among the children.
-  unset($terms[$params['exclude_tid']]);
+  if (isset($params['exclude_tid'])) {
+    unset($terms[$params['exclude_tid']]);
+  }
 
   // If the Term Permissions module is installed, honor its settings.
   if (function_exists('term_permissions_allowed')) {
