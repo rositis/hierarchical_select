@@ -179,6 +179,8 @@ Sponsors
    Merge, http://merge.nl.
 * Initial Drupal 7 port:
    PingV, http://pingv.com.
+* Port of "save lineage" functionality to Drupal 7:
+   Bancard Data Service
 
 
 Author

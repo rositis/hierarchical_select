@@ -19,8 +19,8 @@ HS core:
 Taxonomy:
 ✓ port: admin UI
 ✓ port: "dropbox" support
-- port: taxonomy term form should be altered to include HS
-- port: "save lineage" support (i.e. support multiple parents, automatic warning shown through hs_taxonomy_hierarchical_select_root_level())
+✓ port: "save lineage" support (i.e. support multiple parents, automatic warning shown through hs_taxonomy_hierarchical_select_root_level())
+- port: taxonomy term (create/edit) form should be altered to include HS
 - port: "create new item" support
 - port: "entity_count" support — see http://drupal.org/node/1068462
 - refactor: use the vocabulary machine name internally instead of the vid

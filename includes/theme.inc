@@ -125,6 +125,17 @@ function theme_hierarchical_select_select($variables) {
 }
 
 /**
+ * Format an item separator (for use in a lineage).
+ */
+function theme_hierarchical_select_item_separator($variables) {
+  $output = '';
+  $output .= '<span class="hierarchical-select-item-separator">';
+  $output .= '›';
+  $output .= '</span>';
+  return $output;
+}
+
+/**
  * Format a special option in a Hierarchical Select select. For example the
  * "none" option or the "create new item" option. This theme function allows
  * you to change how a special option is indicated textually.

@@ -10,6 +10,17 @@
 // Drupal core hooks.
 
 /**
+ * Implements hook_theme().
+ */
+function hs_taxonomy_theme() {
+  return array(
+    'hs_taxonomy_formatter_lineage' => array(
+      'variables' => array('lineage' => array()),
+    ),
+  );
+}
+
+/**
  * Implements hook_form_FORMID_alter().
  *
  * Alter the widget type form; dynamically add the Hierarchical Select
@@ -74,7 +85,6 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     
     // TODO: implement all functionality, but for now, disable unsupported
     // settings.
-    unset($form['hs']['save_lineage']);
     unset($form['hs']['editability']);
 
     // TODO: support multiple parents, i.e. support "save lineage".
@@ -163,7 +173,7 @@ function hs_taxonomy_field_ui_widget_settings_ajax($form, &$form_state) {
 
 
 //----------------------------------------------------------------------------
-// Field API hooks.
+// Field API widget hooks.
 
 /**
  * Implements hook_field_widget_info().
@@ -261,6 +271,141 @@ function hs_taxonomy_widget_process($element, &$form_state, $complete_form) {
 
   $element['#return_value'] = $items;
     
+  return $element;
+}
+
+
+//----------------------------------------------------------------------------
+// Field API formatter hooks.
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function hs_taxonomy_field_formatter_info() {
+  return array(
+    'hs_taxonomy_term_reference_hierarchical_text' => array(
+      'label' => t('Hierarchical text'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+    'hs_taxonomy_term_reference_hierarchical_links' => array(
+      'label' => t('Hierarchical links'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_prepare_view().
+ */
+function hs_taxonomy_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
+  // Extract required field information.
+  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+  $vid = $vocabulary->vid;
+
+  // Get the config for this field.
+  module_load_include('inc', 'hierarchical_select', 'includes/common');
+  $config_id = "taxonomy-$vid";
+  $config = hierarchical_select_common_config_get($config_id);
+  $config += array(
+    'module' => 'hs_taxonomy',
+    'params' => array(
+      'vid' => $vid,
+    ),
+  );
+
+  // Collect every possible term attached to any of the fieldable entities.
+  // Copied from taxonomy_field_formatter_prepare_view().
+  foreach ($entities as $id => $entity) {
+    $selection  = array();
+
+    foreach ($items[$id] as $delta => $item) {
+      // Force the array key to prevent duplicates.
+      if ($item['tid'] != 'autocreate') {
+        $selection[] = $item['tid'];
+      }
+    }
+
+    // Generate a dropbox out of the selection. This will automatically
+    // calculate all lineages for us.
+    $dropbox = _hierarchical_select_dropbox_generate($config, $selection);
+
+    // Store additional information in each item that's required for
+    // Hierarchical Select's custom formatters that are compatible with the
+    // save_lineage functionality.
+    if (!empty($dropbox->lineages)) {
+      foreach (array_keys($dropbox->lineages) as $lineage) {
+        foreach ($dropbox->lineages[$lineage] as $level => $details) {
+          $tid = $details['value'];
+
+          // Look up where this term (tid) is stored in the items array.
+          $key = array_search($tid, $selection);
+
+          // Store the additional information.
+          $items[$id][$key]['hs_lineage'] = array(
+            'lineage' => $lineage,
+            'level'   => $level,
+            'label'   => $details['label'],
+          );
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  // Extract required field information.
+  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+
+  // Extract the lineage information from the items (this was added by
+  // hs_taxonomy_field_formatter_prepare_view()).
+  $lineages = array();
+  foreach ($items as $delta => $item) {
+    $metadata = $item['hs_lineage'];
+
+    $term = new StdClass();
+    $term->tid = $item['tid'];
+    $term->vid = $vocabulary->vid;
+    $term->vocabulary_machine_name = $vocabulary->machine_name;
+    $term->name = $metadata['label'];
+
+    $lineages[$metadata['lineage']][$metadata['level']] = $term;
+  }
+
+  // Actual formatting.
+  $element = array();
+  $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';  
+  switch ($display['type']) {
+    case 'hs_taxonomy_term_reference_hierarchical_text':
+      foreach ($lineages as $l => $lineage) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        foreach ($lineage as $level => $term) {
+          // $element['#lineages'][$l][$level] = array(
+          $element[$l]['#lineage'][$level] = array(
+            '#markup' => $term->name,
+          );
+        }
+      }
+      break;
+    case 'hs_taxonomy_term_reference_hierarchical_links':
+      foreach ($lineages as $l => $lineage) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        foreach ($lineage as $level => $term) {
+          $uri = entity_uri('taxonomy_term', $term);
+          // $element['#lineages'][$l][$level] = array(
+          $element[$l]['#lineage'][$level] = array(
+            '#type' => 'link',
+            '#title' => $term->name,
+            '#href' => $uri['path'],
+            '#options' => $uri['options'],
+          );
+        }
+      }
+      break;
+  }
+
   return $element;
 }
 
@@ -670,6 +815,31 @@ function _hs_taxonomy_token_termpath_for_vid($selection, $vid) {
   }
 
   return $terms;
+}
+
+
+//----------------------------------------------------------------------------
+// Theme functions.
+
+/**
+ * Format a lineage for one of HS Taxonomy's custom Term reference formatters.
+ */
+function theme_hs_taxonomy_formatter_lineage($variables) {
+  $output = '';
+  $lineage = $variables['lineage'];
+  $separator = theme('hierarchical_select_item_separator');
+
+  // Render each item within a lineage.
+  $items = array();
+  foreach ($lineage as $level => $item ) {
+    $line  = '<span class="lineage-item lineage-item-level-' . $level . '">';
+    $line .= drupal_render($item);
+    $line .= '</span>';
+    $items[] = $line;
+  }
+  $output .= implode($separator, $items);
+
+  return $output;
 }
 
 

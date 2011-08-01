@@ -118,6 +118,10 @@ function hierarchical_select_element_info() {
     ),
     '#default_value' => -1,
   );
+  $types['hierarchical_select_item_separator'] = array(
+    '#theme' => 'hierarchical_select_item_separator',
+  );
+
   return $types;
 }
 
@@ -224,6 +228,10 @@ function hierarchical_select_theme() {
     ),
     'hierarchical_select_select' => array(
       'file'      => 'includes/theme.inc',
+      'render element' => 'element',
+    ),
+    'hierarchical_select_item_separator' => array(
+      'file'           => 'includes/theme.inc',
       'render element' => 'element',
     ),
     'hierarchical_select_special_option' => array(
@@ -2092,28 +2100,32 @@ function _hierarchical_select_dropbox_reconstruct_lineages_save_lineage_enabled(
 
   // Keep on trying as long as at least one lineage has been extended.
   $at_least_one = TRUE;
-  for ($i = 0; $at_least_one; $i++) {
+  for ($level = 0; $at_least_one; $level++) {
     $at_least_one = FALSE;
     $num = count($lineages);
 
-    // Try to improve every lineage. Make sure we don't iterate over
+    // Try to extend every lineage. Make sure we don't iterate over
     // possibly new lineages.
     for ($id = 0; $id < $num; $id++) {
-      $children = module_invoke($module, 'hierarchical_select_children', $lineages[$id][$i]['value'], $params);
+      // Only try to extend a lineage if it has an item at the current level.
+      if (!isset($lineages[$id][$level])) {
+        continue;
+      }
+      $children = module_invoke($module, 'hierarchical_select_children', $lineages[$id][$level]['value'], $params);
 
       $child_added_to_lineage = FALSE;
       foreach (array_keys($children) as $child) {
         if (in_array($child, $selection)) {
           if (!$child_added_to_lineage) {
             // Add the child to the lineage.
-            $lineages[$id][$i + 1] = array('value' => $child, 'label' => $children[$child]);
+            $lineages[$id][$level + 1] = array('value' => $child, 'label' => $children[$child]);
             $child_added_to_lineage = TRUE;
             $at_least_one = TRUE;
           }
           else {
             // Create new lineage based on current one and add the child.
             $lineage = $lineages[$id];
-            $lineage[$i + 1] = array('value' => $child, 'label' => $children[$child]);
+            $lineage[$level + 1] = array('value' => $child, 'label' => $children[$child]);
 
             // Add the new lineage to the set of lineages
             $lineages[] = $lineage;
