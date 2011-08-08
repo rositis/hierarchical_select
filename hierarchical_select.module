@@ -413,7 +413,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
     $settings =  array(
        'HierarchicalSelect' => array(
          'settings' => array(
-           $hsid => array(
+           "hs-$hsid" => array(
              'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
              'cacheId'          => $config['module'] . '_' . implode('_', (is_array($config['params'])) ? $config['params'] : array()),
              'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
@@ -516,7 +516,7 @@ function _hs_process_developer_mode_send_log_js($element, $hsid) {
     $settings = array(
       'HierarchicalSelect' => array(
         'initialLog' => array(
-          $hsid => $log,
+          "hs-$hsid" => $log,
         ),
       ),
     );
