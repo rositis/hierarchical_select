@@ -87,21 +87,6 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     // settings.
     unset($form['hs']['editability']);
 
-    // TODO: support multiple parents, i.e. support "save lineage".
-    if ($vocabulary->hierarchy == 2) {
-      $form['hs'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Hierarchical Select Configuration'),
-        '#prefix' => '<div id="hs-config-replace">',
-        '#suffix' => '</div>',
-      );
-      $form['hs']['warning'] = array(
-        '#type' => 'item',
-        '#title' => t('WARNING'),
-        '#markup' => '<span style="color:red">This is a vocabulary with multiple parents. The Drupal 7 port of Hierarchical Select does not yet support this.</span>',
-      );      
-    }
-    
     // Add the submit handler for the Hierarchical Select config form. Make
     // sure it is executed first.
     $form['#hs_common_config_form_parents'] = array('hs');
@@ -158,6 +143,59 @@ function hs_taxonomy_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
       $form['field']['cardinality']['#description'] .= ' <strong>' . t('This setting is now managed by the Hierarchical Select configuration.') . '</strong>';
     }
   }
+}
+
+function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
+  // Don't alter the form when taxonomy_override_selector is not set.
+  if (variable_get('taxonomy_override_selector', FALSE) === FALSE) {
+    return;
+  }
+
+  // Don't alter the form when it's in confirmation mode.
+  if (isset($form_state['confirm_delete']) || isset($form_state['confirm_parents'])) {
+    return;
+  }
+
+  // Build an appropriate config, that inherits the level_labels settings
+  // from the vocabulary's Hierarchical Select config.
+  $vid = $form['#vocabulary']->vid;
+  module_load_include('inc', 'hierarchical_select', 'includes/common');
+  $vocabulary_config = hierarchical_select_common_config_get("taxonomy-$vid");
+  $config = array(
+    'module' => 'hs_taxonomy',
+    'params' => array(
+      'vid'         => $vid,
+      'exclude_tid' => $form['#term']['tid'],
+    ),
+    'enforce_deepest' => 0,
+    'entity_count'    => 0,
+    'require_entity'  => 0,
+    'save_lineage'    => 0,
+    'level_labels'    => $vocabulary_config['level_labels'],
+    'dropbox' => array(
+      'status' => 1,
+      'limit'  => 0,
+    ),
+    'editability' => array(
+      'status' => 0,
+    ),
+    'params' => array(
+      'vid'         => isset($form['#term']['vid']) ? $form['#term']['vid'] : NULL,
+      'exclude_tid' => isset($form['#term']['tid']) ? $form['#term']['tid'] : NULL,
+      'root_term'   => TRUE,
+    ),
+    'render_flat_select' => 0,
+  );
+
+  // Use Hierarchical Select for selecting the parent term(s).
+  $parent = isset($form['#term']['tid']) ? array_keys(taxonomy_get_parents($form['#term']['tid'])) : array();
+  $form['relations']['parent'] = array(
+    '#type'          => 'hierarchical_select',
+    '#title'         => t('Parents'),
+    '#default_value' => $parent,
+    '#config'        => $config,
+  );
+  $form['relations']['parent']['#config']['dropbox']['title'] = t('All parent terms');
 }
 
 
@@ -340,8 +378,10 @@ function hs_taxonomy_field_formatter_prepare_view($entity_type, $entities, $fiel
           // Look up where this term (tid) is stored in the items array.
           $key = array_search($tid, $selection);
 
-          // Store the additional information.
-          $items[$id][$key]['hs_lineage'] = array(
+          // Store the additional information. One term can occur in multiple
+          // lineages: when Taxonomy's "multiple parents" functionality is
+          // being used.
+          $items[$id][$key]['hs_lineages'][] = array(
             'lineage' => $lineage,
             'level'   => $level,
             'label'   => $details['label'],
@@ -363,15 +403,17 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
   // hs_taxonomy_field_formatter_prepare_view()).
   $lineages = array();
   foreach ($items as $delta => $item) {
-    $metadata = $item['hs_lineage'];
+    $metadata = $item['hs_lineages'];
 
-    $term = new StdClass();
-    $term->tid = $item['tid'];
-    $term->vid = $vocabulary->vid;
-    $term->vocabulary_machine_name = $vocabulary->machine_name;
-    $term->name = $metadata['label'];
+    for ($i = 0; $i < count($metadata); $i++) {
+      $term = new StdClass();
+      $term->tid = $item['tid'];
+      $term->vid = $vocabulary->vid;
+      $term->vocabulary_machine_name = $vocabulary->machine_name;
+      $term->name = $metadata[$i]['label'];
 
-    $lineages[$metadata['lineage']][$metadata['level']] = $term;
+      $lineages[$metadata[$i]['lineage']][$metadata[$i]['level']] = $term;
+    }
   }
 
   // Actual formatting.
@@ -379,10 +421,10 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
   $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';  
   switch ($display['type']) {
     case 'hs_taxonomy_term_reference_hierarchical_text':
-      foreach ($lineages as $l => $lineage) {
+      for ($l = 0; $l < count($lineages); $l++) {
         $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
-        foreach ($lineage as $level => $term) {
-          // $element['#lineages'][$l][$level] = array(
+        for ($level = 0; $level < count($lineages[$l]); $level++) {
+          $term = $lineages[$l][$level];
           $element[$l]['#lineage'][$level] = array(
             '#markup' => $term->name,
           );
@@ -390,11 +432,11 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
       }
       break;
     case 'hs_taxonomy_term_reference_hierarchical_links':
-      foreach ($lineages as $l => $lineage) {
+      for ($l = 0; $l < count($lineages); $l++) {
         $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
-        foreach ($lineage as $level => $term) {
+        for ($level = 0; $level < count($lineages[$l]); $level++) {
+          $term = $lineages[$l][$level];
           $uri = entity_uri('taxonomy_term', $term);
-          // $element['#lineages'][$l][$level] = array(
           $element[$l]['#lineage'][$level] = array(
             '#type' => 'link',
             '#title' => $term->name,
@@ -432,10 +474,6 @@ function hs_taxonomy_hierarchical_select_params() {
 function hs_taxonomy_hierarchical_select_root_level($params) {
   // TODO: support multiple parents, i.e. support "save lineage".
   $vocabulary = taxonomy_vocabulary_load($params['vid']);
-  if ($vocabulary->hierarchy == 2) {
-    drupal_set_message('This is a vocabulary with multiple parents. The Drupal 7 port of Hierarchical Select does not yet support this.');
-  }
-
   $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
 
   // If the root_term parameter is enabled, then prepend a fake "<root>" term.
