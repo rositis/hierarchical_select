@@ -433,7 +433,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
       );
     }
     else {
-      $element['#attached']['_hs_new_setting_ajax'][] = array($hsid, $settings['HierarchicalSelect']['settings'][$hsid]);
+      $element['#attached']['_hs_new_setting_ajax'][] = array($hsid, $settings['HierarchicalSelect']['settings']["hs-$hsid"]);
     }
 
     $form_state['storage']['hs']['js_settings_sent'][$hsid] = TRUE;
