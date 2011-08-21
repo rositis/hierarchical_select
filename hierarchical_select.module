@@ -1984,7 +1984,8 @@ function _hierarchical_select_hierarchy_enforce_deepest($lineage, $module, $para
   $parent = end($lineage); // The last item in the lineage is the deepest one.
   $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
   while (count($children)) {
-    $first_child = reset(array_keys($children));
+    $keys = array_keys($children);
+    $first_child = $keys[0];
     $lineage[] = $first_child;
     $parent = $first_child;
     $children = module_invoke($module, 'hierarchical_select_children', $parent, $params);
