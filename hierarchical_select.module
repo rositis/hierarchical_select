@@ -406,7 +406,13 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
 
   if (!isset($form_state['storage']['hs']['js_settings_sent'])) {
     $form_state['storage']['hs']['js_settings_sent'] = array();
-  }  
+  }
+
+  // Form was submitted; this is a newly loaded page, thus ensure that all JS
+  // settings are resent.
+  if ($form_state['process_input'] === TRUE) {
+    $form_state['storage']['hs']['js_settings_sent'] = array();
+  }
 
   if (!isset($form_state['storage']['hs']['js_settings_sent'][$hsid])) {
     $config = _hierarchical_select_inherit_default_config($element['#config']);
