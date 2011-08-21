@@ -299,6 +299,12 @@ function hs_taxonomy_field_widget_error($element, $error, $form, &$form_state) {
 function hs_taxonomy_widget_process($element, &$form_state, $complete_form) {
   $tids = $element['#return_value'];
 
+  // If #return_value is array(NULL), then nothing was selected!
+  if (count($tids) == 1 && $tids[0] === NULL) {
+    $element['#return_value'] = array();
+    return $element;
+  }
+
   $items = array();
   foreach ($tids as $tid) {
     $items[] = array('tid' => $tid);
