@@ -7,10 +7,10 @@ HS core:
 ✓ port: support multiple HS on the same page
 ✓ port: admin UI
 ✓ port: "dropbox" support
+✓ upgrade path: delete cache_hierarchical_select
+✓ upgrade path: documentation
 - port: "create new item" support
 - port: render_flat_select support
-- upgrade path: delete cache_hierarchical_select
-- upgrade path: documentation
 - port: client-side caching (use _hierarchical_select_json_convert_hierarchy_to_cache())
 - port: status report
 - feature: live preview of HS on the common config form
