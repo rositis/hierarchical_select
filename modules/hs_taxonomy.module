@@ -247,7 +247,7 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
     }
   }
 
-  $form_item = array(
+  $element += array(
     '#type'          => 'hierarchical_select',
     '#config'        => array(
       'module' => 'hs_taxonomy',
@@ -258,14 +258,10 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
         'entity_count_for_node_type' => NULL,
       ),
     ),
-    '#title'         => $instance['label'],
-    '#required'      => $instance['required'],
     '#default_value' => $tids,
-    '#description'   => $instance['description'],
-    '#weight'        => -15,
   );
 
-  hierarchical_select_common_config_apply($form_item, "taxonomy-$vocabulary->vid");
+  hierarchical_select_common_config_apply($element, "taxonomy-$vocabulary->vid");
 
   // Append another #process callback that transforms #return_value to the
   // format that Field API/Taxonomy Field expects.
@@ -273,9 +269,9 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
   // typically happens automatically during FAPI processing. To ensure the
   // order is right, we already set HS' own #process callback here explicitly.
   $element_info = element_info('hierarchical_select');
-  $form_item['#process'] = array_merge($element_info['#process'], array('hs_taxonomy_widget_process'));
+  $element['#process'] = array_merge($element_info['#process'], array('hs_taxonomy_widget_process'));
 
-  return $form_item;
+  return $element;
 }
 
 /**
