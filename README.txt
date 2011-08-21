@@ -177,7 +177,7 @@ Sponsors
    Merge, http://merge.nl.
 * Views 2 support:
    Merge, http://merge.nl.
-* Initial Drupal 7 port:
+* Initial Drupal 7 port + folow-up fixes:
    PingV, http://pingv.com.
 * Port of "save lineage" functionality to Drupal 7:
    Bancard Data Service
