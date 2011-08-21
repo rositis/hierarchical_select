@@ -699,7 +699,7 @@ function hs_taxonomy_hierarchical_select_config_info() {
               'bundle'         => l(t($bundles_info[$bundle]['label']), "admin/structure/types/manage/$bundle"),
               'context type'   => '',
               'context'        => '',
-              'edit link'      => "admin/structure/types/manage/$bundle/fields/$field_name/widget-type",
+              'edit link'      => $bundles_info[$bundle]['admin']['real path'] . "/fields/$field_name/widget-type",
             );
 
           }
