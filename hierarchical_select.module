@@ -366,7 +366,7 @@ function _hs_process_determine_hsid($element, &$form_state) {
   // Determine the HSID to use: either the existing one that is received, or
   // generate a new one based on the last HSID used (which is
   // stored in form state storage).
-  if (!isset($element['#value']['hsid'])) {
+  if (!isset($element['#value']) || !is_array($element['#value']) || !array_key_exists('hsid', $element['#value'])) {
     if (!isset($form_state['storage']['hs']['last_hsid'])) {
       $form_state['storage']['hs']['last_hsid'] = -1;
     }
