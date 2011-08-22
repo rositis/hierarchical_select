@@ -459,7 +459,7 @@ function _hs_new_setting_ajax($hsid = FALSE, $settings) {
 }
 
 // Basic config validation and diagnostics.
-function _hs_process_developer_mode_log_diagnostics($element) {
+function _hs_process_developer_mode_log_diagnostics(&$element) {
   if (HS_DEVELOPER_MODE) {
     $config = $element['#config'];
     $diagnostics = array();
@@ -484,7 +484,10 @@ function _hs_process_developer_mode_log_diagnostics($element) {
       $diagnostics_string = print_r($diagnostics, TRUE);
       $message = "Config diagnostics (config id: $config_id): $diagnostics_string";
       _hierarchical_select_log($message);
+      $title = $element['#title'];
+      $element = array();
       $element['#type'] = 'item';
+      $element['#title'] = $title;
       $element['#markup'] = '<p><span style="color:red;">Fix the indicated errors in the #config property first!</span><br />' . nl2br($message) . '</p>';
       return FALSE;
     }
