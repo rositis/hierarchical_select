@@ -554,7 +554,7 @@ function _hs_process_exclusive_lineages($element, $hs_selection, $db_selection) 
   return array($element, $hs_selection, $db_selection);
 }
 
-function _hs_process_render_create_new_item($element) {
+function _hs_process_render_create_new_item($element, $hierarchy) {
   $creating_new_item = FALSE;
   if (isset($element['#value']['hierarchical_select']['selects'])) {
     foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
@@ -563,12 +563,18 @@ function _hs_process_render_create_new_item($element) {
 
         // We want to override the select in which the "create_new_item"
         // option was selected and hide all selects after that, if they exist.
-        for ($i = $depth; $i < count($hierarchy->lineage); $i++) {
-          unset($element['hierarchical_select']['selects'][$i]);
+        // If depth == 0, then that means all selects should be hidden.
+        if ($depth == 0) {
+          unset($element['hierarchical_select']['selects']);
+        }
+        else {
+          for ($i = $depth; $i < count($hierarchy->lineage); $i++) {
+            unset($element['hierarchical_select']['selects'][$i]);
+          }
         }
 
         $element['hierarchical_select']['create_new_item'] = array(
-          '#prefix' => '<div class="' . str_replace('_', '-', $value) . '">',
+          '#prefix' => '<div class="create-new-item">',
           '#suffix' => '</div>',
         );
 
@@ -582,7 +588,7 @@ function _hs_process_render_create_new_item($element) {
           '#default_value' => t('new @item', array('@item' => $item_type)),
           '#attributes' => array(
             'title' => t('new @item', array('@item' => $item_type)),
-            'class' => 'create-new-item-input'
+            'class' => array('create-new-item-input'),
           ),
           // Prevent the textfield from being wrapped in a div. This
           // simplifies the CSS and JS code.
@@ -769,7 +775,7 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // When the special "create_new_item" value is passed in a level, replace
   // that level with an inline modal form to create a new item, and hide all
   // subsequent selects.
-  list($element, $creating_new_item) = _hs_process_render_create_new_item($element);
+  list($element, $creating_new_item) = _hs_process_render_create_new_item($element, $hierarchy);
 
   // Render the dropbox, if enabled.
   // Automatically hides the "Add" button when creating a new item.
@@ -1028,7 +1034,7 @@ function _hierarchical_select_process_calculate_selections(&$element, $hsid, $fo
     }
   }
   else {
-    $op = (isset($form_state['input']['op'])) ? $form_state['input']['op'] : NULL;
+    $op = (isset($form_state['input']['op']) && $form_state['input']['hsid'] == $hsid) ? $form_state['input']['op'] : NULL;
     if ($dropbox && $op == t('Add')) {
       $hs_selection = _hierarchical_select_process_get_hs_selection($element);
       $db_selection = _hierarchical_select_process_get_db_selection($element, $hsid, $form_state);

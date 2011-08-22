@@ -83,10 +83,6 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
       '#suffix' => '</div>',
     );
 
-    // TODO: implement all functionality, but for now, disable unsupported
-    // settings.
-    unset($form['hs']['editability']);
-
     // Add the submit handler for the Hierarchical Select config form. Make
     // sure it is executed first.
     $form['#hs_common_config_form_parents'] = array('hs');
@@ -619,25 +615,24 @@ function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
 /**
  * Implementation of hook_hierarchical_select_create_item().
  */
-/*
-// TODO: port this to D7.
 function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
-  $form_state['values'] = array(
-    'name'   => html_entity_decode($label, ENT_QUOTES),
-    'parent' => $parent,
-    'vid'    => $params['vid'],
-  );
-  $status = taxonomy_term_save($term); // TODO Term object replaces array $form_state['values']
+  $term = new StdClass();
+  $term->vid         = $params['vid'];
+  $term->name        = html_entity_decode($label, ENT_QUOTES);
+  $term->description = '';
+  $term->parent      = $parent;
+
+  $status = taxonomy_term_save($term);
 
   if ($status == SAVED_NEW) {
     // Reset the cached tree.
     _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
 
     // Retrieve the tid.
-    $children = taxonomy_get_children($parent, $params['vid']);
-    foreach ($children as $tid => $term) {
+    $children = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $parent, 1);
+    foreach ($children as $term) {
       if ($term->name == $label) {
-        return $tid;
+        return $term->tid;
       }
     }
   }
@@ -645,7 +640,7 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
     return FALSE;
   }
 }
-*/
+
 
 /**
  * Implementation of hook_hierarchical_select_entity_count().
