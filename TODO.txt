@@ -35,7 +35,7 @@ HS Taxonomy Views:
 - everything — see http://drupal.org/node/1170192
 
 Menu: 
-- everything
+✓ everything
 
 Flat List:
 ✓ everything
