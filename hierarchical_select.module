@@ -150,18 +150,9 @@ function hierarchical_select_requirements($phase) {
         $path_errors[] = t('!module', array('!module' => $module_info['name']));
       }
     }
-    $weight_errors = array();
-    foreach (module_implements('hierarchical_select_root_level') as $module) {
-      $weight = db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => $module))->fetchField();
-      if (!($hierarchical_select_weight > $weight)) {
-        $filename = db_query("SELECT filename FROM {system} WHERE type = :type AND name = :name", array(':type' => 'module', ':name' => $module))->fetchField();
-        $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
-        $weight_errors[] = t('!module (!weight)', array('!module' => $module_info['name'], '!weight' => $weight));
-      }
-    }
 
-    if ($up_to_date && !count($path_errors) && !count($weight_errors)) {
-      $value = t('All updates installed. Implementation modules are installed correctly.');
+    if ($up_to_date && !count($path_errors)) {
+      $value = t('All updates installed. HS API implementation modules correctly installed.');
       $description = '';
       $severity = REQUIREMENT_OK;
     }
@@ -174,15 +165,6 @@ function hierarchical_select_requirements($phase) {
         installed in either the <code>sites/all/modules</code> directory or a
         <code>sites/yoursite.com/modules</code> directory"
       ) . ':' . theme('item_list', array('items' => $path_errors));
-      $severity = REQUIREMENT_ERROR;
-    }
-    elseif ($weight_errors) {
-      $value = t('Module weight incorrectly configured!');
-      $description = t(
-        'The weight of the Hierarchical Select module (!weight) is not
-        strictly higher than the weight of the following modules',
-        array('!weight' => $hierarchical_select_weight)
-      ) . ':' . theme('item_list', array('items' => $weight_errors));
       $severity = REQUIREMENT_ERROR;
     }
     else {
