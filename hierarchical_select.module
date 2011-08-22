@@ -1044,10 +1044,6 @@ function _hierarchical_select_process_calculate_selections(&$element, $hsid, $fo
     else if ($op == t('Create')) {
       // This code handles both the creation of a new item in an existing
       // level and the creation of an item that also creates a new level.
-
-      // TODO: http://drupal.org/node/253868
-      // TODO: http://drupal.org/node/253869
-
       $label = trim($element['#value']['hierarchical_select']['create_new_item']['input']);
       $selects = isset($element['#value']['hierarchical_select']['selects']) ? $element['#value']['hierarchical_select']['selects'] : array();
       $depth = count($selects);
