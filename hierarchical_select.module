@@ -1034,7 +1034,7 @@ function _hierarchical_select_process_calculate_selections(&$element, $hsid, $fo
     }
   }
   else {
-    $op = (isset($form_state['input']['op']) && $form_state['input']['hsid'] == $hsid) ? $form_state['input']['op'] : NULL;
+    $op = (isset($form_state['input']['op']) && isset($form_state['input']['hsid']) && $form_state['input']['hsid'] == $hsid) ? $form_state['input']['op'] : NULL;
     if ($dropbox && $op == t('Add')) {
       $hs_selection = _hierarchical_select_process_get_hs_selection($element);
       $db_selection = _hierarchical_select_process_get_db_selection($element, $hsid, $form_state);
