@@ -161,7 +161,8 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     'module' => 'hs_taxonomy',
     'params' => array(
       'vid'         => $vid,
-      'exclude_tid' => $form['#term']['tid'],
+      'exclude_tid' => isset($form['#term']['tid']) ? $form['#term']['tid'] : NULL,
+      'root_term'   => TRUE,
     ),
     'enforce_deepest' => 0,
     'entity_count'    => 0,
@@ -175,19 +176,15 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     'editability' => array(
       'status' => 0,
     ),
-    'params' => array(
-      'vid'         => isset($form['#term']['vid']) ? $form['#term']['vid'] : NULL,
-      'exclude_tid' => isset($form['#term']['tid']) ? $form['#term']['tid'] : NULL,
-      'root_term'   => TRUE,
-    ),
     'render_flat_select' => 0,
   );
 
   // Use Hierarchical Select for selecting the parent term(s).
-  $parent = isset($form['#term']['tid']) ? array_keys(taxonomy_get_parents($form['#term']['tid'])) : array();
+  $parent = isset($form['#term']['tid']) ? array_keys(taxonomy_get_parents($form['#term']['tid'])) : array(0);
   $form['relations']['parent'] = array(
     '#type'          => 'hierarchical_select',
     '#title'         => t('Parents'),
+    '#required'      => TRUE,
     '#default_value' => $parent,
     '#config'        => $config,
   );
@@ -598,7 +595,15 @@ function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
 
   if (!isset($labels[$item])) {
-    $term = taxonomy_term_load($item);
+    if ($item === 0 && isset($params['root_term']) && $params['root_term'] === TRUE) {
+      $term = new StdClass();
+      $term->tid = 0;
+      $term->name = '<' . t('root') . '>';
+    }
+    else {
+      $term = taxonomy_term_load($item);
+    }
+
     // Use the translated term when available!
     if (module_exists('i18ntaxonomy') && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
       $labels[$item] = i18n_taxonomy_term_name($term);
