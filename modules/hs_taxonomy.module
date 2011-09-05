@@ -128,7 +128,7 @@ function hs_taxonomy_field_settings_submit(&$form, &$form_state) {
  * or "save lineage" is enabled.
  */
 function hs_taxonomy_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  if (isset($form['#field']['type']) && $form['#field']['type'] === 'taxonomy_term_reference') {
+  if (isset($form['#field']['type']) && $form['#field']['type'] === 'taxonomy_term_reference' && $form['#instance']['widget']['type'] == 'taxonomy_hs') {
     require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
     $vocabulary = taxonomy_vocabulary_machine_name_load($form['#field']['settings']['allowed_values'][0]['vocabulary']);
@@ -304,7 +304,7 @@ function hs_taxonomy_widget_process($element, &$form_state, $complete_form) {
   }
 
   $element['#return_value'] = $items;
-    
+
   return $element;
 }
 
@@ -414,7 +414,7 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
 
   // Actual formatting.
   $element = array();
-  $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';  
+  $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
   switch ($display['type']) {
     case 'hs_taxonomy_term_reference_hierarchical_text':
       for ($l = 0; $l < count($lineages); $l++) {
