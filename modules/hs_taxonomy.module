@@ -977,7 +977,7 @@ function _hs_taxonomy_hierarchical_select_terms_to_options($terms) {
   $use_i18n = module_exists('i18n_taxonomy');
   foreach ($terms as $key => $term) {
     // Use the translated term when available!
-    $options[$term->tid] = $use_i18n ? i18n_taxonomy_term_name($term) : t($term->name);
+    $options[$term->tid] = $use_i18n && isset($term->vid) ? i18n_taxonomy_term_name($term) : t($term->name);
   }
   return $options;
 }
