@@ -333,7 +333,7 @@ function hierarchical_select_ajax($form, $form_state) {
       'output'  => $output, 
       // 'cache'   => $cache,
   );
-  $new_settings = _hs_new_setting_ajax();
+  $new_settings = _hs_new_setting_ajax(FALSE);
   foreach ($new_settings as $new_setting) {
     $commands[] = array(
       'command'  => 'hierarchicalSelectSettingsUpdate',
@@ -430,7 +430,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
   return $element;
 }
 
-function _hs_new_setting_ajax($hsid = FALSE, $settings) {
+function _hs_new_setting_ajax($hsid = FALSE, $settings = NULL) {
   static $hs_settings = array();
 
   if ($hsid !== FALSE) {
