@@ -25,21 +25,50 @@ function hs_menu_menu() {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Alter the node form.
  */
-function hs_menu_form_alter(&$form, $form_state, $form_id) {
-  if (isset($form['type']['#value']) && $form['type']['#value'] . '_node_form' == $form_id && isset($form['menu']['parent']) && $form['menu']['#access']) {
-    unset($form['menu']['parent']['#options']);
-    $form['menu']['parent']['#type'] = 'hierarchical_select';
-    _hs_menu_apply_config($form['menu']['parent'], NULL);
-  }
-
-  if ($form_id == 'menu_edit_item') {
-    unset($form['menu']['parent']['#options']);
-    $form['menu']['parent']['#type'] = 'hierarchical_select';
-    _hs_menu_apply_config($form['menu']['parent'], array($form['menu']['#item']['menu_name'], $form['menu']['#item']['mlid']));
+ 
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * Alter the node form's menu form.
+ */
+function hs_menu_form_node_form_alter(&$form, &$form_state) {
+  if (isset($form['menu']['link']['parent']) && $form['menu']['#access']) {
+    unset($form['menu']['link']['parent']['#options']);
+    $form['menu']['link']['parent']['#type'] = 'hierarchical_select';
+    _hs_menu_apply_config($form['menu']['link']['parent'], NULL);
   }
 }
+
+/**
+ * Implements hook_form_BASE_FORMID_alter().
+ *
+ * Alter the widget type form; dynamically add the Hierarchical Select
+ * Configuration form when it is needed.
+ */
+function hs_menu_form_menu_edit_item_alter(&$form, &$form_state) {
+  unset($form['parent']['#options']);
+  $original_item = $form['original_item']['#value'];
+  $form['parent']['#type'] = 'hierarchical_select';
+  _hs_menu_apply_config($form['parent'], array($original_item['menu_name'], $original_item['mlid']));
+
+  // Set custom submit callback.
+  array_unshift($form['#submit'], 'hs_menu_menu_edit_item_form_submit');
+}
+
+
+//----------------------------------------------------------------------------
+// Form API callbacks.
+
+/**
+ * Submit callback; menu edit item form.
+ */
+function hs_menu_menu_edit_item_form_submit(&$form, &$form_state) {
+  // Don't return an array, but a single item.
+  $form_state['values']['parent'] = $form_state['values']['parent'][0];
+}
+
 
 //----------------------------------------------------------------------------
 // Menu callbacks.
@@ -133,7 +162,12 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
   $parts = explode(':', $item);
 
   $valid = TRUE;
-  for ($i = 1; $i < count($parts); $i++) {
+
+  // Validate menu name.
+  $valid = (in_array($parts[0], menu_get_names()));
+
+  // Validate hierarchy of mlids.
+  for ($i = 1; $valid && $i < count($parts); $i++) {
     $valid = $valid && is_numeric($parts[$i]);
   }
 
@@ -217,6 +251,8 @@ function _hs_menu_apply_config(&$form, $exclude) {
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
+    'entity_count'    => 0,
+    'require_entity'  => 0,
     'resizable'       => variable_get('hs_menu_resizable', 1),
     'level_labels' => array(
       'status' => 0,
@@ -227,5 +263,6 @@ function _hs_menu_apply_config(&$form, $exclude) {
     'editability' => array(
       'status' => 0,
     ),
+    'render_flat_select' => 0,
   );
 }
