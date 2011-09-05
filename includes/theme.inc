@@ -70,7 +70,7 @@ function theme_hierarchical_select($variables) {
 
   // Update $element['#attributes']['class'].
   if (!isset($element['#attributes']['class'])) {
-    $element['#attributes']['class'] = '';
+    $element['#attributes']['class'] = array();
   }
   $hsid = $element['hsid']['#value'];
   $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
@@ -83,6 +83,7 @@ function theme_hierarchical_select($variables) {
    'hierarchical-select-wrapper-for-name-' . $element['#id'],
    (isset($element['#config']['config_id'])) ? 'hierarchical-select-wrapper-for-config-' . $element['#config']['config_id'] : NULL,
   );
+  array_merge($element['#attributes']['class'], $classes);
   $element['#attributes']['class'] .= ' ' . implode(' ', $classes);
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
