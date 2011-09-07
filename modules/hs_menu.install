@@ -7,7 +7,7 @@
 
 
 /**
- * Implementation of hook_uninstall().
+ * Implementats hook_uninstall().
  */
 function hs_menu_uninstall() {
   db_delete('variable')

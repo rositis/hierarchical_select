@@ -10,7 +10,7 @@
 // Drupal core hooks.
 
 /**
- * Implementation of hook_menu().
+ * Implements of hook_menu().
  */
 function hs_menu_menu() {
   $items['admin/config/content/hierarchical_select/menu'] = array(
@@ -24,10 +24,6 @@ function hs_menu_menu() {
   return $items;
 }
 
-/**
- * Alter the node form.
- */
- 
 /**
  * Implements hook_form_FORMID_alter().
  *
@@ -100,7 +96,7 @@ function hs_menu_admin_settings() {
 // Hierarchical Select hooks.
 
 /**
- * Implementation of hook_hierarchical_select_params().
+ * Implements hook_hierarchical_select_params().
  */
 function hs_menu_hierarchical_select_params() {
   $params = array(
@@ -110,7 +106,7 @@ function hs_menu_hierarchical_select_params() {
 }
 
 /**
- * Implementation of hook_hierarchical_select_root_level().
+ * Implements hook_hierarchical_select_root_level().
  */
 function hs_menu_hierarchical_select_root_level($params) {
   $menus = array();
@@ -124,7 +120,7 @@ function hs_menu_hierarchical_select_root_level($params) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_children().
+ * Implements hook_hierarchical_select_children().
  */
 function hs_menu_hierarchical_select_children($parent, $params) {
   $children = array();
@@ -134,7 +130,7 @@ function hs_menu_hierarchical_select_children($parent, $params) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_lineage().
+ * Implements hook_hierarchical_select_lineage().
  */
 function hs_menu_hierarchical_select_lineage($item, $params) {
   $lineage = array($item);
@@ -156,7 +152,7 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_valid_item().
+ * Implements hook_hierarchical_select_valid_item().
  */
 function hs_menu_hierarchical_select_valid_item($item, $params) {
   $parts = explode(':', $item);
@@ -178,7 +174,7 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_item_get_label().
+ * Implements hook_hierarchical_select_item_get_label().
  */
 function hs_menu_hierarchical_select_item_get_label($item, $params) {
   static $labels = array();
@@ -198,7 +194,7 @@ function hs_menu_hierarchical_select_item_get_label($item, $params) {
 }
 
 /**
- * Implementation of hook_hierarchical_select_implementation_info().
+ * Implements hook_hierarchical_select_implementation_info().
  */
 function hs_menu_hierarchical_select_implementation_info() {
   return array(
