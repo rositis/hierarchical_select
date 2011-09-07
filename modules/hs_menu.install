@@ -7,6 +7,17 @@
 
 
 /**
+ * Implements hook_install().
+ */
+function hs_menu_install() {
+  // Ensure hs_menu runs after Core's menu.
+  db_update('system')
+    ->fields(array('weight' => 1))
+    ->condition('name', 'hs_menu')
+    ->execute();
+}
+
+/**
  * Implementats hook_uninstall().
  */
 function hs_menu_uninstall() {
