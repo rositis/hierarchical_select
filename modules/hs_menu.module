@@ -34,6 +34,9 @@ function hs_menu_form_node_form_alter(&$form, &$form_state) {
     unset($form['menu']['link']['parent']['#options']);
     $form['menu']['link']['parent']['#type'] = 'hierarchical_select';
     _hs_menu_apply_config($form['menu']['link']['parent'], array('type' => $form['type']['#value']));
+
+     // Set custom submit callback.
+     array_unshift($form['#submit'], 'hs_menu_node_form_submit');
   }
 }
 
@@ -68,6 +71,13 @@ function hs_menu_menu_edit_item_form_submit(&$form, &$form_state) {
   $form_state['values']['parent'] = $form_state['values']['parent'][0];
 }
 
+/**
+ * Submit callback; node edit form.
+ */
+function hs_menu_node_form_submit(&$form, &$form_state) {
+  // Don't return an array, but a single item.
+  $form_state['values']['menu']['parent'] = $form_state['values']['menu']['parent'][0];
+}
 
 //----------------------------------------------------------------------------
 // Menu callbacks.
