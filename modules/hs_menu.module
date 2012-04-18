@@ -185,7 +185,7 @@ function hs_menu_hierarchical_select_valid_item($item, $params) {
   $valid = TRUE;
 
   // Validate menu name.
-  $valid = (in_array($parts[0], menu_get_names()));
+  $valid = (array_key_exists($parts[0], menu_get_menus()));
 
   // Validate hierarchy of mlids.
   for ($i = 1; $valid && $i < count($parts); $i++) {
