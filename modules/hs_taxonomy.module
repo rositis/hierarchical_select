@@ -325,6 +325,22 @@ function hs_taxonomy_field_formatter_info() {
       'label' => t('Hierarchical links'),
       'field types' => array('taxonomy_term_reference'),
     ),
+    'hs_taxonomy_term_reference_hierarchical_links_last_text' => array(
+      'label' => t('Hierarchical links last text'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+    'hs_taxonomy_term_reference_hierarchical_text_last_link' => array(
+      'label' => t('Hierarchical text last link'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+    'hs_taxonomy_term_reference_last_link_only' => array(
+      'label' => t('Last link only'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+    'hs_taxonomy_term_reference_last_text_only' => array(
+      'label' => t('Last text only'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
   );
 }
 
@@ -427,6 +443,7 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
         }
       }
       break;
+
     case 'hs_taxonomy_term_reference_hierarchical_links':
       for ($l = 0; $l < count($lineages); $l++) {
         $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
@@ -434,14 +451,91 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
           $term = $lineages[$l][$level];
           $uri = entity_uri('taxonomy_term', $term);
           $element[$l]['#lineage'][$level] = array(
-            '#type' => 'link',
-            '#title' => $term->name,
-            '#href' => $uri['path'],
+            '#type'    => 'link',
+            '#title'   => $term->name,
+            '#href'    => $uri['path'],
             '#options' => $uri['options'],
           );
         }
       }
       break;
+
+    case 'hs_taxonomy_term_reference_hierarchical_links_last_text':
+      for ($l = 0; $l < count($lineages); $l++) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        for ($level = 0; $level < count($lineages[$l]) - 1; $level++) {
+          $term = $lineages[$l][$level];
+          $uri = entity_uri('taxonomy_term', $term);
+          $element[$l]['#lineage'][$level] = array(
+            '#type'    => 'link',
+            '#title'   => $term->name,
+            '#href'    => $uri['path'],
+            '#options' => $uri['options'],
+          );
+        }
+        if (count($lineages[$l]) > 0) {
+          $level = count($lineages[$l]) - 1;
+          $term = $lineages[$l][$level];
+          $element[$l]['#lineage'][$level] = array(
+            '#markup' => $term->name,
+          );
+        }
+      }
+      break;
+
+    case 'hs_taxonomy_term_reference_hierarchical_text_last_link':
+      for ($l = 0; $l < count($lineages); $l++) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        for ($level = 0; $level < count($lineages[$l]) - 1; $level++) {
+          $term = $lineages[$l][$level];
+          $element[$l]['#lineage'][$level] = array(
+            '#markup' => $term->name,
+          );
+        }
+        if (count($lineages[$l]) > 0) {
+          $level = count($lineages[$l]) - 1;
+          $term = $lineages[$l][$level];
+          $uri = entity_uri('taxonomy_term', $term);
+          $element[$l]['#lineage'][$level] = array(
+            '#type'    => 'link',
+            '#title'   => $term->name,
+            '#href'    => $uri['path'],
+            '#options' => $uri['options'],
+          );
+        }
+      }
+      break;
+
+    case 'hs_taxonomy_term_reference_last_text_only':
+      for ($l = 0; $l < count($lineages); $l++) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        if (count($lineages[$l]) > 0) {
+          $level = count($lineages[$l]) - 1;
+          $term = $lineages[$l][$level];
+          $element[$l]['#lineage'][0] = array(
+            '#markup' => $term->name,
+          );
+        }
+      }
+      break;
+
+    case 'hs_taxonomy_term_reference_last_link_only':
+      for ($l = 0; $l < count($lineages); $l++) {
+        $element[$l]['#theme'] = 'hs_taxonomy_formatter_lineage';
+        if (count($lineages[$l]) > 0) {
+          $level = count($lineages[$l]) - 1;
+          $term = $lineages[$l][$level];
+          $uri = entity_uri('taxonomy_term', $term);
+          $element[$l]['#lineage'][0] = array(
+            '#type'    => 'link',
+            '#title'   => $term->name,
+            '#href'    => $uri['path'],
+            '#options' => $uri['options'],
+          );
+        }
+      }
+      break;
+
   }
 
   return $element;
