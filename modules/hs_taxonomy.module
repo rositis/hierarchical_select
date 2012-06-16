@@ -398,6 +398,7 @@ function hs_taxonomy_field_formatter_prepare_view($entity_type, $entities, $fiel
             'lineage' => $lineage,
             'level'   => $level,
             'label'   => $details['label'],
+            'tid'     => $tid,
           );
         }
       }
@@ -421,7 +422,7 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
 
       for ($i = 0; $i < count($metadata); $i++) {
         $term = new StdClass();
-        $term->tid = $item['tid'];
+        $term->tid = $metadata[$i]['tid'];
         $term->vid = $vocabulary->vid;
         $term->vocabulary_machine_name = $vocabulary->machine_name;
         $term->name = $metadata[$i]['label'];
