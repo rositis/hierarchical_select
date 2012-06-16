@@ -416,16 +416,18 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
   // hs_taxonomy_field_formatter_prepare_view()).
   $lineages = array();
   foreach ($items as $delta => $item) {
-    $metadata = $item['hs_lineages'];
+    if (!empty($item['hs_lineages'])) {
+      $metadata = $item['hs_lineages'];
 
-    for ($i = 0; $i < count($metadata); $i++) {
-      $term = new StdClass();
-      $term->tid = $item['tid'];
-      $term->vid = $vocabulary->vid;
-      $term->vocabulary_machine_name = $vocabulary->machine_name;
-      $term->name = $metadata[$i]['label'];
+      for ($i = 0; $i < count($metadata); $i++) {
+        $term = new StdClass();
+        $term->tid = $item['tid'];
+        $term->vid = $vocabulary->vid;
+        $term->vocabulary_machine_name = $vocabulary->machine_name;
+        $term->name = $metadata[$i]['label'];
 
-      $lineages[$metadata[$i]['lineage']][$metadata[$i]['level']] = $term;
+        $lineages[$metadata[$i]['lineage']][$metadata[$i]['level']] = $term;
+      }
     }
   }
 
@@ -649,8 +651,8 @@ function hs_taxonomy_hierarchical_select_lineage($item, $params) {
  */
 function hs_taxonomy_get_parents_all($tid) {
   $parents = array();
-  if ($tid) {
-    $parents[] = taxonomy_term_load($tid);
+  if ($term = taxonomy_term_load($tid)) {
+    $parents[] = $term;
     $n = 0;
     while ($parent = taxonomy_get_parents($parents[$n]->tid)) {
       $parents = array_merge($parents, array(reset($parent)));
@@ -667,15 +669,20 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
   if (isset($params['root_term']) && $params['root_term'] && $item == 0) {
     return TRUE;
   }
-  else if (!is_numeric($item) || $item < 1 || (isset($params['exclude_tid']) && $item == $params['exclude_tid'])) {
+
+  if (!is_numeric($item) || $item < 1 || (isset($params['exclude_tid']) && $item == $params['exclude_tid'])) {
     return FALSE;
   }
+
   $term = taxonomy_term_load($item);
+  if (!$term) {
+    return FALSE;
+  }
 
   // If the Term Permissions module is installed, honor its settings.
   if (function_exists('term_permissions_allowed')) {
     global $user;
-    if (!term_permissions_allowed($term->tid, $user) ) {
+    if (!term_permissions_allowed($term->tid, $user)) {
       return FALSE;
     }
   }
@@ -1038,11 +1045,12 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
 function hs_taxonomy_term_count_nodes($tid, $type = 0) {
   static $count;
 
-  $term = taxonomy_term_load($tid);
-  $tree = _hs_taxonomy_hierarchical_select_get_tree($term->vid, $tid);
   $tids = array($tid);
-  foreach ($tree as $descendant) {
-    $tids[] = $descendant->tid;
+  if ($term = taxonomy_term_load($tid)) {
+    $tree = _hs_taxonomy_hierarchical_select_get_tree($term->vid, $tid);
+    foreach ($tree as $descendant) {
+      $tids[] = $descendant->tid;
+    }
   }
 
   if (!isset($count[$type][$tid])) {
