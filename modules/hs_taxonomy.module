@@ -44,7 +44,8 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     $field = field_info_field($form['#field_name']);
     $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
 
-    $vid = $vocabulary->vid;
+    $vid = isset($vocabulary->vid) ? $vocabulary->vid : NULL;
+    $save_lineage = isset($vocabulary->hierarchy) ? (int) ($vocabulary->hierarchy == 2) : 0;
     $instance = field_info_instance($form['#entity_type'], $form['#field_name'], $form['#bundle']);
 
     // Add the Hierarchical Select config form.
@@ -59,7 +60,7 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
     $defaults = array(
       // Enable the save_lineage setting by default if the multiple parents
       // vocabulary option is enabled.
-      'save_lineage' => (int) ($vocabulary->hierarchy == 2),
+      'save_lineage' => $save_lineage,
       'editability' => array(
         'max_levels' => _hs_taxonomy_hierarchical_select_get_depth($vid),
       ),
