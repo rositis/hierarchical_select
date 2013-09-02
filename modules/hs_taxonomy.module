@@ -1012,8 +1012,18 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
   if (!isset($children[$vid])) {
     $children[$vid] = array();
 
-    // TODO Please convert this statement to the D7 database API syntax.
-    $result = db_query('SELECT t.tid, t.*, parent FROM {taxonomy_term_data} t INNER JOIN  {taxonomy_term_hierarchy} h ON t.tid = h.tid WHERE t.vid = :vid ORDER BY weight, name', array(':vid' => $vid));
+    $query = db_select('taxonomy_term_data', 't');
+    $query->join('taxonomy_term_hierarchy', 'h', 'h.tid = t.tid');
+    $result = $query
+      ->addTag('translatable')
+      ->addTag('term_access')
+      ->fields('t')
+      ->fields('h', array('parent'))
+      ->condition('t.vid', $vid)
+      ->orderBy('t.weight')
+      ->orderBy('t.name')
+      ->execute();
+
     foreach ($result as $term) {
       $children[$vid][$term->parent][] = $term->tid;
       $parents[$vid][$term->tid][] = $term->parent;
