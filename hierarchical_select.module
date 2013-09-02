@@ -1705,7 +1705,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // - the allowed_levels setting allows to create new items at this level.
     if ($config['editability']['status'] && module_hook($config['module'], 'hierarchical_select_create_item')) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
-        $item_type = (count($config['editability']['item_types']) ==  $depth)
+        $item_type = (count($config['editability']['item_types']) >=  $depth)
           ? t($config['editability']['item_types'][$depth])
           : t('item');
         $option = theme('hierarchical_select_special_option', array('option' => t('create new !item_type', array('!item_type' => $item_type))));
@@ -1773,7 +1773,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
               && module_hook($config['module'], 'hierarchical_select_create_item')
               && _hierarchical_select_create_new_item_is_allowed($config, $depth)
         ) {
-          $item_type = (count($config['editability']['item_types']) ==  $depth)
+          $item_type = (count($config['editability']['item_types']) >=  $depth)
             ? t($config['editability']['item_types'][$depth])
             : t('item');
           $option = theme('hierarchical_select_special_option', array('option' => t('create new !item_type', array('!item_type' => $item_type))));
@@ -1810,7 +1810,7 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     $label = ($config['level_labels']['status']) ? t($config['level_labels']['labels'][$depth]) : '';
 
     // Item type.
-    $item_type = (count($config['editability']['item_types']) ==  $depth)
+    $item_type = (count($config['editability']['item_types']) >=  $depth)
       ? t($config['editability']['item_types'][$depth])
       : t('item');
 
