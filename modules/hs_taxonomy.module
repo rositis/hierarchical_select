@@ -435,7 +435,6 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
 
   // Actual formatting.
   $element = array();
-  $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
   switch ($display['type']) {
     case 'hs_taxonomy_term_reference_hierarchical_text':
       for ($l = 0; $l < count($lineages); $l++) {
@@ -540,7 +539,10 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
         }
       }
       break;
+  }
 
+  if (!empty($element)) {
+    $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
   }
 
   return $element;
