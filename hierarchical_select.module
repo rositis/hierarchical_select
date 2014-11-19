@@ -305,6 +305,7 @@ function hierarchical_select_ajax() {
     );
   }
 
+  drupal_alter('hierarchical_select_ajax_commands', $commands, $context);
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
