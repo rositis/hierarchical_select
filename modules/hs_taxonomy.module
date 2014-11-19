@@ -1056,6 +1056,7 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
     $result = $query
       ->addTag('translatable')
       ->addTag('term_access')
+      ->addTag('hs_taxonomy_tree')
       ->fields('t')
       ->fields('h', array('parent'))
       ->condition('t.vid', $vid)
@@ -1121,14 +1122,21 @@ function hs_taxonomy_term_count_nodes($tid, $type = 0) {
   }
 
   if (!isset($count[$type][$tid])) {
-    if (is_numeric($type)) {
-      // TODO Please convert this statement to the D7 database API syntax.
-      $count[$type][$tid] = db_query(db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) AS count FROM {taxonomy_term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND t.tid IN (%s)"), implode(',', $tids))->fetchField();
+    $query = db_select('taxonomy_term_node','t');
+    $query->join('node', 'n', 't.nid = n.nid');
+    $query->addExpression('COUNT(DISTINCT(n.nid))', 'count')
+      ->condition('n.status', 1)
+      ->condition('t,tid', $tids);
+
+    if (!is_numeric($type)) {
+      $query->condition('n.type', $type);
     }
-    else {
-      // TODO Please convert this statement to the D7 database API syntax.
-      $count[$type][$tid] = db_query(db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) AS count FROM {taxonomy_term_node} t INNER JOIN {node} n ON t.nid = n.nid WHERE n.status = 1 AND n.type = '%s' AND t.tid IN (%s)"), $type, implode(',', $tids))->fetchField();
-    }
+
+    $query->addTag('hs_taxonomy_term_count_nodes');
+    $query->addTag('term_access');
+    $result = $query->execute();
+
+    $count[$type][$tid] = $result->fetchField();
   }
   return $count[$type][$tid];
 }
