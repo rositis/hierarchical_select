@@ -452,6 +452,9 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
 
   // Pass the hierarchical_select id via POST.
   post.push({ name : 'hsid', value : hsid });
+  // Emulate the AJAX data sent normally so that we get the same theme.
+  post.push({ name : 'ajax_page_state[theme]', value : Drupal.settings.ajaxPageState.theme });
+  post.push({ name : 'ajax_page_state[theme_token]', value : Drupal.settings.ajaxPageState.theme_token });
   
   // If a cache system is installed, let the server know if it's running
   // properly. If it is running properly, the server will send back additional
