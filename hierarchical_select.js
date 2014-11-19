@@ -252,7 +252,7 @@ Drupal.HierarchicalSelect.prepareGETSubmit = function(hsid) {
 
 Drupal.HierarchicalSelect.attachBindings = function(hsid) {
   var updateOpString = $('#hierarchical-select-'+ hsid +'-wrapper .update-button').val();
-  var addOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select input', Drupal.HierarchicalSelect.context).val();
+  var addOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .add-to-dropbox', Drupal.HierarchicalSelect.context).val();
   var createNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-create', Drupal.HierarchicalSelect.context).val();
   var cancelNewItemOpString = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-cancel', Drupal.HierarchicalSelect.context).val();
 
