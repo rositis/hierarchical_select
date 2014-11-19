@@ -323,6 +323,11 @@ function _hs_process_determine_hsid($element, &$form_state) {
     $hsid = check_plain($element['#value']['hsid']);
   }
 
+  $last_hsid = drupal_array_get_nested_value($form_state, array('storage', 'hs', 'last_hsid'));
+  if ($last_hsid <= $hsid) {
+    $form_state['storage']['hs']['last_hsid'] = $hsid;
+  }
+
   return $hsid;
 }
 
@@ -653,12 +658,27 @@ function _hs_process_render_nojs($element, $config) {
 /**
  * Hierarchical select form element type #process callback.
  */
-function form_hierarchical_select_process($element, &$form_state, $complete_form) {  
-  // dpm('#process');
-  // dpm($form_state);
-  //
-  // Calculations.
-  //
+function form_hierarchical_select_process($element, &$form_state, $complete_form) {
+
+  if (arg(0) != 'hierarchical_select_ajax') {
+    // Get unique identifier using parents of the field.
+    $cid = isset($element['#parents']) ? implode("-", $element['#parents']) : implode("-", $element['#field_parents']);
+
+    // Verify if hsid is present.
+    $elhsid = drupal_array_get_nested_value($element, array('#value', 'hsid'));
+
+    if (!isset($elhsid)) {
+      // Retrieve previous element from form_state.
+      $cached = drupal_array_get_nested_value($form_state, array('storage', 'hs', 'hs_fields', $cid));
+    }
+    if (empty($cached)) {
+      $docache = TRUE;
+    }
+    else{
+      // Switch courrent element with the "cached".
+      return $cached;
+    }
+  }
 
   // Determine the HSID.
   $hsid = _hs_process_determine_hsid($element, $form_state);
@@ -771,7 +791,13 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // is NOT erased, the corresponding value in $form_state['input'] will be
   // used instead of the default value that was set. This would result in
   // undesired behavior.
-  drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+  if (empty($docache)) {
+    drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+  }
+  else {
+    // Store new element in cache.
+    $form_state['storage']['hs']['hs_fields'][$cid] = $element;
+  }
 
   // Send the collected developer mode logs (by using #attached JS).
   $element = _hs_process_developer_mode_send_log_js($element, $hsid);
