@@ -314,17 +314,11 @@ function _hs_process_determine_hsid($element, &$form_state) {
   // generate a new one based on the last HSID used (which is
   // stored in form state storage).
   if (!isset($element['#value']) || !is_array($element['#value']) || !array_key_exists('hsid', $element['#value'])) {
-    // Do we have a default value?
-    if (!empty($element['#default_value'])) {
-      $hsid = is_array($element['#default_value']) ? reset($element['#default_value']) : $element['#default_value'];
+    if (!isset($form_state['storage']['hs']['last_hsid'])) {
+      $form_state['storage']['hs']['last_hsid'] = -1;
     }
-    else {
-      if (!isset($form_state['storage']['hs']['last_hsid'])) {
-        $form_state['storage']['hs']['last_hsid'] = -1;
-      }
-      $form_state['storage']['hs']['last_hsid']++;
-      $hsid = $form_state['storage']['hs']['last_hsid'];
-    }
+    $form_state['storage']['hs']['last_hsid']++;
+    $hsid = $form_state['storage']['hs']['last_hsid'];
   }
   else {
     $hsid = check_plain($element['#value']['hsid']);
@@ -1065,7 +1059,7 @@ function _hierarchical_select_process_calculate_selections(&$element, $hsid, $fo
   //   therefor set either manually or by another module),
   // then use the value of #default_value, or when available, of #value.  
   if (empty($form_state['input']) || (!isset($element['#value']['hierarchical_select']) && !isset($element['#value']['dropbox']))) {
-    $value = (!empty($element['#value'])) ? $element['#value'] : $element['#default_value'];
+    $value = (isset($element['#value'])) ? $element['#value'] : $element['#default_value'];
     $value = (is_array($value)) ? $value : array($value);
     if ($dropbox) {
       $db_selection = $value;
