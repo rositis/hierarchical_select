@@ -532,6 +532,46 @@ function _hs_process_exclusive_lineages($element, $hs_selection, $db_selection) 
 
 function _hs_process_render_create_new_item($element, $hierarchy) {
   $creating_new_item = FALSE;
+
+  // This container and the "Create" / "Cancel" buttons must always be part of
+  // the form, even when HS is not in create mode, in order for AJAX submit
+  // callbacks on the "Create" and "Cancel" buttons to be processed correctly.
+  //
+  // Basically, FAPI looks through each of the buttons in the form to determine
+  // which one was clicked. If it can't find the responsible button, it
+  // assumes it was the first button in the form. This is problematic when the
+  // user clicks on the "Create" or "Cancel" buttons because we only want them
+  // to show up when HS is in create mode. To fix this, we always render the
+  // buttons as part of the form, then disable access to them in an
+  // "#after_build" callback.
+  //
+  // This might not be necessary if we used D7's native AJAX callback function,
+  // ajax_form_callback().
+  $element['hierarchical_select']['create_new_item'] = array(
+    '#prefix' => '<div class="create-new-item">',
+    '#suffix' => '</div>',
+    '#after_build' => array('hierarchical_select_create_new_item_after_build'),
+  );
+
+  // @todo Port to use built-in D7 AJAX callback?
+  $element['hierarchical_select']['create_new_item']['create'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create'),
+    '#attributes' => array('class' => array('create-new-item-create')),
+    '#limit_validation_errors' => array($element['#parents']),
+    '#validate' => array(),
+    '#submit' => array('hierarchical_select_ajax_update_submit'),
+  );
+
+  $element['hierarchical_select']['create_new_item']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+    '#attributes' => array('class' => array('create-new-item-cancel')),
+    '#limit_validation_errors' => array($element['#parents']),
+    '#validate' => array(),
+    '#submit' => array('hierarchical_select_ajax_update_submit'),
+  );
+
   if (isset($element['#value']['hierarchical_select']['selects'])) {
     foreach ($element['#value']['hierarchical_select']['selects'] as $depth => $value) {
       if ($value == 'create_new_item' && _hierarchical_select_create_new_item_is_allowed($element['#config'], $depth)) {
@@ -548,11 +588,6 @@ function _hs_process_render_create_new_item($element, $hierarchy) {
             unset($element['hierarchical_select']['selects'][$i]);
           }
         }
-
-        $element['hierarchical_select']['create_new_item'] = array(
-          '#prefix' => '<div class="create-new-item">',
-          '#suffix' => '</div>',
-        );
 
         $item_type_depth = ($value == 'create_new_item') ? $depth : $depth + 1;
         $item_type = (count($element['#config']['editability']['item_types']) ==  $item_type_depth)
@@ -571,24 +606,29 @@ function _hs_process_render_create_new_item($element, $hierarchy) {
           // Prevent the textfield from being wrapped in a div. This
           // simplifies the CSS and JS code.
           '#theme_wrappers' => array(),
-        );
-
-        $element['hierarchical_select']['create_new_item']['create'] = array(
-          '#type' => 'button',
-          '#value' => t('Create'),
-          '#attributes' => array('class' => array('create-new-item-create')),
-        );
-
-        $element['hierarchical_select']['create_new_item']['cancel'] = array(
-          '#type' => 'button',
-          '#value' => t('Cancel'),
-          '#attributes' => array('class' => array('create-new-item-cancel')),
+          // Place the textfield above the "Create" / "Cancel" buttons.
+          '#weight' => -1,
         );
       }
     }
   }
+  $element['hierarchical_select']['create_new_item']['#creating_new_item'] = $creating_new_item;
 
   return array($element, $creating_new_item);
+}
+
+/**
+ * Render API callback: Controls access to the create_new_item form.
+ *
+ * Only allows access to the create_new_item form if creating a new item.
+ *
+ * This function is assigned as an #after_build callback in
+ * _hs_process_render_create_new_item().
+ */
+function hierarchical_select_create_new_item_after_build(array $element) {
+  $element['#access'] = $element['#creating_new_item'];
+
+  return $element;
 }
 
 function _hs_process_render_dropbox($element, $hsid, $creating_new_item, $dropbox, $form_state) {
