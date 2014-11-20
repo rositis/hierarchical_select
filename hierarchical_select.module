@@ -604,7 +604,7 @@ function _hs_process_render_dropbox($element, $hsid, $creating_new_item, $dropbo
     if ($config['dropbox']['limit'] > 0) { // Zero as dropbox limit means no limit.
       if (count($dropbox->lineages) >= $config['dropbox']['limit']) {
         $element['dropbox_limit_warning'] = array(
-          '#markup'  => t("You've reached the maximal number of items you can select."),
+          '#markup'  => t("You've reached the maximum number of items you can select."),
           '#prefix' => '<p class="hierarchical-select-dropbox-limit-warning">',
           '#suffix' => '</p>',
         );
