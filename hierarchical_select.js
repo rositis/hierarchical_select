@@ -36,7 +36,7 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
   // form items to be disabled after a hard refresh.
   // See http://drupal.org/node/453048 and
   // http://www.ryancramer.com/journal/entries/radio_buttons_firefox/
-  if ($.browser.mozilla) {
+  if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
     $('#hierarchical-select-'+ hsid +'-wrapper').parents('form').attr('autocomplete', 'off');
   }
 
@@ -377,7 +377,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       if ($createNewItemInput.size() == 0) {
         // Give focus to the level below the one that has changed, if it
         // exists.
-        if (!$.browser.mozilla) { // Don't give focus in Firefox: the user would have to click twice before he can make a selection.
+        if (!(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)) { // Don't give focus in Firefox: the user would have to click twice before he can make a selection.
           $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
           .slice(lastUnchanged, lastUnchanged + 1)
           .focus();
