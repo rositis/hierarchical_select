@@ -32,12 +32,25 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
     return false;
   }
 
+  var form = $('#hierarchical-select-'+ hsid +'-wrapper').parents('form');
+
+  // Pressing the 'enter' key on a form that contains an HS widget, depending
+  // on which browser, usually causes the first submit button to be pressed
+  // (likely an HS button).  This results in unpredictable behaviour.  There is
+  // no way to determine the 'real' submit button, so disable the enter key.
+  form.find('input').keypress(function(event) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });
+
   // Turn off Firefox' autocomplete feature. This causes Hierarchical Select
   // form items to be disabled after a hard refresh.
   // See http://drupal.org/node/453048 and
   // http://www.ryancramer.com/journal/entries/radio_buttons_firefox/
   if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    $('#hierarchical-select-'+ hsid +'-wrapper').parents('form').attr('autocomplete', 'off');
+    form.attr('autocomplete', 'off');
   }
 
   if (this.cache != null) {
