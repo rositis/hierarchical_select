@@ -741,25 +741,20 @@ function hs_taxonomy_hierarchical_select_item_get_label($item, $params) {
   if (!isset($labels[$item])) {
     if ($item === 0 && isset($params['root_term']) && $params['root_term'] === TRUE) {
       $term = new StdClass();
-      $term->tid = 0;
       $term->name = '<' . t('root') . '>';
     }
     else {
       $term = taxonomy_term_load($item);
+      // Try to translate the label if the i18n module is available.
+      if (module_exists('i18n_taxonomy')) {
+        $term->name = i18n_taxonomy_term_name($term);
+      }
     }
-
-    // Use the translated term when available!
-    if (module_exists('i18ntaxonomy') && i18ntaxonomy_vocabulary($term->vid) == I18N_TAXONOMY_LOCALIZE) {
-      $labels[$item] = i18n_taxonomy_term_name($term);
-    }
-    else {
-      $labels[$item] = t($term->name);
-    }
+    $labels[$item] = $term->name;
   }
 
   return $labels[$item];
 }
-
 
 /**
  * Implementation of hook_hierarchical_select_create_item().
