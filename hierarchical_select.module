@@ -832,8 +832,20 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // is NOT erased, the corresponding value in $form_state['input'] will be
   // used instead of the default value that was set. This would result in
   // undesired behavior.
+  // This, however, must not be called on node preview, becuase in that case
+  // the node will be rebuilt and we need the values inside $form_state['input']
+  // to recreate the edited form properly.
+  // @TODO: If the form is rebuilt by some other action than a node preview, we
+  // might lose data again, we should see if there's any way to prevent this from
+  // happening by setting this value after the form has been flagged to be rebuilt,
+  // but as far as I checked, there's not.
+  // Another option might be to rework the need of this function to prevent
+  // the undesired behaviors of not having it with some other logic that would
+  // work as well if the form is rebuilt.
   if (empty($docache)) {
-    drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+    if (!isset($form_state['triggering_element']) || ($form_state['triggering_element']['#value'] != t('Preview') && $form_state['triggering_element']['#value'] != t('View changes'))) {
+      drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+    }
   }
   else {
     // Store new element in cache.
