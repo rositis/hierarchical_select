@@ -1997,7 +1997,7 @@ function _hierarchical_select_hierarchy_validate($selection, $module, $params) {
   if (empty($selection)) {
     $selection = -1;
   }
-  elseif (is_array($selection)) {
+  if (is_array($selection)) {
     // This is needed because we may have unset some values and we don't want
     // any gaps in the indexes (ie. the indexes would be 0,1,3 if we did
     // "$selection[] = X" after unsetting #2).
