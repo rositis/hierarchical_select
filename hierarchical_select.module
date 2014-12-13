@@ -1721,12 +1721,13 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // - the dropbox is enabled *and* at least one selection has been added to
   //   the dropbox (3)
   // except when:
+  // - level labels are enabled
   // - the special_items setting has been configured, and
   // - one special item has the 'none' property
   $first_case  = !$required;
   $second_case = $config['enforce_deepest'];
   $third_case  = $dropbox && count($dropbox->lineages) > 0;
-  if (($first_case || $second_case || $third_case) && (isset($special_items) && !count($special_items['none']))) {
+  if (($first_case || $second_case || $third_case) && (!$config['level_labels']['status'] && isset($special_items) && !count($special_items['none']))) {
     $option = theme('hierarchical_select_special_option', array('option' => t('none')));
     $hierarchy->levels[0] = array('none' => $option) + $hierarchy->levels[0];
   }
