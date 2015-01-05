@@ -626,6 +626,20 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   }
   else {
     Drupal.HierarchicalSelect.preUpdateAnimations(hsid, updateType, lastUnchanged, function() {
+      // Adding current theme to prevent conflicts, @see ajax.js
+      // @TODO, try converting to use Drupal.ajax instead.
+      ajaxOptions.data.push({ name : 'ajax_page_state[theme]', value : Drupal.settings.ajaxPageState.theme });
+      ajaxOptions.data.push({ name : 'ajax_page_state[theme_token]', value : Drupal.settings.ajaxPageState.theme_token });
+      for (var key in Drupal.settings.ajaxPageState.css) {
+        ajaxOptions.data.push({ name : 'ajax_page_state[css][' + key + ']', value : 1});
+      }
+      for (var key in Drupal.settings.ajaxPageState.js) {
+        ajaxOptions.data.push({ name : 'ajax_page_state[js][' + key + ']', value : 1});
+      }
+
+      // Make it work with jquery update
+      ajaxOptions.data.push({ name : 'ajax_page_state[jquery_version]', value : Drupal.settings.ajaxPageState.jquery_version });
+
       $.ajax(ajaxOptions);
     });
   }
