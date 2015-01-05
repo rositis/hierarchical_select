@@ -773,12 +773,7 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
     _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
 
     // Retrieve the tid.
-    $children = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $parent, 1);
-    foreach ($children as $term) {
-      if ($term->name == $label) {
-        return $term->tid;
-      }
-    }
+    return $term->tid;
   }
   else {
     return FALSE;
