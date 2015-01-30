@@ -5,7 +5,7 @@ Drupal.behaviors.HierarchicalSelect = {
   attach: function (context) {
     $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
     .addClass('hierarchical-select-wrapper-processed').each(function() {
-      var hsid = $(this).attr('id').replace(/^hierarchical-select-(\d+)-wrapper$/, "$1");
+      var hsid = $(this).attr('id').replace(/^hierarchical-select-(\w+)-wrapper$/, "$1");
       Drupal.HierarchicalSelect.initialize(hsid);
     });
   }
@@ -386,22 +386,6 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
   switch (updateType) {
     case 'update-hierarchical-select':
       var $createNewItemInput = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .create-new-item-input', Drupal.HierarchicalSelect.context);
-      
-      if ($createNewItemInput.size() == 0) {
-        // Give focus to the level below the one that has changed, if it
-        // exists.
-        if (!(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)) { // Don't give focus in Firefox: the user would have to click twice before he can make a selection.
-          $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
-          .slice(lastUnchanged, lastUnchanged + 1)
-          .focus();
-        }
-      }
-      else {
-        // Give focus to the input field of the "create new item/level"
-        // section, if it exists, and also select the existing text.
-        $createNewItemInput.focus();
-        $createNewItemInput[0].select();
-      }
       // Hide the loaded selects after the one that was just changed, then
       // drop them in.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings["hs-" + hsid]['animationDelay'];
@@ -419,6 +403,24 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       }
       else if (callback) {
         callback();
+      }
+      if ($createNewItemInput.size() == 0) {
+        // Give focus to the level below the one that has changed, if it
+        // exists.
+        setTimeout(
+          function() {
+            $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context)
+              .slice(lastUnchanged, lastUnchanged + 1)
+              .focus();
+          },
+          animationDelay + 100
+        );
+      }
+      else {
+        // Give focus to the input field of the "create new item/level"
+        // section, if it exists, and also select the existing text.
+        $createNewItemInput.focus();
+        $createNewItemInput[0].select();
       }
       break;
 
