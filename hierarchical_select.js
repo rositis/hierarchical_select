@@ -133,7 +133,8 @@ Drupal.HierarchicalSelect.resizable = function(hsid) {
   // speed up DOM manipulation during dragging.
   var $selects = $selectsWrapper.find('select');
 
-  var defaultHeight = Drupal.HierarchicalSelect.state["hs-" + hsid].defaultHeight = $selects.slice(0, 1).height();
+  var defaultPadding = parseInt($selects.slice(0, 1).css('padding-top').replace(/^(\d+)px$/, "$1")) + parseInt($selects.slice(0, 1).css('padding-bottom').replace(/^(\d+)px$/, "$1"));
+  var defaultHeight = Drupal.HierarchicalSelect.state["hs-" + hsid].defaultHeight = $selects.slice(0, 1).height() + defaultPadding;
   var defaultSize = Drupal.HierarchicalSelect.state["hs-" + hsid].defaultSize = $selects.slice(0, 1).attr('size');
   defaultSize = (defaultSize == 0) ? 1 : defaultSize;
   var margin = Drupal.HierarchicalSelect.state["hs-" + hsid].margin = parseInt($selects.slice(0, 1).css('margin-bottom').replace(/^(\d+)px$/, "$1"));
