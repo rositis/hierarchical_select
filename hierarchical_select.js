@@ -550,11 +550,13 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   // Construct the object that contains the options for a callback to the
   // server. If a client-side cache is found however, it's possible that this
   // won't be used.
-  var ajaxOptions = {
+  var ajaxOptions = $.extend({}, Drupal.ajax.prototype, {
     url:        url,
     type:       'POST',
     dataType:   'json',
     data:       post,
+    effect:     'fade',
+    wrapper:    '#hierarchical-select-' + hsid + '-wrapper',
     beforeSend: function() {
       Drupal.HierarchicalSelect.triggerEvents(hsid, 'before-' + updateType, settings);
       Drupal.HierarchicalSelect.disableForm(hsid);
@@ -625,7 +627,7 @@ Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
         }
       });
     }
-  };
+  });
 
   // Use the client-side cache to update the hierarchical select when:
   // - the hierarchical select is being updated (i.e. no add/remove), and
