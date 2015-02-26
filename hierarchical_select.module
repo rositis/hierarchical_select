@@ -1720,9 +1720,11 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // Prepend a "<create new item>" option to the root level when:
   // - the editability setting is enabled, and
   // - the hook is implemented (this is an optional hook), and
+  // - the logged in user has permission to edit terms in this vocabulary, and
   // - the allowed_levels setting allows to create new items at this level.
   if (!empty($config['editability']['status'])
         && module_hook($config['module'], 'hierarchical_select_create_item')
+        && ($config['module'] == 'hs_taxonomy' && (user_access('administer taxonomy') || user_access('edit terms in ' . $config['params']['vid'])))
         && _hierarchical_select_create_new_item_is_allowed($config, 0)
   ) {
     $item_type = (count($config['editability']['item_types']) > 0)
@@ -1764,7 +1766,9 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
     // - the editability setting is enabled, and
     // - the hook is implemented (this is an optional hook), and
     // - the allowed_levels setting allows to create new items at this level.
-    if (!empty($config['editability']['status']) && module_hook($config['module'], 'hierarchical_select_create_item')) {
+    if (!empty($config['editability']['status'])
+          && ($config['module'] == 'hs_taxonomy' && (user_access('administer taxonomy') || user_access('edit terms in ' . $config['params']['vid'])))
+          && module_hook($config['module'], 'hierarchical_select_create_item')) {
       for ($depth = 1; $depth <= $max_depth; $depth++) {
         $item_type = (count($config['editability']['item_types']) >=  $depth)
           ? t($config['editability']['item_types'][$depth])
@@ -1788,10 +1792,12 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
       // - this is not the root level (the root level already has this), and
       // - the editability setting is enabled, and
       // - the hook is implemented (this is an optional hook), and
+      // - the logged in user has permission to edit terms in this vocabulary, and
       // - the allowed_levels setting allows to create new items at this level.
       if ($depth > 0
             && !empty($config['editability']['status'])
             && module_hook($config['module'], 'hierarchical_select_create_item')
+            && ($config['module'] == 'hs_taxonomy' && (user_access('administer taxonomy') || user_access('edit terms in ' . $config['params']['vid'])))
             && _hierarchical_select_create_new_item_is_allowed($config, $depth)
       ) {
         $item_type = (count($config['editability']['item_types']) == $depth)
@@ -1829,9 +1835,11 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
         // Prepend a "<create new item>" option to the current level when:
         // - the editability setting is enabled, and
         // - the hook is implemented (this is an optional hook), and
+        // - the logged in user has permission to edit terms in this vocabulary, and
         // - the allowed_levels setting allows to create new items at this level.
         if (!empty($config['editability']['status'])
               && module_hook($config['module'], 'hierarchical_select_create_item')
+              && ($config['module'] == 'hs_taxonomy' && (user_access('administer taxonomy') || user_access('edit terms in ' . $config['params']['vid'])))
               && _hierarchical_select_create_new_item_is_allowed($config, $depth)
         ) {
           $item_type = (count($config['editability']['item_types']) >=  $depth)
@@ -1856,12 +1864,14 @@ function _hierarchical_select_hierarchy_generate($config, $selection, $required,
   // - the editability setting is enabled
   // - the allow_new_levels setting is enabled
   // - an additional level is permitted by the max_levels setting
+  // - the logged in user has permission to edit terms in this vocabulary
   // - the deepest item of the lineage is a valid item
   // NOTE: this uses an optional hook, so we also check if it's implemented.
   if (!empty($config['editability']['status'])
         && !empty($config['editability']['allow_new_levels'])
         && ($config['editability']['max_levels'] == 0 || count($hierarchy->lineage) < $config['editability']['max_levels'])
         && module_invoke($config['module'], 'hierarchical_select_valid_item', end($hierarchy->lineage), $config['params'])
+        && ($config['module'] == 'hs_taxonomy' && (user_access('administer taxonomy') || user_access('edit terms in ' . $config['params']['vid'])))
         && module_hook($config['module'], 'hierarchical_select_create_item')
   ) {
     $depth = $max_depth + 1;
