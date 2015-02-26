@@ -859,7 +859,9 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // work as well if the form is rebuilt.
   if (empty($docache)) {
     if (!isset($form_state['triggering_element']) || ($form_state['triggering_element']['#value'] != t('Preview') && $form_state['triggering_element']['#value'] != t('View changes'))) {
-      drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+      if (isset($form_state['input']) && is_array($form_state['input'])) {
+        drupal_array_set_nested_value($form_state['input'], $element['#array_parents'], array());
+      }
     }
   }
   else {
