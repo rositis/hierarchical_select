@@ -801,6 +801,10 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
   // If render_flat_select is enabled, render a flat select.
   if ($config['render_flat_select']) {
     $element['flat_select'] = _hs_process_render_flat_select($hierarchy, $dropbox, $config);
+    // See https://www.drupal.org/node/994820
+    if (empty($element['flat_select']['#options'])) {
+      unset($element['flat_select']);
+    }
   }
 
   // Render the hierarchical select.
