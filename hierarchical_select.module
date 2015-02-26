@@ -699,7 +699,7 @@ function _hs_process_render_nojs($element, $config) {
     '#submit'                  => array('hierarchical_select_ajax_update_submit'),
   );
   $element['nojs']['update_button_help_text'] = array(
-    '#value'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
+    '#markup'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
     '#prefix' => '<div class="help-text">',
     '#suffix' => '</div>',
   );

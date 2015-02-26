@@ -5,7 +5,7 @@ Drupal.behaviors.HierarchicalSelect = {
   attach: function (context) {
     $('.hierarchical-select-wrapper:not(.hierarchical-select-wrapper-processed)', context)
     .addClass('hierarchical-select-wrapper-processed').each(function() {
-      var hsid = $(this).attr('id').replace(/^hierarchical-select-(\w+)-wrapper$/, "$1");
+      var hsid = $(this).attr('id').replace(/^hierarchical-select-(.+)-wrapper$/, "$1");
       Drupal.HierarchicalSelect.initialize(hsid);
     });
   }
