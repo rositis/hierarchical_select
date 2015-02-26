@@ -492,6 +492,7 @@ function hs_taxonomy_field_formatter_view($entity_type, $entity, $field, $instan
         for ($level = 0; $level < count($lineages[$l]); $level++) {
           $term = $lineages[$l][$level];
           $uri = entity_uri('taxonomy_term', $term);
+          $uri['options']['html'] = TRUE;
           $element[$l]['#lineage'][$level] = array(
             '#type'    => 'link',
             '#title'   => $term->name,
