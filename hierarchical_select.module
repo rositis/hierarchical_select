@@ -359,7 +359,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
   // hierarchical select.
   $element['#attached']['library'][] = array('system', 'drupal.ajax');
   $element['#attached']['library'][] = array('system', 'jquery.form');
-  $element['#attached']['library'][] = array('system', 'effects.core');    
+  $element['#attached']['library'][] = array('system', 'effects');
   $element['#attached']['library'][] = array('system', 'effects.drop');    
   $element['#attached']['css'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css';
   $element['#attached']['js'][] = drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.js';
