@@ -377,7 +377,7 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
     $form_state['storage']['hs']['js_settings_sent'] = array();
   }
 
-  if (!isset($form_state['storage']['hs']['js_settings_sent'][$hsid])) {
+  if (!isset($form_state['storage']['hs']['js_settings_sent'][$hsid]) || (isset($form_state['storage']['hs']['js_settings_sent'][$hsid]) && (isset($form_state['triggering_element']) && $form_state['triggering_element']['#type'] == 'submit'))) {
     $config = _hierarchical_select_inherit_default_config($element['#config']);
     $settings =  array(
        'HierarchicalSelect' => array(
