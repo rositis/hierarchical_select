@@ -319,25 +319,10 @@ function _hs_process_determine_hsid($element, &$form_state) {
   // generate a new one based on the last HSID used (which is
   // stored in form state storage).
   if (!isset($element['#value']) || !is_array($element['#value']) || !array_key_exists('hsid', $element['#value'])) {
-    // Do we have a default value?
-    if (!empty($element['#default_value']) && $element['#config']['module'] == 'hs_taxonomy') {
-      $hsid = is_array($element['#default_value']) ? reset($element['#default_value']) : $element['#default_value'];
-    }
-    else {
-      if (!isset($form_state['storage']['hs']['last_hsid'])) {
-        $form_state['storage']['hs']['last_hsid'] = -1;
-      }
-      $form_state['storage']['hs']['last_hsid']++;
-      $hsid = $form_state['storage']['hs']['last_hsid'];
-    }
+    $hsid = uniqid();
   }
   else {
     $hsid = check_plain($element['#value']['hsid']);
-  }
-
-  $last_hsid = drupal_array_get_nested_value($form_state, array('storage', 'hs', 'last_hsid'));
-  if ($last_hsid <= $hsid) {
-    $form_state['storage']['hs']['last_hsid'] = $hsid;
   }
 
   return $hsid;
