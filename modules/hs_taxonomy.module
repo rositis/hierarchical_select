@@ -42,7 +42,9 @@ function hs_taxonomy_form_field_ui_widget_type_form_alter(&$form, &$form_state) 
   $current_widget_type = (isset($form_state['input']['widget_type'])) ? $form_state['input']['widget_type'] : $form_state['build_info']['args'][0]['widget']['type'];
   if ($current_widget_type == 'taxonomy_hs') {
     $field = field_info_field($form['#field_name']);
-    $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+    if (!empty($field['settings']['allowed_values'][0]['vocabulary'])) {
+      $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+    }
 
     $vid = isset($vocabulary->vid) ? $vocabulary->vid : NULL;
     $save_lineage = isset($vocabulary->hierarchy) ? (int) ($vocabulary->hierarchy == 2) : 0;
@@ -270,7 +272,9 @@ function hs_taxonomy_field_widget_info() {
 function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
-  $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+  if (!empty($field['settings']['allowed_values'][0]['vocabulary'])) {
+    $vocabulary = taxonomy_vocabulary_machine_name_load($field['settings']['allowed_values'][0]['vocabulary']);
+  }
 
   // Build an array of existing term IDs.
   $tids = array();
@@ -285,9 +289,9 @@ function hs_taxonomy_field_widget_form(&$form, &$form_state, $field, $instance, 
     '#config'        => array(
       'module' => 'hs_taxonomy',
       'params' => array(
-        'vid'                        => (int) $vocabulary->vid,
+        'vid'                        => isset($vocabulary->vid) ? (int) $vocabulary->vid : NULL,
         'exclude_tid'                => NULL,
-        'root_term'                  => (int) $field['settings']['allowed_values'][0]['parent'],
+        'root_term'                  => isset($field['settings']['allowed_values'][0]['parent']) ? (int) $field['settings']['allowed_values'][0]['parent'] : NULL,
         'entity_count_for_node_type' => NULL,
       ),
     ),
@@ -608,6 +612,9 @@ function hs_taxonomy_hierarchical_select_params() {
  * Implementation of hook_hierarchical_select_root_level().
  */
 function hs_taxonomy_hierarchical_select_root_level($params) {
+  if (!isset($params['vid'])) {
+    return array();
+  }
   // TODO: support multiple parents, i.e. support "save lineage".
   $vocabulary = taxonomy_vocabulary_load($params['vid']);
   $terms = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1);
