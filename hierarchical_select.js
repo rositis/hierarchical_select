@@ -465,9 +465,12 @@ Drupal.HierarchicalSelect.triggerEvents = function(hsid, updateType, settings) {
 
 Drupal.HierarchicalSelect.update = function(hsid, updateType, settings) {
   var post = $('form:has(#hierarchical-select-' + hsid +'-wrapper)', Drupal.HierarchicalSelect.context).formToArray();
+  var hs_current_language = Drupal.settings.HierarchicalSelect.hs_current_language;
 
   // Pass the hierarchical_select id via POST.
   post.push({ name : 'hsid', value : hsid });
+  // Send the current language so we can use the same language during the AJAX callback.
+  post.push({ name : 'hs_current_language', value : hs_current_language});
   // Emulate the AJAX data sent normally so that we get the same theme.
   post.push({ name : 'ajax_page_state[theme]', value : Drupal.settings.ajaxPageState.theme });
   post.push({ name : 'ajax_page_state[theme_token]', value : Drupal.settings.ajaxPageState.theme_token });

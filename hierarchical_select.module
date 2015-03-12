@@ -257,6 +257,29 @@ function hierarchical_select_features_api() {
   );
 }
 
+/**
+ * Implements hook_select_menu_site_status_alter().
+ *
+ * This will run straight after the bootstrap/hook_init(), and override the
+ * interface language there determined with the interface language from the
+ * previous request on the HS AJAX callback. We want the language to remain
+ * the same between requests so we can determine the "triggering element"
+ * correctly. If the button value changed because of a language change (as
+ * can happen with the admin_language module), the whole form would submit.
+ */
+function hierarchical_select_menu_site_status_alter(&$menu_site_status, $path) {
+  global $language;
+  // Make sure we are on the AJAX callback.
+  if (0 === strpos($_GET['q'], 'hierarchical_select_ajax') && !empty($_POST['hs_current_language'])) {
+    $languages = language_list();
+    if (isset($languages[$_POST['hs_current_language']])) {
+      // Override the language set during bootstrap with the language from the
+      // previous request.
+      $language = $languages[$_POST['hs_current_language']];
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------------
 // Menu system callbacks.
@@ -340,6 +363,7 @@ function _hs_process_shortcut_special_items($config) {
 }
 
 function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form) {
+  global $language;
   // Set up Javascript and add settings specifically for the current
   // hierarchical select.
   $element['#attached']['library'][] = array('system', 'drupal.ajax');
@@ -365,19 +389,21 @@ function _hs_process_attach_css_js($element, $hsid, &$form_state, $complete_form
   if (!isset($form_state['storage']['hs']['js_settings_sent'][$hsid]) || (isset($form_state['storage']['hs']['js_settings_sent'][$hsid]) && (isset($form_state['triggering_element']) && $form_state['triggering_element']['#type'] == 'submit'))) {
     $config = _hierarchical_select_inherit_default_config($element['#config']);
     $settings =  array(
-       'HierarchicalSelect' => array(
-         'settings' => array(
-           "hs-$hsid" => array(
-             'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
-             'cacheId'          => $config['module'] . '_' . md5(serialize($config['params'])),
-             'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
-             'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
-             'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
-             'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
-             'ajax_url'         => url('hierarchical_select_ajax/' . implode('/', $element['#array_parents'])),
+      'HierarchicalSelect' => array(
+        // Save language in settings so we can use the same language during the AJAX callback.
+        'hs_current_language' => $language->language,
+        'settings' => array(
+          "hs-$hsid" => array(
+            'animationDelay'   => ($config['animation_delay'] == 0) ? (int) variable_get('hierarchical_select_animation_delay', 400) : $config['animation_delay'],
+            'cacheId'          => $config['module'] . '_' . md5(serialize($config['params'])),
+            'renderFlatSelect' => (isset($config['render_flat_select'])) ? (int) $config['render_flat_select'] : 0,
+            'createNewItems'   => (isset($config['editability']['status'])) ? (int) $config['editability']['status'] : 0,
+            'createNewLevels'  => (isset($config['editability']['allow_new_levels'])) ? (int) $config['editability']['allow_new_levels'] : 0,
+            'resizable'        => (isset($config['resizable'])) ? (int) $config['resizable'] : 0,
+            'ajax_url'         => url('hierarchical_select_ajax/' . implode('/', $element['#array_parents'])),
           ),
-         ),
-       )
+        ),
+      )
     );
 
     if (!isset($_POST['hsid'])) {
@@ -696,7 +722,6 @@ function _hs_process_render_nojs($element, $config) {
  * Hierarchical select form element type #process callback.
  */
 function form_hierarchical_select_process($element, &$form_state, $complete_form) {
-
   if (arg(0) != 'hierarchical_select_ajax') {
     // Get unique identifier using parents of the field.
     $cid = isset($element['#parents']) ? implode("-", $element['#parents']) : implode("-", $element['#field_parents']);
@@ -711,8 +736,8 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
     if (empty($cached)) {
       $docache = TRUE;
     }
-    else{
-      // Switch courrent element with the "cached".
+    else {
+      // Switch current element with the "cached".
       return $cached;
     }
   }
