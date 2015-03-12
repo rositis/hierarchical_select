@@ -170,7 +170,7 @@ function hs_taxonomy_form_taxonomy_form_term_alter(&$form, &$form_state) {
     'save_lineage'    => 0,
     'level_labels'    => array('status' => FALSE, 'labels' => array()),
     'dropbox' => array(
-      'status' => 1,
+      'status' => variable_get('hs_taxonomy_enable_dropbox_on_term_form', 0),
       'limit'  => 0,
     ),
     'editability' => array(
