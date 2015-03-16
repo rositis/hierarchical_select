@@ -708,6 +708,10 @@ function _hs_process_render_nojs($element, $config) {
     '#limit_validation_errors' => array($element['#parents']),
     '#validate'                => array(),
     '#submit'                  => array('hierarchical_select_ajax_update_submit'),
+    '#ajax'                    => array(
+      'callback' => 'menu_link_weight_parent_ajax_callback',
+      'wrapper' => 'menu-link-weight-wrapper',
+    ),
   );
   $element['nojs']['update_button_help_text'] = array(
     '#markup'  => _hierarchical_select_nojs_helptext($config['dropbox']['status']),
@@ -1228,7 +1232,6 @@ function _hs_process_render_hs_selects($hsid, $hierarchy, $size) {
       '#validated' => TRUE,
     );
   }
-
   return $form;
 }
 
@@ -1530,7 +1533,7 @@ function _hierarchical_select_create_new_item_is_allowed($config, $depth) {
  *   The generated help text (in HTML).
  */
 function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
-  $output = '';
+  $output = '<noscript>';
 
   // The options that will be used in the unordered list.
   $items = array(
@@ -1547,6 +1550,7 @@ function _hierarchical_select_nojs_helptext($dropbox_is_enabled) {
   $output .= '</span> ';
   $output .= t("But don't worry: you can still use this web site! You have two options:");
   $output .= theme('item_list', array('items' => $items, 'title' => NULL, 'type' => 'ul', 'attributes' => array('class' => array('solutions'))));
+  $output .= '</noscript>';
 
   return $output;
 }
