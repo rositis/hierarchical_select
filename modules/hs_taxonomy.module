@@ -744,7 +744,7 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
 
   $status = taxonomy_term_save($term);
 
-  if ($status == SAVED_NEW) {
+  if ($status !== FALSE) {
     // Reset the cached tree.
     _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
 
