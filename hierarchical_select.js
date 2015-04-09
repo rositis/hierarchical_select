@@ -53,6 +53,13 @@ Drupal.HierarchicalSelect.initialize = function(hsid) {
     form.attr('autocomplete', 'off');
   }
 
+  // Enable *all* submit buttons in this form, as well as all input-related
+  // elements of the current hierarchical select, in case we reloaded while
+  // they were disabled.
+  form.add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select')
+      .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input')
+      .attr('disabled', false);
+
   if (this.cache != null) {
     this.cache.initialize();
   }
