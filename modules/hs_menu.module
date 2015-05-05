@@ -172,6 +172,10 @@ function hs_menu_hierarchical_select_lineage($item, $params) {
     do {
       $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
       array_unshift($lineage, "$menu_name:$plid");
+      if ($mlid == $plid) {
+        // Somehow we have an infinite loop situation. Bail out of the loop.
+        break;
+      }
       $mlid = $plid;
     } while ($plid > 0);
   }
