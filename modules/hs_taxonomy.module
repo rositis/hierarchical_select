@@ -749,7 +749,12 @@ function hs_taxonomy_hierarchical_select_create_item($label, $parent, $params) {
     _hs_taxonomy_hierarchical_select_get_tree($params['vid'], 0, -1, 1, TRUE);
 
     // Retrieve the tid.
-    return $term->tid;
+    $children = _hs_taxonomy_hierarchical_select_get_tree($params['vid'], $parent, 1);
+    foreach ($children as $term) {
+      if ($term->name == $label) {
+        return $term->tid;
+      }
+    }
   }
   else {
     return FALSE;
@@ -1010,12 +1015,32 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
     $children = $parents = $terms = array();
   }
 
+  $tree = array();
+
+  if (!is_array($parent)) {
+    $parent = array($parent);
+  }
+
+  $max_depth = (is_null($max_depth)) ? 99999999 : $max_depth;
   $depth++;
 
   // We cache trees, so it's not CPU-intensive to call get_tree() on a term
   // and its children, too.
-  if (!isset($children[$vid])) {
-    $children[$vid] = array();
+  if ($max_depth <= $depth) {
+    return $tree;
+  }
+  // Prepare queue for the "IN ( .. )" part of query.
+  $queue = array();
+  foreach ($parent as $single_parent) {
+    // Queue branch for processing if it's not cached yet.
+    if (!isset($children[$vid][$single_parent])) {
+      $queue[] = $single_parent;
+      // Use an empty array to distinguish between a stub (without children)
+      // term and a branch that is not loaded yet.
+      $children[$vid][$single_parent] = array();
+    }
+  }
+  if (!empty($queue)) {
 
     $query = db_select('taxonomy_term_data', 't');
     $query->join('taxonomy_term_hierarchy', 'h', 'h.tid = t.tid');
@@ -1026,6 +1051,7 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
       ->fields('t')
       ->fields('h', array('parent'))
       ->condition('t.vid', $vid)
+      ->condition('parent', array_merge(array($vid), $queue), 'IN')
       ->orderBy('t.weight')
       ->orderBy('t.name')
       ->execute();
@@ -1048,23 +1074,28 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
     }
   }
 
-  $max_depth = (is_null($max_depth)) ? count($children[$vid]) : $max_depth;
-  if (isset($children[$vid][$parent])) {
-    foreach ($children[$vid][$parent] as $child) {
-      if ($max_depth > $depth) {
-        $term = isset($term_entities[$child]) ? $term_entities[$child] : $terms[$vid][$child];
-        $term = clone $term;
-        $term->depth = $depth;
-        // The "parent" attribute is not useful, as it would show one parent only.
-        unset($term->parent);
-        $term->parents = $parents[$vid][$child];
-        $tree[] = $term;
-
-        if (isset($children[$vid][$child])) {
-          $tree = array_merge($tree, _hs_taxonomy_hierarchical_select_get_tree($vid, $child, $depth, $max_depth));
+  $next_parent = array();
+  foreach ($parent as $single_parent) {
+    foreach ($children[$vid][$single_parent] as $child) {
+      $term = clone($terms[$vid][$child]);
+      $term->depth = $depth;
+      // The "parent" attribute is not useful, as it would show one parent only.
+      unset($term->parent);
+      $term->parents = $parents[$vid][$child];
+      $tree[] = $term;
+      // Need more steps ?
+      if ($max_depth > $depth + 1) {
+        // Queue children for the next step down the tree. Do not process
+        // children which we already know as stub ones.
+        if (!isset($children[$vid][$child]) || !empty($children[$vid][$child])) {
+          $next_parent[] = $child;
         }
       }
     }
+  }
+  if (!empty($next_parent)) {
+    // Process multiple children together i.e. next level.
+    $tree = array_merge($tree, _hs_taxonomy_hierarchical_select_get_tree($vid, $next_parent, $depth, $max_depth));
   }
 
   return isset($tree) ? $tree : array();
