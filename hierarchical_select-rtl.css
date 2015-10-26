@@ -3,8 +3,8 @@
 /* The hierarchical select. */
 .hierarchical-select-wrapper .hierarchical-select .selects {
   float: right; /* If a block is floated, it won't consume as much width as
-                   available, only just enough. This allows the grippie to
-                   perfectly scale with the with consumed by the selects. */ 
+		   available, only just enough. This allows the grippie to
+		   perfectly scale with the with consumed by the selects. */
 }
 
 .hierarchical-select-wrapper .hierarchical-select .selects .grippie {
