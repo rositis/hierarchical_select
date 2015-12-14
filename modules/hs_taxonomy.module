@@ -1077,7 +1077,8 @@ function _hs_taxonomy_hierarchical_select_get_tree($vid, $parent = 0, $depth = -
   $next_parent = array();
   foreach ($parent as $single_parent) {
     foreach ($children[$vid][$single_parent] as $child) {
-      $term = clone($terms[$vid][$child]);
+      $term = isset($term_entities[$child]) ? $term_entities[$child] : $terms[$vid][$child];
+      $term = clone $term;
       $term->depth = $depth;
       // The "parent" attribute is not useful, as it would show one parent only.
       unset($term->parent);
