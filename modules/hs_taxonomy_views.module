@@ -96,6 +96,8 @@ function hs_taxonomy_views_form_alter(&$form, $form_state, $form_id) {
  *   The ID of a display within the given view object.
  * @param $filter_id
  *   The ID of a filter used within the given view object.
+ *
+ * @return string
  */
 function hs_taxonomy_views_config_title($view, $display_id, $filter_id) {
   $filter_label = _hs_taxonomy_views_get_filter_label($view, $display_id, $filter_id);
@@ -120,6 +122,9 @@ function hs_taxonomy_views_config_title($view, $display_id, $filter_id) {
  *   The ID of a display within the given view object.
  * @param $filter_id
  *   The ID of a filter used within the given view object.
+ *
+ * @return array
+ *   Returns a form.
  */
 function hs_taxonomy_views_config($view, $display_id, $filter_id) {
   $filter = _hs_taxonomy_views_get_filter($view, $display_id, $filter_id);
@@ -620,13 +625,13 @@ function hs_taxonomy_views_hierarchical_select_config_info() {
 /**
  * Get a filter from a view object.
  *
- * @param $view
+ * @param object $view
  *   A view object.
- * @param $display_id
+ * @param int $display_id
  *   The ID of a display within the given view object.
- * @param $filter_id
+ * @param int $filter_id
  *   The ID of a filter used within the given view object.
- * @return
+ * @return array
  *   The filter array.
  */
 function _hs_taxonomy_views_get_filter($view, $display_id, $filter_id) {
@@ -637,13 +642,13 @@ function _hs_taxonomy_views_get_filter($view, $display_id, $filter_id) {
 /**
  * Get a filter's label from a view object.
  *
- * @param $view
+ * @param object $view
  *   A view object.
- * @param $display_id
+ * @param int $display_id
  *   The ID of a display within the given view object.
- * @param $filter_id
+ * @param int $filter_id
  *   The ID of a filter used within the given view object.
- * @return
+ * @return string|bool
  *   The filter's label.
  */
 function _hs_taxonomy_views_get_filter_label($view, $display_id, $filter_id) {
@@ -655,13 +660,13 @@ function _hs_taxonomy_views_get_filter_label($view, $display_id, $filter_id) {
  * Generate the path at which the configuration form of the given filter is
  * available.
  *
- * @param $view
+ * @param object $view
  *   A view object.
- * @param $display_id
+ * @param int $display_id
  *   The ID of a display within the given view object.
- * @param $filter_id
+ * @param int $filter_id
  *   The ID of a filter used within the given view object.
- * @return
+ * @return string
  *   The Drupal path for the desired config form..
  */
 function _hs_taxonomy_views_config_path($view_name, $display_id, $filter_id) {
@@ -675,13 +680,13 @@ function _hs_taxonomy_views_config_path($view_name, $display_id, $filter_id) {
  * will be returned instead of 'default'. That's also how Views picks which
  * filter settings to use.
  *
- * @param $view
+ * @param object $view
  *   A view object.
- * @param $display_id
+ * @param int $display_id
  *   The ID of a display within the given view object.
- * @param $filter_id
+ * @param int $filter_id
  *   The ID of a filter used within the given view object.
- * @return
+ * @return string
  *   The most specfic display name.
  */
 function _hs_taxonomy_views_get_display_id_for_filter($view, $filter_id) {
