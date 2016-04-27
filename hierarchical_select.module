@@ -2148,7 +2148,9 @@ function _hierarchical_select_dropbox_generate($config, $selection) {
       }
     }
 
-    usort($dropbox->lineages, '_hierarchical_select_dropbox_sort');
+    if (!isset($config['dropbox']['sort']) || $config['dropbox']['sort']){
+      usort($dropbox->lineages, '_hierarchical_select_dropbox_sort');
+    }
 
     // Now store each lineage's selection too. This is needed on the client side
     // to enable the remove button to let the server know which selected items

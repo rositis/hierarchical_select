@@ -62,6 +62,7 @@ element type:
         'title'    => t('All selections'),
         'limit'    => 0,
         'reset_hs' => 1,
+        'sort'     => 1,
       ),
       'editability' => array(
         'status'           => 0,
@@ -148,6 +149,9 @@ array. These are the items it can contain:
  - dropbox['reset_hs'] (optional, defaults to 1, which means "do reset")
    Determines what will happen to the hierarchical select when the user has
    added a selection to the dropbox.
+ 
+ - dropbox['sort'] (optional, defaults to 1, which means "do sort")
+   Determines if hierarchical select sorts the items in the dropbox.
 
  - editability['status] (optional, defaults to 0)
    Allow the user to create new items in the hierarchy.
@@ -376,6 +380,7 @@ should get you started.
         'title'    => t('All selections'),
         'limit'    => 0,
         'reset_hs' => 1,
+        'sort' => 1,
       ),
       'editability' => array(
         'status'           => 0,

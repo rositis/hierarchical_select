@@ -280,6 +280,7 @@ function _hierarchical_select_create_export_code($config) {
   $output .= "    'title'     => '" . str_replace("'", "\'", $config['dropbox']['title']) . "',\n";
   $output .= "    'limit'     => " . $config['dropbox']['limit'] . ",\n";
   $output .= "    'reset_hs'  => " . $config['dropbox']['reset_hs'] . ",\n";
+  $output .= "    'sort'      => " . $config['dropbox']['sort'] . ",\n";
   $output .= "  ),\n";
   $output .= "  'editability' => array(\n";
   $output .= "    'status' => " . $config['editability']['status'] . ",\n";

@@ -295,7 +295,13 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     '#default_value' => (isset($config['dropbox']['reset_hs'])) ? $config['dropbox']['reset_hs'] : NULL,
     '#attributes' => array('class' => array('dropbox-reset-hs')),
   );
-
+  $form['dropbox']['sort'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sort dropbox items'),
+    '#description' => t('Automatically sort items added to the dropbox. If unchecked new items will be added to the end of the dropbox list.'),
+    '#default_value' => (isset($config['dropbox']['sort'])) ? $config['dropbox']['sort'] : 1,
+    '#attributes' => array('class' => array('dropbox-sort')),
+  );
   if (module_hook($module, 'hierarchical_select_create_item')) {
     $form['editability'] = array(
       '#type' => 'fieldset',
