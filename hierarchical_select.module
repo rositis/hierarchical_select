@@ -1036,7 +1036,11 @@ function _hierarchical_select_process_get_db_selection($element, $hsid, &$form_s
           // we make sure that on a form rebuild the same remove checkbox,
           // which is accessed by index, is not set, preventing a double removal.
           // @see https://www.drupal.org/node/1566878#comment-9226261
-          unset($form_state['input']['parent']['dropbox']['visible']['lineages'][$x]['remove']);
+          $elm = &$form_state['input'];
+          foreach ($element['#parents'] as $parent) {
+            $elm = &$elm[$parent];
+          }
+          unset($elm['dropbox']['visible']['lineages'][$x]['remove']);
         }
       }
     }
