@@ -1,0 +1,29 @@
+diff -ru a/hierarchical_select.js b/hierarchical_select.js
+--- a/hierarchical_select.js	2015-05-29 12:29:17.000000000 +0000
++++ b/hierarchical_select.js	2015-10-21 12:11:10.222039018 +0000
+@@ -58,7 +58,13 @@
+   // they were disabled.
+   form.add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select .selects select')
+       .add('#hierarchical-select-' + hsid +'-wrapper .hierarchical-select input')
+-      .attr('disabled', false);
++      .map(function(index, element) {
++        var $this = $(this);
++
++        if (!$this.attr('data-force-disabled')) {
++          $this.attr('disabled', false);
++        }
++      });
+ 
+   if (this.cache != null) {
+     this.cache.initialize();
+diff -ru a/hierarchical_select.module b/hierarchical_select.module
+--- a/hierarchical_select.module	2015-05-29 12:29:17.000000000 +0000
++++ b/hierarchical_select.module	2015-10-21 12:11:10.126039018 +0000
+@@ -1496,6 +1496,7 @@
+   // also a wrong assumption). Hence it reverts to the main form's default
+   // submit handler.
+   $element['#attributes']['disabled'] = TRUE;
++  $element['#attributes']['data-force-disabled'] = TRUE;
+ 
+   // Recurse through all children:
+   foreach (element_children($element) as $key) {
