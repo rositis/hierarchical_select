@@ -288,7 +288,7 @@ function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
  * Helper function to apply the HS config to a form item.
  */
 function _hs_menu_apply_config(&$form, $params) {
-  $params['exclude'] = $params[0] .':'. $params[1];
+  $params['exclude'] = $params['exclude'][0] .':'. $params['exclude'][1];
   // The following is to ensure via javascript self is not listed.
   if(!empty($params['exclude'])) {
     drupal_add_js('jQuery(document).ready(function () {
