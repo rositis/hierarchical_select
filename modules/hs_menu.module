@@ -303,8 +303,6 @@ function _hs_menu_apply_config(&$form, $params) {
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
-    'entity_count'    => 0,
-    'require_entity'  => 0,
     'resizable'       => variable_get('hs_menu_resizable', 1),
     'level_labels' => array(
       'status' => 0,
@@ -314,6 +312,14 @@ function _hs_menu_apply_config(&$form, $params) {
     ),
     'editability' => array(
       'status' => 0,
+    ),
+    'entity_count'    => array(
+      'enabled' => 0,
+      'require_entity' => 0,
+      'settings' => array(
+        'count_children' => 0,
+        'entity_types' => array(),
+      ),
     ),
     'render_flat_select' => 0,
   );
