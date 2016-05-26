@@ -7,10 +7,6 @@ Drupal.behaviors.HierarchicalSelect = {
     .addClass('hierarchical-select-wrapper-processed').each(function() {
       var hsid = $(this).attr('id').replace(/^hierarchical-select-(.+)-wrapper$/, "$1");
       Drupal.HierarchicalSelect.initialize(hsid);
-      // Add an ellipsis to indicate options with sub-options
-      $(".hierarchical-select-wrapper .hierarchical-select option.has-children").each( function( index, element ){
-        if (element["innerHTML"].indexOf("...") == -1) element["innerHTML"] = element["innerHTML"] + "...";
-      });
     });
   }
 };
