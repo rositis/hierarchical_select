@@ -296,23 +296,6 @@ Drupal.HierarchicalSelect.attachBindings = function(hsid) {
     Drupal.HierarchicalSelect.prepareGETSubmit(e.data.hsid);
   })
 
-  // "add-to-dropbox" event
-  // When selecting an item from the root level, the next level is automatically
-  // loaded and shown in a new list. However, once you add an item to the
-  // dropbox, all the lists disappear except the root one. This list keeps its
-  // selection which prevents you from loading the next level unless you choose
-  // another item first. This makes sense as the onchange event cannot fire
-  // unless the selection has actually changed. In order to solve this, we reset
-  // the selection in all the lists once an item has been added to the dropbox.
-  // This forces the user to always start from scratch when adding a new item,
-  // which is preferable.
-  .unbind('add-to-dropbox').bind('add-to-dropbox', data, function(e) {
-    // Reset the selections once an item has been added.
-    $('#hierarchical-select-' + hsid + '-wrapper',
-      Drupal.HierarchicalSelect.context).find(
-      '.hierarchical-select .selects select').val('');
-  })
-
   // "update-hierarchical-select" event
   .find('.hierarchical-select .selects select').unbind().change(function(_hsid) {
     return function() {
