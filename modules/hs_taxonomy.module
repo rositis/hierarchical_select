@@ -635,7 +635,7 @@ function hs_taxonomy_hierarchical_select_root_level($params) {
   }
 
   // If the Term Permissions module is installed, honor its settings.
-  if (function_exists('term_permissions_allowed')) {
+  if (module_exists('term_permissions')) {
     global $user;
     foreach ($terms as $key => $term) {
       if (!term_permissions_allowed($term->tid, $user) ) {
@@ -663,7 +663,7 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
   }
 
   // If the Term Permissions module is installed, honor its settings.
-  if (function_exists('term_permissions_allowed')) {
+  if (module_exists('term_permissions')) {
     global $user;
     foreach ($terms as $key => $term) {
       if (!term_permissions_allowed($term->tid, $user) ) {
@@ -728,7 +728,7 @@ function hs_taxonomy_hierarchical_select_valid_item($item, $params) {
   }
 
   // If the Term Permissions module is installed, honor its settings.
-  if (function_exists('term_permissions_allowed')) {
+  if (module_exists('term_permissions')) {
     global $user;
     if (!term_permissions_allowed($term->tid, $user)) {
       return FALSE;
