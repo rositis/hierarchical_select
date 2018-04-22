@@ -655,7 +655,7 @@ function hs_taxonomy_hierarchical_select_children($parent, $params) {
     return array();
   }
 
-  $terms = taxonomy_get_children($parent, $params['vid']);
+  $terms = taxonomy_get_tree($params['vid'], $parent, 1);
 
   // Unset the term that's being excluded, if it is among the children.
   if (isset($params['exclude_tid'])) {
