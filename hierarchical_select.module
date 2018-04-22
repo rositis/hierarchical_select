@@ -903,7 +903,6 @@ function form_hierarchical_select_process($element, &$form_state, $complete_form
 
   // Send the collected developer mode logs (by using #attached JS).
   $element = _hs_process_developer_mode_send_log_js($element, $hsid);
-  $element['#value'] = $element['#return_value'];
 
   return $element;
 }
