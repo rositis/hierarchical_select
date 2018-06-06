@@ -2179,7 +2179,7 @@ function _hierarchical_select_dropbox_generate($config, $selection) {
     }
 
     if (!isset($config['dropbox']['sort']) || $config['dropbox']['sort']){
-      array_multisort($dropbox->lineages, '_hierarchical_select_dropbox_sort');
+      usort($dropbox->lineages, '_hierarchical_select_dropbox_sort');
     }
 
     // Now store each lineage's selection too. This is needed on the client side
