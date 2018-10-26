@@ -135,12 +135,22 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       1 => t('Save !item lineage', $args),
       0 => t('Save only the deepest !item', $args),
     ),
-    '#default_value' => (isset($config['save_lineage'])) ? $config['save_lineage'] :  NULL,
+    '#default_value' => (isset($config['save_lineage'])) ? $config['save_lineage'] : NULL,
     '#description' => t(
       'Saving the !item lineage means saving the <em>the !item itself and all
       its ancestors</em>.',
       $args
     ),
+  );
+
+  $form['allowed_max_depth'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max Allowed Depth'),
+    '#description' => t("Restrict the depth at which taxonomy terms are selectable. 0 means the entire tree, 1 means only the root level, 2 means the first two levels, etc."),
+    '#default_value' => (isset($config['allowed_max_depth'])) ? $config['allowed_max_depth'] : 0,
+    '#size' => 5,
+    '#attributes' => array('class' => array('allowed_max_depth')),
+    '#element_validate' => array('hs_element_validate_integer_ge_zero'),
   );
 
   $form['enforce_deepest'] = array(
@@ -315,18 +325,19 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
       '#attributes' => array('class' => array('editability-allow-new-levels')),
     );
     $form['editability']['max_levels'] = array(
-      '#type' => 'select',
+      '#type' => 'textfield',
       '#title' => t('Maximum number of levels allowed'),
-      '#options' => array(
-        0 => t('0 (no limit)'), 1, 2, 3, 4, 5, 6, 7, 8, 9
-      ),
-      '#default_value' => (isset($config['editability']['max_levels'])) ? $config['editability']['max_levels'] : NULL,
+      '#default_value' => (isset($config['editability']['max_levels'])) ? $config['editability']['max_levels'] : 0,
+      '#size' => 5,
       '#description' => t(
         'When the user is allowed to create new levels, this option prevents
-        the user from creating extremely deep !hierarchies.',
+        the user from creating extremely deep !hierarchies.<br />
+        Max Allowed Depth takes precedence over this setting.<br />
+        0 = unlimited, any other positive integer is valid',
         $args
       ),
       '#attributes' => array('class' => array('editability-max-levels')),
+      '#element_validate' => array('hs_element_validate_integer_ge_zero'),
     );
 
     $form['editability']['#theme'] = 'hierarchical_select_common_config_form_editability';
@@ -406,6 +417,25 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
   }
 
   return $form;
+}
+
+/**
+ * Validate integer greater than or equal to zero.
+ *
+ * How is this not already an element validator?
+ *
+ * @param array $element
+ *   The element we are validating.
+ * @param array $form_state
+ *   The submitted form.
+ */
+function hs_element_validate_integer_ge_zero(array $element, array &$form_state) {
+  $value = $element['#value'];
+  if ($value !== '' && (!is_numeric($value) || intval($value) != $value || $value < 0)) {
+    form_error($element, t('%name must be an integer greater than or equal to 0(zero).', array(
+      '%name' => $element['#title'],
+    )));
+  }
 }
 
 /**
