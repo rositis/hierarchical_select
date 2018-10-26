@@ -5,8 +5,6 @@
  * This file contains the unit tests of the internals.
  */
 
-
-//file_put_contents('test.html', print_r(array($hierarchy, $reference), TRUE));
 define('SEP', '|');
 define('EURO', 'europe');
 define('EURO_BE', 'belgium');
@@ -38,9 +36,11 @@ define('LINEAGE_ASIA_CH', implode(SEP, array(ASIA, ASIA_CH)));
 define('LINEAGE_ASIA_JP', implode(SEP, array(ASIA, ASIA_JP)));
 define('LINEAGE_ASIA_JP_TOK', implode(SEP, array(ASIA, ASIA_JP, ASIA_JP_TOK)));
 
-
+/**
+ * Tests for the internals of Hierarchical Select.
+ */
 class HierarchicalSelectInternals extends DrupalWebTestCase {
-  private $small_hierarchy = array(
+  private $smallHierarchy = array(
     EURO => array(
       'label' => LABEL_EURO,
       'children' => array(
@@ -78,7 +78,6 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     ),
   );
 
-
   /**
    * Implementation of getInfo().
    */
@@ -98,7 +97,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     parent::setUp('hierarchical_select', 'hs_smallhierarchy');
   }
 
-  // In this test, all settings are disabled.
+  /**
+   * In this test, all settings are disabled.
+   */
   public function testAllSettingsOff() {
     // Generate form item.
     $form_item = array(
@@ -106,7 +107,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       '#config' => array(
         'module' => 'hs_smallhierarchy',
         'params' => array(
-          'hierarchy' => $this->small_hierarchy,
+          'hierarchy' => $this->smallHierarchy,
           'id'        => 'driverpack_platforms',
           'separator' => '|',
         ),
@@ -142,15 +143,15 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       ),
     );
 
-    // No selection
+    // No selection.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(), array());
     $reference = new stdClass();
     $reference->lineage = array(
-      0 => 'none',
+      0 => 'label_0',
     );
     $reference->levels = array(
       0 => array(
-        'none' => '<none>',
+        'label_0' => '',
         LINEAGE_EURO => LABEL_EURO,
         LINEAGE_ASIA => LABEL_ASIA,
       ),
@@ -161,9 +162,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
         LINEAGE_ASIA => 2,
       ),
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'no selection');
 
-    // Europe
+    // Europe.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
@@ -178,17 +179,17 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_EURO_BE => 2,
       LINEAGE_EURO_FR => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe');
 
-    // Europe > France
+    // Europe > France.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO_FR), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
       1 => LINEAGE_EURO_FR,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe > France');
 
-    // Europe > Belgium
+    // Europe > Belgium.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO_BE), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
@@ -213,9 +214,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_EURO_BE_BRU => 0,
       LINEAGE_EURO_BE_HAS => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe > Belgium');
 
-    // Asia
+    // Asia.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_ASIA), array());
     $reference->lineage = array(
       0 => LINEAGE_ASIA,
@@ -232,9 +233,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_ASIA_JP => 1,
     );
     unset($reference->childinfo[2]);
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Asia');
 
-    // Asia > Japan > Tokyo
+    // Asia > Japan > Tokyo.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_ASIA_JP_TOK), array());
     $reference->lineage = array(
       0 => LINEAGE_ASIA,
@@ -248,10 +249,12 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     $reference->childinfo[2] = array(
       LINEAGE_ASIA_JP_TOK => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Asia > Japan > Tokyo');
   }
 
-  // In this test, only enforce_deepest enabled.
+  /**
+   * In this test, only enforce_deepest enabled.
+   */
   public function testEnforceDeepest() {
     // Generate form item.
     $form_item = array(
@@ -259,7 +262,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       '#config' => array(
         'module' => 'hs_smallhierarchy',
         'params' => array(
-          'hierarchy' => $this->small_hierarchy,
+          'hierarchy' => $this->smallHierarchy,
           'id'        => 'driverpack_platforms',
           'separator' => '|',
         ),
@@ -295,7 +298,7 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       ),
     );
 
-    // No selection
+    // No selection.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(), array());
     $reference = new stdClass();
     $reference->lineage = array(
@@ -303,7 +306,6 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     );
     $reference->levels = array(
       0 => array(
-        'none' => '<none>',
         LINEAGE_EURO => LABEL_EURO,
         LINEAGE_ASIA => LABEL_ASIA,
       ),
@@ -314,9 +316,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
         LINEAGE_ASIA => 2,
       ),
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'no selection (deepest)');
 
-    // Europe
+    // Europe.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
@@ -339,9 +341,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_EURO_BE_BRU => 0,
       LINEAGE_EURO_BE_HAS => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe (deepest)');
 
-    // Europe > France
+    // Europe > France.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO_FR), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
@@ -349,9 +351,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     );
     unset($reference->levels[2]);
     unset($reference->childinfo[2]);
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe > France (deepest)');
 
-    // Europe > Belgium
+    // Europe > Belgium.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_EURO_BE), array());
     $reference->lineage = array(
       0 => LINEAGE_EURO,
@@ -374,9 +376,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_EURO_BE_BRU => 0,
       LINEAGE_EURO_BE_HAS => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Europe > Belgium (deepest)');
 
-    // Asia
+    // Asia.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_ASIA), array());
     $reference->lineage = array(
       0 => LINEAGE_ASIA,
@@ -392,9 +394,9 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
       LINEAGE_ASIA_JP => 1,
     );
     unset($reference->childinfo[2]);
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Asia (deepest)');
 
-    // Asia > Japan > Tokyo
+    // Asia > Japan > Tokyo.
     list($hierarchy, $dropbox) = $this->generate($form_item, array(LINEAGE_ASIA_JP_TOK), array());
     $reference->lineage = array(
       0 => LINEAGE_ASIA,
@@ -407,27 +409,42 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     $reference->childinfo[2] = array(
       LINEAGE_ASIA_JP_TOK => 0,
     );
-    $this->assertHierarchy($hierarchy, $reference);
+    $this->assertHierarchy($hierarchy, $reference, 'Asia > Japan > Tokyo (deepest)');
   }
 
-
-  //--------------------------------------------------------------------------
-  // Private methods.
-
+  /**
+   * Generate the $hierarchy and $dropbox objects.
+   *
+   * This uses the selections that were just calculated.
+   */
   private function generate($element, $hs_selection, $db_selection, $op = 'Update') {
     $config = $element['#config'];
 
-    // Generate the $hierarchy and $dropbox objects using the selections that
-    // were just calculated.
     $dropbox = (!$config['dropbox']['status']) ? FALSE : _hierarchical_select_dropbox_generate($config, $db_selection);
     $hierarchy = _hierarchical_select_hierarchy_generate($config, $hs_selection, $element['#required'], $dropbox);
 
     return array($hierarchy, $dropbox);
   }
 
-  private function assertHierarchy($hierarchy, $reference) {
-    $this->assertIdentical($hierarchy->lineage,    $reference->lineage,    'Hierarchy lineage is correct.');
-    $this->assertIdentical($hierarchy->levels,     $reference->levels,     'Hierarchy levels is correct.');
-    $this->assertIdentical($hierarchy->childinfo, $reference->childinfo, 'Hierarchy child info is correct.');
+  /**
+   * Group multiple assertions into a single check.
+   */
+  private function assertHierarchy($hierarchy, $reference, $test = 'this test') {
+    $this->assertIdentical(
+      $hierarchy->lineage,
+      $reference->lineage,
+      t('Hierarchy lineage for @test is correct.', array('@test' => $test))
+    );
+    $this->assertIdentical(
+      $hierarchy->levels,
+      $reference->levels,
+      t('Hierarchy levels for @test is correct.', array('@test' => $test))
+    );
+    $this->assertIdentical(
+      $hierarchy->childinfo,
+      $reference->childinfo,
+      t('Hierarchy child info for @test is correct.', array('@test' => $test))
+    );
   }
+
 }
