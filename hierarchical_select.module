@@ -2265,7 +2265,7 @@ function _hierarchical_select_dropbox_reconstruct_lineages_save_lineage_enabled(
 
       $child_added_to_lineage = FALSE;
       foreach (array_keys($children) as $child) {
-        if (in_array($child, $selection)) {
+        if (in_array((string) $child, $selection)) {
           if (!$child_added_to_lineage) {
             // Add the child to the lineage.
             $lineages[$id][$level + 1] = array('value' => $child, 'label' => $children[$child]);
