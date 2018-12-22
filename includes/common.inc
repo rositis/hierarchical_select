@@ -6,44 +6,66 @@
  */
 
 /**
- * Retrieve a config. If certain settings are not yet configured by the user,
- * defaults will be set. These defaults can also be overriden. This allows
- * modules to provide their own meaningful defaults.
+ * Retrieve a config.
  *
- * @param $config_id
+ * If certain settings are not yet configured by the user, defaults will be
+ * set. These defaults can also be overriden. This allows modules to provide
+ * their own meaningful defaults.
+ *
+ * @param string $config_id
  *   A config id, typically of the form "module-someid", e.g.
  *   "taxonomy-field_name".
- * @param $defaults_override
+ * @param array $defaults_override
  *   Optionally override the defaults.
  *
  * @return array
  *   An array of default config.
  */
-function hierarchical_select_common_config_get($config_id, $defaults_override = array()) {
-  $config = variable_get('hs_config_' . $config_id, array());
+function hierarchical_select_common_config_get($config_id, array $defaults_override = array()) {
+  $var = hierarchical_select_common_sanitize_var('hs_config_' . $config_id);
+  $config = variable_get($var, array());
   return _hierarchical_select_inherit_default_config($config, $defaults_override);
 }
 
 /**
  * Set a config.
  *
- * @param $config_id
+ * @param string $config_id
  *   A config id.
- * @param $config
+ * @param array $config
  *   The config to store.
  */
-function hierarchical_select_common_config_set($config_id, $config) {
-  variable_set('hs_config_' . $config_id, $config);
+function hierarchical_select_common_config_set($config_id, array $config) {
+  $var = hierarchical_select_common_sanitize_var('hs_config_' . $config_id);
+  variable_set($var, $config);
 }
 
 /**
  * Delete a config.
  *
- * @param $config_id
+ * @param string $config_id
  *   The config id to delete.
  */
 function hierarchical_select_common_config_del($config_id) {
-  variable_del('hs_config_' . $config_id);
+  $var = hierarchical_select_common_sanitize_var('hs_config_' . $config_id);
+  variable_del($var);
+}
+
+/**
+ * Sanitize the key for a system variable.
+ *
+ * @param string $key
+ *   The key of the system variable that is about to be used.
+ *
+ * @return string
+ *   The sanitized key.
+ */
+function hierarchical_select_common_sanitize_var($key) {
+  // Meet Drupal Code standards.
+  // https://www.drupal.org/project/hierarchical_select/issues/1368916
+  $key = str_replace('-', '_', $key);
+
+  return $key;
 }
 
 /**

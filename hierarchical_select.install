@@ -82,3 +82,27 @@ function hierarchical_select_update_7002() {
     hierarchical_select_common_config_set($info_item['config_id'], $config);
   }
 }
+
+/**
+ * Update system variable keys. Issue #1368916.
+ */
+function hierarchical_select_update_7003() {
+  module_load_include('inc', 'hierarchical_select', 'includes/common');
+  // Retrieve our keys.
+  $result = db_select('variable', 'v')
+    ->fields('v', array('name'))
+    ->condition('v.name', 'hs_config%', 'LIKE')
+    ->execute()
+    ->fetchAll();
+  foreach ($result as $id => $var) {
+    $key = $var->name;
+    // Get our current value for the key.
+    $val = variable_get($key, array());
+    // Sanitize our key.
+    $new_key = hierarchical_select_common_sanitize_var($key);
+    // Write the value to the new key.
+    variable_set($new_key, $val);
+    // Delete the previous variable.
+    variable_del($key);
+  }
+}

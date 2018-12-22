@@ -447,4 +447,19 @@ class HierarchicalSelectInternals extends DrupalWebTestCase {
     );
   }
 
+  /**
+   * Test sanitized HS Config var names.
+   */
+  public function testHsConfigVarNames() {
+    module_load_include('inc', 'hierarchical_select', 'includes/common');
+    // Save an empty array.
+    $name = 'hs-config-var';
+    hierarchical_select_common_config_set($name, array(TRUE));
+
+    // Manually fetch the variable we expect.
+    $sane_name = 'hs_config_hs_config_var';
+    $test = variable_get($sane_name, NULL);
+    $this->assertNotNull($test, 'HS Config Vars are being sanitized.');
+  }
+
 }
