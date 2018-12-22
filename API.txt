@@ -420,7 +420,7 @@ should get you started.
       'render_flat_select' => 0,
     ),
     '#description' => 'Put your description here',
-    '#default_value' => 'win|xp|x86',
+    '#default_value' => 'win|vista|x86',
   );
 
 
