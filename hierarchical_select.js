@@ -397,7 +397,7 @@ Drupal.HierarchicalSelect.postUpdateAnimations = function(hsid, updateType, last
       // Hide the loaded selects after the one that was just changed, then
       // drop them in.
       var animationDelay = Drupal.settings.HierarchicalSelect.settings["hs-" + hsid]['animationDelay'];
-      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context).slice(lastUnchanged);
+      var $animatedSelects = $('#hierarchical-select-'+ hsid +'-wrapper .hierarchical-select .selects select', Drupal.HierarchicalSelect.context).slice(lastUnchanged).not(':hidden');
       if ($animatedSelects.size() > 0) {
         $animatedSelects.hide();
         for (var i = 0; i < $animatedSelects.size(); i++) {
