@@ -1,6 +1,6 @@
+#Hierarchical Select
+##Description
 
-Description
------------
 This module defines the "hierarchical_select" form element, which is a greatly
 enhanced way for letting the user select items in a hierarchy.
 
@@ -13,21 +13,20 @@ choose a site-wide animation delay, and so on. You can even create new items
 and levels through Hierarchical Select!
 
 
-Integrates with
----------------
+##Integrates with
 * Taxonomy (Drupal core)
 
 
-Installation
-------------
-1) Place this module directory in your "modules" folder (this will usually be
+##Installation
+
+1. Place this module directory in your "modules" folder (this will usually be
 "sites/all/modules/"). Don't install your module in Drupal core's "modules"
 folder, since that will cause problems and is bad practice in general. If
 "sites/all/modules" doesn't exist yet, just create it.
 
-2) Enable the Hierarchical Select and Hierarchical Select Taxonomy modules.
+1. Enable the Hierarchical Select and Hierarchical Select Taxonomy modules.
 
-3) If you want to use it for one or more of your vocabularies, go to
+1. If you want to use it for one or more of your vocabularies, go to
 admin/structure/types and click the "manage fields" link for a content type on
 which you're using a Term reference field. Click the "edit" link for this Term
 reference field and then go to the "widget type" tab in the upper right corner.
@@ -41,40 +40,40 @@ Troubleshooting
 ---------------
 If you ever have problems, make sure to go through these steps:
 
-1) Go to admin/reports/status (i.e. the Status Report). Ensure that the status
+1. Go to `admin/reports/status` (i.e. the Status Report). Ensure that the status
    of the Hierarchical Select module is ok.
 
-2) Ensure that the page isn't being served from your browser's cache. Use
+1. Ensure that the page isn't being served from your browsers cache. Use
    CTRL+R in Windows/Linux browsers, CMD+R in Mac OS X browsers to enforce the
    browser to reload everything, preventing it from using its cache.
 
-3) When you're getting a JS alert with the following message: "Received an
+1. When you're getting a JS alert with the following message: "Received an
    invalid response from the server.", ensure that the page (of which this
    form is a part) is *not* being cached.
 
-4) When Hierarchical Select seems to be misbehaving in a certain use case in
+1. When Hierarchical Select seems to be misbehaving in a certain use case in
    which terms with multiple parents are being used, make sure to enable the
    "Save term lineage" setting.
    Note: you may have to repeat this for every configuration in which the
    vocabulary with terms that have multiple parents are being used. E.g. if
-   such a vocabulary is called "A", then go to 
-      admin/config/content/hierarchical_select/configs
+   such a vocabulary is called "A", then go to
+      `/admin/config/content/hierarchical_select/configs`
    and edit all configuration that have "A" in the "Hierarchy" column.
 
 In case of problems, don't forget to try a hard refresh in your browser!
 
 
-Limitations
------------
-- Creating new items in the hierarchy in a multiple parents hierarchy (more
+##Limitations
+
+* Creating new items in the hierarchy in a multiple parents hierarchy (more
   scientifically: a directed acyclic graph) is *not* supported.
-- Not the entire scalability problem can be solved by installing this set of
+* Not the entire scalability problem can be solved by installing this set of
   modules; read the maximum scalability section for details.
-- The child indicators only work in Firefox. This *cannot* be supported in
+* The child indicators only work in Firefox. This *cannot* be supported in
   Safari or IE. See http://drupal.org/node/180691#comment-1044691.
-- The special [save-lineage-termpath] token only works with content_taxonomy
+* The special [save-lineage-termpath] token only works with content_taxonomy
   fields as long as you have the "Save option" set to either "Tag" or "Both".
-- In hierarchies where items can have multiple parent items and where you have
+* In hierarchies where items can have multiple parent items and where you have
   enabled Hierarchical Select's "save lineage" setting, it is impossible to
   remember individual hierarchies, unless the underlying module supports it.
   So far, no module supports this. Hierarchical Select is just a form element,
@@ -89,7 +88,7 @@ Limitations
   lineages will be rendered by Hierarchical Select, because only the four
   terms are stored and thus there is no way to recover the originally selected
   two lineages.
-- You can NOT expect the Hierarchical Select Taxonomy module to automagically
+* You can NOT expect the Hierarchical Select Taxonomy module to automagically
   fix all existing nodes when you enable or disable the "save lineage" setting
   and neither can you expect it to keep working properly when you reorganize
   the term hierarchy. There's nothing I can do about this. Hierarchical Select
@@ -100,8 +99,8 @@ Limitations
   * http://drupal.org/node/976394#comment-4054456
 
 
-Rendering hierarchy lineages when viewing content
--------------------------------------------------
+##Rendering hierarchy lineages when viewing content
+
 Hierarchical Select is obviously only used for input. Hence it is only used on
 the create/edit forms of content.
 Combine that with the fact that Hierarchical Select is the only module capable
@@ -115,7 +114,7 @@ the theme_hierarchical_select_selection_as_lineages($selection, $config)
 function.
 
 Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
-  <?php if ($taxonomy):
+  `<?php if ($taxonomy):
     require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
     $vid = 2;                                                    // Vocabulary ID. CHANGE THIS!
     $config_id = "taxonomy-$vid";                                // Generate the config ID.
@@ -124,7 +123,7 @@ Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
     $config['params']['vid'] = $vid;                             // Set the parameters.
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
-  <?php endif; ?>
+  <?php endif; ?>``
 
 This will automatically render all lineages for vocabulary 2 (meaning that if
 you want to render the lineages of multiple vocabularies, you'll have to clone
@@ -132,15 +131,19 @@ this piece of code once for every vocabulary). It will also automatically get
 the current Hierarchical Select configuration for that vocabulary.
 
 Alternatively, you could provide the $config array yourself. Only three keys
-are required: 1) module, 2) params, 3) save_lineage. For example:
-  <?php if ($taxonomy):
+are required:
+1.module,
+1.params,
+1.save_lineage.
+For example:
+  `<?php if ($taxonomy):
     $vid = 2;                          // Vocabulary ID. CHANGE THIS!
     $config['module'] = 'hs_taxonomy'; // Set the module.
     $config['params']['vid'] = $vid;   // Set the parameters.
     $config['save_lineage'] = 1;       // save_lineage setting is enabled. CHANGE THIS!
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
-  <?php endif; ?>
+  <?php endif; ?>``
 
 If you don't like how the lineage is displayed, simply override the
 theme_hierarchical_select_selection_as_lineages() function from within your
@@ -152,8 +155,8 @@ the elements that are selected by the module (see hs_taxonomy.module for more
 info).
 
 
-Setting a fixed size
---------------------
+##Setting a fixed size
+
 When you don't want users to be able to resize a hierarchical select
 themselves, you can set a fixed size in advance yourself
 Setting #size to >1 does *not* generate #multiple = TRUE selects! And the
@@ -164,8 +167,8 @@ thereby showing more options.
 See http://www.w3.org/TR/html401/interact/forms.html#adef-size-SELECT.
 
 
-Sponsors
---------
+###Sponsors
+
 * Initial development:
    Paul Ektov of http://autobin.ru.
 * Abstraction, to let other modules than taxonomy hook in:
@@ -188,8 +191,7 @@ Sponsors
    Bancard Data Service
 
 
-Author
-------
+###Author
 Wim Leers
 
 * website: http://wimleers.com/
@@ -198,3 +200,6 @@ Wim Leers
 The author can be contacted for paid development on this module. This can vary
 from new features to Hierarchical Select itself, to new implementations (i.e.
 support for new kinds of hierarchies).
+
+###Backdrop Port
+Ryan Ositis http://ryanositis.com
