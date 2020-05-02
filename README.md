@@ -1,6 +1,5 @@
-#Hierarchical Select
-##Description
-
+Hierarchical Select
+======================
 This module defines the "hierarchical_select" form element, which is a greatly
 enhanced way for letting the user select items in a hierarchy.
 
@@ -13,21 +12,19 @@ choose a site-wide animation delay, and so on. You can even create new items
 and levels through Hierarchical Select!
 
 
-##Integrates with
-* Taxonomy (Drupal core)
+Integrates with
+---------------
+* Taxonomy
 
 
-##Installation
-
-1. Place this module directory in your "modules" folder (this will usually be
-"sites/all/modules/"). Don't install your module in Drupal core's "modules"
-folder, since that will cause problems and is bad practice in general. If
-"sites/all/modules" doesn't exist yet, just create it.
+Installation
+---------------
+1. Place this module directory in your `/modules` folder.
 
 1. Enable the Hierarchical Select and Hierarchical Select Taxonomy modules.
 
 1. If you want to use it for one or more of your vocabularies, go to
-admin/structure/types and click the "manage fields" link for a content type on
+`/admin/structure/types` and click the "manage fields" link for a content type on
 which you're using a Term reference field. Click the "edit" link for this Term
 reference field and then go to the "widget type" tab in the upper right corner.
 There, you can choose the "Hierarchical Select" widget type, and when you do,
@@ -63,8 +60,8 @@ If you ever have problems, make sure to go through these steps:
 In case of problems, don't forget to try a hard refresh in your browser!
 
 
-##Limitations
-
+Limitations
+---------------
 * Creating new items in the hierarchy in a multiple parents hierarchy (more
   scientifically: a directed acyclic graph) is *not* supported.
 * Not the entire scalability problem can be solved by installing this set of
@@ -99,8 +96,8 @@ In case of problems, don't forget to try a hard refresh in your browser!
   * http://drupal.org/node/976394#comment-4054456
 
 
-##Rendering hierarchy lineages when viewing content
-
+Rendering hierarchy lineages when viewing content
+---------------
 Hierarchical Select is obviously only used for input. Hence it is only used on
 the create/edit forms of content.
 Combine that with the fact that Hierarchical Select is the only module capable
@@ -123,7 +120,7 @@ Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
     $config['params']['vid'] = $vid;                             // Set the parameters.
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
-  <?php endif; ?>``
+  <?php endif; ?>`
 
 This will automatically render all lineages for vocabulary 2 (meaning that if
 you want to render the lineages of multiple vocabularies, you'll have to clone
@@ -143,20 +140,19 @@ For example:
     $config['save_lineage'] = 1;       // save_lineage setting is enabled. CHANGE THIS!
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
-  <?php endif; ?>``
+  <?php endif; ?>`
 
 If you don't like how the lineage is displayed, simply override the
-theme_hierarchical_select_selection_as_lineages() function from within your
-theme, create e.g. garland_hierarchical_select_selection_as_lineages().
+`theme_hierarchical_select_selection_as_lineages()` function from within your
+theme, create e.g. `garland_hierarchical_select_selection_as_lineages()`.
 
 It's also worth mentioning that the 'hs_taxonomy_tree' tag was added to the
 queries that build the term tree. As a result now you can easily change/filter
 the elements that are selected by the module (see hs_taxonomy.module for more
 info).
 
-
-##Setting a fixed size
-
+Setting a fixed size
+---------------
 When you don't want users to be able to resize a hierarchical select
 themselves, you can set a fixed size in advance yourself
 Setting #size to >1 does *not* generate #multiple = TRUE selects! And the
@@ -166,40 +162,38 @@ the "size" HTML attribute. This increases the vertical size of selects,
 thereby showing more options.
 See http://www.w3.org/TR/html401/interact/forms.html#adef-size-SELECT.
 
+Current Maintainers
+-------------------
+* [Ryan Osītis](https://github.com/rositis)
 
-###Sponsors
-
+Credits
+-------------------
+* Ported to Backdrop CMS by:
+   [Ryan Osītis](https://github.com/rositis)
+* Author:
+   [Wim Leers](http://wimleers.com/)
 * Initial development:
-   Paul Ektov of http://autobin.ru.
+   [Paul Ektov](http://autobin.ru)
 * Abstraction, to let other modules than taxonomy hook in:
-   Etienne Leers of http://creditcalc.biz.
+   [Etienne Leers](http://creditcalc.biz)
 * Support for saving the term lineage:
-   Paul Ektov of http://autobin.ru.
+   [Paul Ektov](http://autobin.ru)
 * Multiple select support:
-   Marmaladesoul, http://marmaladesoul.com.
+   [Marmaladesoul[(http://marmaladesoul.com)
 * Taxonomy Subscriptions support:
    Mr Bidster Inc.
 * Ability to create new items/levels:
-   The Worx Company, http://www.worxco.com.
+   [The Worx Company](http://www.worxco.com)
 * Ability to only show items that are associated with at least one entity:
-   Merge, http://merge.nl.
+   [Merge](http://merge.nl)
 * Views 2 support:
-   Merge, http://merge.nl.
+   [Merge](http://merge.nl)
 * Initial Drupal 7 port + folow-up fixes:
-   PingV, http://pingv.com.
+   [PingV](http://pingv.com)
 * Port of "save lineage" functionality to Drupal 7:
    Bancard Data Service
 
-
-###Author
-Wim Leers
-
-* website: http://wimleers.com/
-* contact: http://wimleers.com/contact
-
-The author can be contacted for paid development on this module. This can vary
-from new features to Hierarchical Select itself, to new implementations (i.e.
-support for new kinds of hierarchies).
-
-###Backdrop Port
-Ryan Ositis http://ryanositis.com
+License
+-------------------
+This project is GPL v2 software.
+See the LICENSE.txt file in this directory for complete text.
