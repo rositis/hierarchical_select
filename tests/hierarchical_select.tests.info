@@ -1,0 +1,5 @@
+[HierarchialSelectTestCase]
+name = Hierarchical Select functionality
+description = Do something with Hierarchical Select
+group = Hierarchial Select
+file = internals.test

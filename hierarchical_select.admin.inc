@@ -11,6 +11,7 @@
  * Form definition; admin settings.
  */
 function hierarchical_select_admin_settings($form, &$form_state) {
+  $form['#config'] = 'hierarchical_select.settings';
   $form['description'] = array(
     '#markup' => t('All settings below will be used as site-wide defaults.'),
     '#prefix' => '<div>',
@@ -25,7 +26,7 @@ function hierarchical_select_admin_settings($form, &$form_state) {
     ),
     '#size' => 5,
     '#maxlength' => 5,
-    '#default_value' => variable_get('hierarchical_select_animation_delay', 400),
+    '#default_value' => config_get('hierarchical_select','hierarchical_select_animation_delay'),
   );
   $form['hierarchical_select_level_labels_style'] = array(
     '#type' => 'select',
@@ -41,7 +42,7 @@ function hierarchical_select_admin_settings($form, &$form_state) {
       'inversed' => t('Inversed'),
       'underlined' => t('Underlined'),
     ),
-    '#default_value' => variable_get('hierarchical_select_level_labels_style', 'none'),
+    '#default_value' => config_get('hierarchical_select.settings','hierarchical_select_level_labels_style'),
   );
   // TODO: port the HS client-side cache system to Drupal 7.
   /*
@@ -85,14 +86,15 @@ function hierarchical_select_admin_configs() {
   foreach ($info_items as $id => $item) {
     $config_id = $item['config_id'];
 
-    $rows[$id] = array(
-      $item['hierarchy type'],
-      $item['hierarchy'],
-      $item['entity type'],
-      $item['bundle'],
-      $item['context type'],
-      $item['context'],
-      theme('links', array('links' => array(
+    try {
+      $rows[$id] = array(
+        $item['hierarchy type'],
+        $item['hierarchy'],
+        $item['entity type'],
+        $item['bundle'],
+        $item['context type'],
+        $item['context'],
+        theme('links', array('links' => array(
           array(
             'title' => t('Edit'),
             'href' => $item['edit link'],
@@ -107,15 +109,23 @@ function hierarchical_select_admin_configs() {
             'href' => "admin/config/content/hierarchical_select/import/$config_id",
           ),
         ))),
-    );
+      );
+      $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all Hierarchical Select configurations.')));
+    }
+    catch (Exception $e) {
+      watchdog('hierarchical_select', $e->getMessage());
+    }
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all Hierarchical Select configurations.')));
+  return $output;
 }
 
 /**
  * Menu callback; a table that lists all Hierarchical Select implementations
  * and the features they support.
+ *
+ * @return string
+ * @throws \Exception
  */
 function hierarchical_select_admin_implementations() {
   $output = '';
@@ -125,7 +135,7 @@ function hierarchical_select_admin_implementations() {
   $rows = array();
   foreach (module_implements('hierarchical_select_root_level') as $module) {
     $filename = db_query("SELECT filename FROM {system} WHERE type = :type AND name = :name", array(':type' => 'module', ':name' => $module))->fetchField();
-    $module_info = drupal_parse_info_file(dirname($filename) . "/$module.info");
+    $module_info = backdrop_parse_info_file(dirname($filename) . "/$module.info");
     // Try to extract the hierarchy type from the optional hook_hierarchical_select_config_info().
     $hierarchy_type = $entity_type = t('unknown');
     if (module_hook($module, 'hierarchical_select_implementation_info')) {
@@ -151,23 +161,33 @@ function hierarchical_select_admin_implementations() {
     It is <strong>not a reflection of some settings</strong>.
   ');
   $output .= '</p>';
+  try {
+    $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all installed Hierarchical Select implementations.')));
 
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all installed Hierarchical Select implementations.')));
-
+  }
+  catch (Exception $e) {
+    watchdog('hierarchical_select', $e->getMessage());
+  }
   return $output;
 }
 
 /**
  * Form definition; config export form.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $config_id
+ *
+ * @return mixed
  */
 function hierarchical_select_admin_export($form, &$form_state, $config_id) {
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
+  require_once BACKDROP_ROOT . '/' . backdrop_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
   $config = hierarchical_select_common_config_get($config_id);
   $code = _hierarchical_select_create_export_code($config);
 
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
-  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
+  backdrop_add_css(backdrop_get_path('module', 'hierarchical_select') . '/css/hierarchical_select.css');
+  backdrop_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
 
   $lines = substr_count($code, "\n") + 1;
   $form['config'] = array(
@@ -183,12 +203,18 @@ function hierarchical_select_admin_export($form, &$form_state, $config_id) {
 
 /**
  * Form definition; config import form.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $config_id
+ *
+ * @return mixed
  */
 function hierarchical_select_admin_import($form, &$form_state, $config_id) {
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc';
+  require_once BACKDROP_ROOT . '/' . backdrop_get_path('module', 'hierarchical_select') . '/includes/common.inc';
 
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
-  drupal_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
+  backdrop_add_css(backdrop_get_path('module', 'hierarchical_select') . '/css/hierarchical_select.css');
+  backdrop_add_js('$(document).ready(function() { $(".hierarchical-select-code").focus(); });', array('type' => 'inline', 'scope' => JS_DEFAULT));
 
   $form['config'] = array(
     '#type' => 'textarea',
@@ -213,6 +239,9 @@ function hierarchical_select_admin_import($form, &$form_state, $config_id) {
 
 /**
  * Validate callback; config import form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function hierarchical_select_admin_import_validate($form, &$form_state) {
   ob_start();
@@ -234,12 +263,15 @@ function hierarchical_select_admin_import_validate($form, &$form_state) {
 
 /**
  * Submit callback; config import form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function hierarchical_select_admin_import_submit($form, &$form_state) {
   $config = unserialize($form_state['values']['interpreted_config']);
   $config_id = $config['config_id'];
   hierarchical_select_common_config_set($config_id, $config);
-  drupal_set_message(t('Hierarchical Select configuration for %config_id imported!', array('%config_id' => $config_id)));
+  backdrop_set_message(t('Hierarchical Select configuration for %config_id imported!', array('%config_id' => $config_id)));
 }
 
 

@@ -12,7 +12,7 @@
  */
 
 
-if (Drupal.jsEnabled) {
+if (Backdrop.jsEnabled) {
   $(document).ready(function(){
     $('.view-filters form').submit(function() {
       // Remove the Hierarchical Select form build id and the form id, to

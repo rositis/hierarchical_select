@@ -65,14 +65,13 @@ function theme_hierarchical_select_form_element($variables) {
  */
 function theme_hierarchical_select($variables) {
   $element = $variables['element'];
-  $output = '';
 
   // Update $element['#attributes']['class'].
   if (!isset($element['#attributes']['class'])) {
     $element['#attributes']['class'] = array();
   }
   $hsid = $element['hsid']['#value'];
-  $level_labels_style = variable_get('hierarchical_select_level_labels_style', 'none');
+  $level_labels_style = config_get('hierarchical_select.settings','hierarchical_select_level_labels_style');
   $classes = array(
    'hierarchical-select-wrapper',
    "hierarchical-select-level-labels-style-$level_labels_style",
@@ -86,7 +85,7 @@ function theme_hierarchical_select($variables) {
   $element['#attributes']['id'] = "hierarchical-select-$hsid-wrapper";
   $element['#id'] = "hierarchical-select-$hsid-wrapper"; // This ensures the label's for attribute is correct.
 
-  return '<div ' . drupal_attributes($element['#attributes']) . '>' . drupal_render_children($element) . '</div>';
+  return '<div ' . backdrop_attributes($element['#attributes']) . '>' . backdrop_render_children($element) . '</div>';
 }
 
 /**
@@ -101,7 +100,7 @@ function theme_hierarchical_select_selects_container($variables) {
   $element = $variables['element'];
   $output = '';
   $output .= '<div class="hierarchical-select clearfix">';
-  $output .= drupal_render_children($element);
+  $output .= backdrop_render_children($element);
   $output .= '</div>';
   return $output;
 }
@@ -115,12 +114,12 @@ function theme_hierarchical_select_selects_container($variables) {
  * @return string
  *   A themed HTML string representing the form element.
  */
-function theme_hierarchical_select_select($variables) {  
+function theme_hierarchical_select_select($variables) {
   $element = $variables['element'];
   element_set_attributes($element, array('id', 'name', 'size'));
   _form_set_class($element, array('form-select'));
 
-  return '<select' . drupal_attributes($element['#attributes']) . '>' . _hierarchical_select_options($element) . '</select>';
+  return '<select' . backdrop_attributes($element['#attributes']) . '>' . _hierarchical_select_options($element) . '</select>';
 }
 
 /**
@@ -193,14 +192,14 @@ function theme_hierarchical_select_dropbox_table($variables) {
       $output .= '<td>';
       // Each item in a lineage is separated by the separator string.
       for ($depth = 0; $depth < $deepest_level; $depth++) {
-        $output .= drupal_render($db_entry[$depth]);
+        $output .= backdrop_render($db_entry[$depth]);
 
         if ($depth < $deepest_level - 1) {
           $output .= $separator_html;
         }
       }
       $output .= '</td>';
-      $output .= '<td class="dropbox-remove">' . drupal_render($db_entry['remove']) . '</td>';
+      $output .= '<td class="dropbox-remove">' . backdrop_render($db_entry['remove']) . '</td>';
       $output .= '</tr>';
     }
   }
@@ -234,19 +233,24 @@ function theme_hierarchical_select_common_config_form_level_labels($variables) {
   $header = array(t('Level'), t('Label'));
   $rows = array();
 
-  $output .= drupal_render($form['status']);
+  $output .= backdrop_render($form['status']);
 
   $output .= '<div class="level-labels-settings">';
   if (isset($form['labels']) && count(element_children($form['labels']))) {
     foreach (element_children($form['labels']) as $depth) {
       $row = array();
       $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
-      $row[]['data'] = drupal_render($form['labels'][$depth]);
+      $row[]['data'] = backdrop_render($form['labels'][$depth]);
       $rows[] = $row;
     }
 
     // Render the table.
-    $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;')));
+    try {
+      $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;')));
+    }
+    catch (Exception $e) {
+      watchdog('hierarchical_select', $e->getMessage());
+    }
   }
   else {
     // No levels exist yet in the hierarchy!
@@ -257,7 +261,7 @@ function theme_hierarchical_select_common_config_form_level_labels($variables) {
   $output .= '</div>';
 
   // Render the remaining form items.
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
 
   return $output;
 }
@@ -277,23 +281,28 @@ function theme_hierarchical_select_common_config_form_editability($variables) {
   $strings = $form['#strings'];
 
   $output = '';
-  $header = array(t('Level'), t('Allow'), t('!item_type', array('!item_type' => drupal_ucfirst($strings['item_type']))));
+  $header = array(t('Level'), t('Allow'), t('!item_type', array('!item_type' => backdrop_ucfirst($strings['item_type']))));
   $rows = array();
 
-  $output .= drupal_render($form['status']);
+  $output .= backdrop_render($form['status']);
 
   $output .= '<div class="editability-per-level-settings">';
   if (isset($form['item_types']) && count(element_children($form['item_types']))) {
     foreach (element_children($form['item_types']) as $depth) {
       $row = array();
       $row[]['data'] = ($depth == 0) ? t('Root level') : t('Sublevel !depth', array('!depth' => $depth));
-      $row[]['data'] = drupal_render($form['allowed_levels'][$depth]);
-      $row[]['data'] = drupal_render($form['item_types'][$depth]);
+      $row[]['data'] = backdrop_render($form['allowed_levels'][$depth]);
+      $row[]['data'] = backdrop_render($form['item_types'][$depth]);
       $rows[] = $row;
     }
 
     // Render the table and description.
-    $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;'), 'caption' => '<em>' . t('Per-level settings for creating new !items.', array('!items' => $strings['items']))));
+    try {
+      $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('style' => 'width: auto;'), 'caption' => '<em>' . t('Per-level settings for creating new !items.', array('!items' => $strings['items']))));
+    }
+    catch (Exception $e) {
+      watchdog('hierarchical_select', $e->getMessage());
+    }
     $output .= '<div class="description">';
     $output .= t(
       'The %item_type you enter for each level is what will be used in
@@ -315,7 +324,7 @@ function theme_hierarchical_select_common_config_form_editability($variables) {
   $output .= '</div>';
 
   // Render the remaining form items.
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
 
   return $output;
 }
@@ -324,13 +333,10 @@ function theme_hierarchical_select_common_config_form_editability($variables) {
  * Themeing function to render a selection (of items) according to a given
  * Hierarchical Select configuration as one or more lineages.
  *
- * @param $selection
- *   A selection of items of a hierarchy.
- * @param $config
- *   A config array with at least the following settings:
- *   - module
- *   - save_lineage
- *   - params
+ * @param $variables
+ *   An array containing both the selection of items of a hierarchy and the
+ *   configuration data.
+ * @return string
  */
 function theme_hierarchical_select_selection_as_lineages($variables) {
   $selection = $variables['selection'];
@@ -358,7 +364,7 @@ function theme_hierarchical_select_selection_as_lineages($variables) {
   }
 
   // Add the CSS.
-  drupal_add_css(drupal_get_path('module', 'hierarchical_select') . '/hierarchical_select.css');
+  backdrop_add_css(backdrop_get_path('module', 'hierarchical_select') . '/css/hierarchical_select.css');
 
   return $output;
 }
@@ -376,6 +382,10 @@ function theme_hierarchical_select_selection_as_lineages($variables) {
  * able to set a class on an option element if it contains a level label, to
  * allow for level label styles.
  * TODO: rename to _hierarchical_select_select_options().
+ *
+ * @param $element
+ *
+ * @return string
  */
 function _hierarchical_select_options($element) {
   if (!isset($choices)) {
