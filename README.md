@@ -11,11 +11,9 @@ the number of items that can be selected, configure a title for the dropbox,
 choose a site-wide animation delay, and so on. You can even create new items
 and levels through Hierarchical Select!
 
-
 Integrates with
 ---------------
 * Taxonomy
-
 
 Installation
 ---------------
@@ -32,12 +30,11 @@ the entire Hierarchical Select configuration UI will appear: here you'll find
 a whole range of Hierarchical Select settings. All settings are explained
 there as well!
 
-
 Troubleshooting
 ---------------
 If you ever have problems, make sure to go through these steps:
 
-1. Go to `admin/reports/status` (i.e. the Status Report). Ensure that the status
+1. Go to `/admin/reports/status` (i.e. the Status Report). Ensure that the status
    of the Hierarchical Select module is ok.
 
 1. Ensure that the page isn't being served from your browsers cache. Use
@@ -59,7 +56,6 @@ If you ever have problems, make sure to go through these steps:
 
 In case of problems, don't forget to try a hard refresh in your browser!
 
-
 Limitations
 ---------------
 * Creating new items in the hierarchy in a multiple parents hierarchy (more
@@ -77,10 +73,10 @@ Limitations
   not a system for storing hierarchies.
   For example, if you have created a multiple parent vocabulary through the
   Taxonomy module, and you have terms like this:
-   A -> C
-   A -> D
-   B -> C
-   B -> D
+  * A -> C
+  * A -> D
+  * B -> C
+  * B -> D
   If you then save any two lineages in which all four terms exist, all four
   lineages will be rendered by Hierarchical Select, because only the four
   terms are stored and thus there is no way to recover the originally selected
@@ -95,7 +91,6 @@ Limitations
   * http://drupal.org/node/1023762#comment-4054386
   * http://drupal.org/node/976394#comment-4054456
 
-
 Rendering hierarchy lineages when viewing content
 ---------------
 Hierarchical Select is obviously only used for input. Hence it is only used on
@@ -107,11 +102,12 @@ can reconstruct it relatively efficiently. However, this lineage is only
 visible when creating/editing content, not when viewing it.
 To allow you to display the lineages of stored items, I have provided a
 theming function that you can call from within e.g. your node.tpl.php file:
-the theme_hierarchical_select_selection_as_lineages($selection, $config)
+the `theme_hierarchical_select_selection_as_lineages($selection, $config)`
 function.
 
 Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
-  `<?php if ($taxonomy):
+```
+  <?php if ($taxonomy):
     require_once(drupal_get_path('module', 'hierarchical_select') . '/includes/common.inc');
     $vid = 2;                                                    // Vocabulary ID. CHANGE THIS!
     $config_id = "taxonomy-$vid";                                // Generate the config ID.
@@ -121,18 +117,19 @@ Sample usage (using Taxonomy and Hierarchical Select Taxonomy):
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
   <?php endif; ?>`
-
+```
 This will automatically render all lineages for vocabulary 2 (meaning that if
 you want to render the lineages of multiple vocabularies, you'll have to clone
 this piece of code once for every vocabulary). It will also automatically get
 the current Hierarchical Select configuration for that vocabulary.
 
-Alternatively, you could provide the $config array yourself. Only three keys
+Alternatively, you could provide the `$config` array yourself. Only three keys
 are required:
-1.module,
-1.params,
-1.save_lineage.
+1. module,
+1. params,
+1. save_lineage.
 For example:
+``````
   `<?php if ($taxonomy):
     $vid = 2;                          // Vocabulary ID. CHANGE THIS!
     $config['module'] = 'hs_taxonomy'; // Set the module.
@@ -140,8 +137,8 @@ For example:
     $config['save_lineage'] = 1;       // save_lineage setting is enabled. CHANGE THIS!
   ?>
     <div class="terms"><?php print theme('hierarchical_select_selection_as_lineages', $node->taxonomy, $config); ?></div>
-  <?php endif; ?>`
-
+  <?php endif; ?>
+```
 If you don't like how the lineage is displayed, simply override the
 `theme_hierarchical_select_selection_as_lineages()` function from within your
 theme, create e.g. `garland_hierarchical_select_selection_as_lineages()`.
@@ -179,7 +176,7 @@ Credits
 * Support for saving the term lineage:
    [Paul Ektov](http://autobin.ru)
 * Multiple select support:
-   [Marmaladesoul[(http://marmaladesoul.com)
+   [Marmaladesoul](http://marmaladesoul.com)
 * Taxonomy Subscriptions support:
    Mr Bidster Inc.
 * Ability to create new items/levels:
