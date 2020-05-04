@@ -129,7 +129,7 @@ are required:
 1. params,
 1. save_lineage.
 For example:
-``````
+```
   `<?php if ($taxonomy):
     $vid = 2;                          // Vocabulary ID. CHANGE THIS!
     $config['module'] = 'hs_taxonomy'; // Set the module.
