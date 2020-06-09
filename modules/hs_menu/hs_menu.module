@@ -76,6 +76,9 @@ function hs_menu_form_menu_edit_item_alter(&$form, &$form_state) {
 
 /**
  * Submit callback; menu edit item form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function hs_menu_menu_edit_item_form_submit(&$form, &$form_state) {
   // Don't return an array, but a single item.
@@ -84,6 +87,9 @@ function hs_menu_menu_edit_item_form_submit(&$form, &$form_state) {
 
 /**
  * Submit callback; node edit form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function hs_menu_node_form_submit(&$form, &$form_state) {
   // Don't return an array, but a single item.
@@ -95,8 +101,11 @@ function hs_menu_node_form_submit(&$form, &$form_state) {
 
 /**
  * Form definition; admin settings.
+ *
+ * @return mixed
  */
 function hs_menu_admin_settings() {
+  $form['#config'] = 'hs_menu.settings';
   $form['hs_menu_resizable'] = array(
     '#type' => 'radios',
     '#title' => t('Resizable'),
@@ -109,7 +118,7 @@ function hs_menu_admin_settings() {
       0 => t('Disabled'),
       1 => t('Enabled'),
     ),
-    '#default_value' => variable_get('hs_menu_resizable', 1),
+    '#default_value' => config_get('hs_menu.settings', 'hs_menu_resizable'),
   );
 
   $form['hs_menu_content_types'] = array(
@@ -117,7 +126,7 @@ function hs_menu_admin_settings() {
     '#title' => t('Content types'),
     '#description' => t("Select the content types to use Hierarchical Select Menu on. If no content types are selected, then it will apply to all content types."),
     '#options' => node_type_get_names(),
-    '#default_value' => variable_get('hs_menu_content_types', array()),
+    '#default_value' => config_get('hs_menu,settings','hs_menu_content_types'),
   );
 
   return system_settings_form($form);
@@ -139,6 +148,7 @@ function hs_menu_hierarchical_select_params() {
 
 /**
  * Implements hook_hierarchical_select_root_level().
+ * TODO: This is not actually an implementation of a hook. WYF?
  */
 function hs_menu_hierarchical_select_root_level($params) {
   $menus = array();
@@ -167,8 +177,7 @@ function hs_menu_hierarchical_select_root_level($params) {
  * Implements hook_hierarchical_select_children().
  */
 function hs_menu_hierarchical_select_children($parent, $params) {
-  $children = array();
-  list($menu_name, $plid) = explode(':', $parent);
+  [$menu_name, $plid] = explode(':', $parent);
   $tree = menu_tree_all_data($menu_name, NULL);
   return _hs_menu_children($tree, $menu_name, $plid, $params['exclude']);
 }
@@ -179,7 +188,7 @@ function hs_menu_hierarchical_select_children($parent, $params) {
 function hs_menu_hierarchical_select_lineage($item, $params) {
   $lineage = array($item);
 
-  list($menu_name, $mlid) = explode(':', $item);
+  [$menu_name, $mlid] = explode(':', $item);
 
   // If the initial mlid is zero, then this is the root level, so we don't
   // have to get the lineage.
@@ -257,6 +266,13 @@ function hs_menu_hierarchical_select_implementation_info() {
 
 /**
  * Recursive helper function for hs_menu_hierarchical_select_children().
+ *
+ * @param $tree
+ * @param $menu_name
+ * @param int $plid
+ * @param bool $exclude
+ *
+ * @return array
  */
 function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
   $children = array();
@@ -286,12 +302,15 @@ function _hs_menu_children($tree, $menu_name, $plid = 0, $exclude = FALSE) {
 
 /**
  * Helper function to apply the HS config to a form item.
+ *
+ * @param $form
+ * @param $params
  */
 function _hs_menu_apply_config(&$form, $params) {
   // The following is to ensure via javascript self is not listed.
   if (!empty($params['exclude'])) {
     $params['exclude'] = $params['exclude'][0] .':'. $params['exclude'][1];
-    drupal_add_js('jQuery(document).ready(function () {
+    backdrop_add_js('jQuery(document).ready(function () {
         jQuery("[value*=\"' . $params['exclude'] . '\"]").hide();
     });', 'inline');
   }
@@ -303,7 +322,7 @@ function _hs_menu_apply_config(&$form, $params) {
     ),
     'save_lineage'    => 0,
     'enforce_deepest' => 0,
-    'resizable'       => variable_get('hs_menu_resizable', 1),
+    'resizable'       => config_get('hs_menu.settings','hs_menu_resizable'),
     'level_labels' => array(
       'status' => 0,
     ),

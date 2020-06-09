@@ -161,12 +161,15 @@ function hs_smallhierarchy_hierarchical_select_implementation_info() {
  * - makes it very easy to find the parent of a given item.
  * - makes it very easy to find the label and children of a given item.
  *
- * @params $hierarchy
+ * @param $hierarchy
  *   The hierarchy.
- * @params $id
+ * @param $id
  *   A unique identifier for the hierarchy, for caching purposes.
- * @params $separator
+ *
+ * @param string $separator
  *   The separator to use.
+ *
+ * @return array|mixed
  */
 function _hs_smallhierarchy_transform($hierarchy, $id, $separator = '|') {
   // Make sure each hierarchy is only transformed once.
@@ -191,13 +194,13 @@ function _hs_smallhierarchy_transform($hierarchy, $id, $separator = '|') {
 /**
  * Helper function for _hs_smallhierarchy_transform().
  *
- * @params $parent
+ * @param $parent
  *   The parent item of the current level.
- * @params $hs_hierarchy
+ * @param $hs_hierarchy
  *   The HS hierarchy.
- * @params $relative_hierarchy
+ * @param $relative_hierarchy
  *   The hierarchy relative to the current level.
- * @params $separator
+ * @param string $separator
  *   The separator to use.
  */
 function _hs_smallhierarchy_transform_recurse($parent, &$hs_hierarchy, $relative_hierarchy, $separator = '|') {

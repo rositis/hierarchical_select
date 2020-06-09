@@ -11,6 +11,8 @@
  * Form definition; admin settings.
  */
 function hierarchical_select_admin_settings($form, &$form_state) {
+  $config = config('hierarchical_select.settings');
+
   $form['#config'] = 'hierarchical_select.settings';
   $form['description'] = array(
     '#markup' => t('All settings below will be used as site-wide defaults.'),
@@ -42,7 +44,7 @@ function hierarchical_select_admin_settings($form, &$form_state) {
       'inversed' => t('Inversed'),
       'underlined' => t('Underlined'),
     ),
-    '#default_value' => config_get('hierarchical_select.settings','hierarchical_select_level_labels_style'),
+    '#default_value' => $config->get('hierarchical_select_level_labels_style'),
   );
   // TODO: port the HS client-side cache system to Drupal 7.
   /*
@@ -113,7 +115,7 @@ function hierarchical_select_admin_configs() {
       $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array(), 'caption' => t('Overview of all Hierarchical Select configurations.')));
     }
     catch (Exception $e) {
-      watchdog('hierarchical_select', $e->getMessage());
+      watchdog_exception('hierarchical_select', $e);
     }
   }
 
@@ -166,7 +168,7 @@ function hierarchical_select_admin_implementations() {
 
   }
   catch (Exception $e) {
-    watchdog('hierarchical_select', $e->getMessage());
+    watchdog_exception('hierarchical_select', $e);
   }
   return $output;
 }

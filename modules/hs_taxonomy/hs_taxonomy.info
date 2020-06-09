@@ -1,7 +1,7 @@
 name = Hierarchical Select Taxonomy
+type = module
 description = Use Hierarchical Select for Taxonomy.
 dependencies[] = hierarchical_select
 dependencies[] = taxonomy
 package = Form Elements
-
-core = 7.x
+backdrop = 1.x

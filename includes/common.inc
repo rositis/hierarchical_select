@@ -5,6 +5,7 @@
  * Functions used by more than one Hierarchical Select implementation.
  */
 
+// TODO: Move to Config.
 /**
  * Retrieve a config.
  *
@@ -61,8 +62,8 @@ function hierarchical_select_common_config_del($config_id) {
  *   The sanitized key.
  */
 function hierarchical_select_common_sanitize_var($key) {
-  // Meet Drupal Code standards.
-  // https://www.drupal.org/project/hierarchical_select/issues/1368916
+  // Meet backdrop Code standards.
+  // https://www.backdrop.org/project/hierarchical_select/issues/1368916
   $key = str_replace('-', '_', $key);
 
   return $key;
@@ -92,7 +93,9 @@ function hierarchical_select_common_config_apply(&$form_item, $config_id, $defau
  * Form definition of the hierarchical_select_common_config_form form.
  */
 function hierarchical_select_common_config_form($module, $params, $config_id, $defaults_override, $strings, $max_hierarchy_depth, $preview_is_required) {
-  $config = hierarchical_select_common_config_get($config_id, $defaults_override);
+  // $config = hierarchical_select_common_config_get($config_id, $defaults_override);
+  $config = config('hierarchical_select.settings');
+
   $args = array(
     '!item' => $strings['item'],
     '!items' => $strings['items'],
@@ -112,12 +115,12 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
     ),
     '#attached' => array(
       'css' => array(
-        drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css'
+        backdrop_get_path('module', 'hierarchical_select') . '/includes/common_config_form.css'
       ),
       'js' => array(
         array(
           'type' => 'file',
-          'data' => drupal_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js',
+          'data' => backdrop_get_path('module', 'hierarchical_select') . '/includes/common_config_form.js',
         ),
         array(
           'type' => 'setting',
@@ -130,8 +133,8 @@ function hierarchical_select_common_config_form($module, $params, $config_id, $d
   $form['config_id'] = array('#type' => 'value', '#value' => $config_id);
 
   // TODO: really make this a *live* preview, i.e. refresh the preview on each
-  // change in the form. This cannot be done easily in Drupal 5 or 6, so let's
-  // do so in Drupal 7. See cfg.livePreview in common_config_form.js.
+  // change in the form. This cannot be done easily in backdrop 5 or 6, so let's
+  // do so in backdrop 7. See cfg.livePreview in common_config_form.js.
   $form['live_preview'] = array(
     '#type' => 'fieldset',
     '#title' => t('Preview'),
